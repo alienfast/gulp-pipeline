@@ -11,10 +11,10 @@ The javascript community is iterating on asset tooling faster than others, indee
 Why don't we just use the same tools for the asset pipeline?  Now we can.  
 
 ### Reuse, modularity, extensibility
-We are certainly not the first to consider this.  What we did see is that noone was actually reusing shared code in a way that benefits many.  We have seen people share code in a repository, but only in a way that could be cloned or copied.  We want actual reuse, in that we never want to copy code again. When we transpile ES6, we want check it with EsLint.  When we transpile SCSS, we want to check it with ScssLint.
+We are certainly not the first to consider this.  What we did see is that noone was actually reusing shared code in a way that benefits many.  We have seen people share code in a repository, but only in a way that could be cloned or copied.  We want actual reuse, in that we never want to copy code again. When we transpile ES6, we want check it with EsLint.  When we transpile SCSS, we want to check it with ScssLint...and we never want to copy that code again.
 
 ## Who is this for?
-Anyone that wants gulp recipes in a reusable/extensible/modular way.  While we certainly want to provide recipes that can be reused and replace the rails pipeline, these recipes should be modular enough that any project (node, bower, angular) can utilize them.
+Anyone that wants gulp recipes in a reusable/extensible/modular way.  While we certainly want to provide recipes that can be reused and replace the rails pipeline, these recipes should be modular enough that any project (node, angular, etc) can utilize them.
 
 ## Usage
 NOTE: very much a work in progress

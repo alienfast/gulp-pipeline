@@ -1,4 +1,4 @@
-# gulp-asset-pipeline
+# gulp-pipeline
 Meta gulp plugin recipes modularized as ES6 classes. Fully configurable. Fully extensible. Full pipeline in a few lines of code.
 
 ES6, reusable, modular, extensible gulp recipes.
@@ -22,7 +22,7 @@ NOTE: very much a work in progress
 Here's an ES6 authored `gulpfile.babel.js` that provides tasks to build and watch an ES6/SCSS project.  Simple enough?
  
 ```javascript
-import { Scss, Browserify } from 'gulp-asset-pipeline'
+import { Scss, Browserify } from 'gulp-pipeline'
 import gulp from 'gulp'
 
 let scss = new Scss(gulp)

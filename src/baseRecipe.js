@@ -3,7 +3,8 @@ import extend from 'extend'
 const BaseRecipe = (() => {
 
   const Default = {
-    register: true
+    register: true,
+    watch: true
   }
 
   /**

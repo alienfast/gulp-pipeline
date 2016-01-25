@@ -42,21 +42,23 @@ Run it with `gulp`.
 Each exported ES6 class is a recipe having configurable options that registers a task as well as a watch task if applicable.  These are simply common gulp build configurations.
 
 ## I want it to work different...what can I do?
+
 There are many things you can do here (not an exhaustive list):
+
 1.  Configure the options which are passed into the recipe that is instantiated.
 1. Extend the class and customize it to your liking
 1. Extend the `BaseRecipe` class to create your own recipe
 1. Create your own gulp task and simpy `#run` the recipe without registering tasks:
-```javascript
-gulp.task('foo', () => {
-  // do stuff
-
-  // run the recipe
-  new Sass(gulp, {task: false, watch: false}).run()
+  ```javascript
+  gulp.task('foo', () => {
+    // do stuff
   
-  // do other stuff
-})
-```
+    // run the recipe
+    new Sass(gulp, {task: false, watch: false}).run()
+    
+    // do other stuff
+  })
+  ```
 1. Submit a PR to change the existing recipe to a better one!
 
 

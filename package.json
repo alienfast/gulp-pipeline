@@ -2,8 +2,12 @@
   "name": "gulp-pipeline",
   "version": "0.0.0",
   "description": "Meta gulp plugin recipes modularized as ES6 classes. Fully configurable. Fully extensible. Full pipeline in a few lines of code.",
+
   "main": "dist/gulp-pipeline.cjs.js",
-  "jsnext:main": "dist/gulp-pipeline.es6.js",
+  "jsnext:main": "dist/gulp-pipeline.es2015.js",
+  "xxmain": "src/index.js",
+  "xxjsnext:main": "src/index.js",
+
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -30,7 +34,7 @@
     "url": "https://github.com/alienfast/gulp-pipeline/issues"
   },
   "homepage": "https://github.com/alienfast/gulp-pipeline#readme",
-  "devDependencies": {
+  "dependencies": {
     "babel-core": "^6.4.5",
     "babel-preset-es2015": "^6.3.13",
     "babel-preset-es2015-rollup": "^1.1.1",

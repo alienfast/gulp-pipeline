@@ -216,7 +216,8 @@ const Scss = (() => {
     dest: 'public/stylesheets',
     options: {
       indentedSyntax: true,
-      errLogToConsole: true
+      errLogToConsole: true,
+      includePaths: ['node_modules']
     },
     autoprefixer: {
       options: {  // from bootstrap
@@ -294,3 +295,6 @@ const Scss = (() => {
   return Scss
 
 })()
+
+export { EsLint, Browserify, Scss };
+//# sourceMappingURL=gulp-pipeline.es2015.js.map

@@ -16,7 +16,8 @@ const Scss = (() => {
     dest: 'public/stylesheets',
     options: {
       indentedSyntax: true,
-      errLogToConsole: true
+      errLogToConsole: true,
+      includePaths: ['node_modules']
     },
     autoprefixer: {
       options: {  // from bootstrap

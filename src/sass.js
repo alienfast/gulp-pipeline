@@ -1,12 +1,13 @@
 import BaseRecipe from './baseRecipe'
-import { Autoprefixer, Default as AutoprefixerDefault } from './autoprefixer'
+import { Default as AutoprefixerDefault } from './autoprefixer'
 import autoprefixer from 'gulp-autoprefixer'
+import BrowserSync from 'browser-sync'
+import debug from 'gulp-debug'
 import extend from 'extend'
 import sass from 'gulp-sass'
 import sourcemaps from 'gulp-sourcemaps'
-import BrowserSync from 'browser-sync'
 import Util from 'gulp-util'
-import debug from 'gulp-debug'
+
 
 // TODO: scsslint
 
@@ -59,7 +60,9 @@ const Sass = class extends BaseRecipe {
     bundle
       .pipe(sourcemaps.init())
       .pipe(sass(this.config.options))
-      .on('error', (error) => { this.notifyError(error) })
+      .on('error', (error) => {
+        this.notifyError(error)
+      })
       .pipe(autoprefixer(this.config.autoprefixer.options))
       .pipe(sourcemaps.write())
       .pipe(this.gulp.dest(this.config.dest))

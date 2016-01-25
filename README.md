@@ -22,17 +22,18 @@ NOTE: very much a work in progress
 Here's an ES6 authored `gulpfile.babel.js` that provides tasks to build and watch an ES6/SCSS project.  Simple enough?
  
 ```javascript
-import { Sass, Browserify } from 'gulp-pipeline'
+import { Sass, Browserify, TaskSequence } from 'gulp-pipeline'
 import gulp from 'gulp'
 
-let sass = new Sass(gulp)
+// create the sass and sass:watch tasks
+let sass = new Sass(gulp, {source: './app/assets/stylesheets/index.scss'})
+
+// create the browserify and browserify:watch tasks
 let browserify = new Browserify(gulp)
 
-// add macro default task
-gulp.task('default', [sass.taskName(), browserify.taskName()])
-
-// add macro watch task
-gulp.task('watch', [sass.watchTaskName(), browserify.watchTaskName()])
+// Simple helper to create the default and watch tasks as a sequence of the recipes already defined
+new TaskSequence(gulp, 'default', [sass, browserify])
+new TaskSequence(gulp, 'watch', [sass, browserify], {watch: true})
 ```
 
 Run it with `gulp`.

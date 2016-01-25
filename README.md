@@ -28,12 +28,15 @@ import gulp from 'gulp'
 // create the sass and sass:watch tasks
 let sass = new Sass(gulp)
 
+// create the scsslint and scsslint:watch tasks
+let scsslint = new ScssLint(gulp)
+
 // create the browserify and browserify:watch tasks
 let browserify = new Browserify(gulp)
 
 // Simple helper to create the default and watch tasks as a sequence of the recipes already defined
-new TaskSequence(gulp, 'default', [sass, browserify])
-new TaskSequence(gulp, 'watch', [sass, browserify], {watch: true})
+new TaskSequence(gulp, 'default', [scsslint, sass, browserify])
+new TaskSequence(gulp, 'watch', [scsslint, sass, browserify], {watch: true})
 ```
 
 Run it with `gulp`.

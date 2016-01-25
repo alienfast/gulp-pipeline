@@ -1,8 +1,16 @@
 import BaseRecipe from './baseRecipe'
 import extend from 'extend'
+import scssLint from 'gulp-scss-lint'
 import scssLintStylish from 'gulp-scss-lint-stylish'
 
 export const Default = {
+  debug: true,
+  task: {
+    name: 'scsslint'
+  },
+  watch: {
+    glob: './app/assets/stylesheets/**/*.scss'
+  },
   source: './app/assets/stylesheets/**/*.scss',
   options: {
     customReport: scssLintStylish

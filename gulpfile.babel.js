@@ -26,7 +26,10 @@ gulp.task('rollup:cjs', () => {
   let settings = extend(true, {}, rollupBaseSettings, {
     dest: 'dist/gulp-pipeline.cjs.js',
     format: 'cjs',
-    plugins: [babel({babelrc: false})]
+    plugins: [babel({
+      babelrc: false,
+      presets: ['es2015-rollup']
+    })]
   })
   return rollup(settings).then((bundle) => {
     return bundle.write(settings)

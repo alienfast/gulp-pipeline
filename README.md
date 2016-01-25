@@ -22,17 +22,17 @@ NOTE: very much a work in progress
 Here's an ES6 authored `gulpfile.babel.js` that provides tasks to build and watch an ES6/SCSS project.  Simple enough?
  
 ```javascript
-import { Scss, Browserify } from 'gulp-pipeline'
+import { Sass, Browserify } from 'gulp-pipeline'
 import gulp from 'gulp'
 
-let scss = new Scss(gulp)
+let sass = new Sass(gulp)
 let browserify = new Browserify(gulp)
 
 // add macro default task
-gulp.task('default', [scss.taskName(), browserify.taskName()])
+gulp.task('default', [sass.taskName(), browserify.taskName()])
 
 // add macro watch task
-gulp.task('watch', [scss.watchTaskName(), browserify.watchTaskName()])
+gulp.task('watch', [sass.watchTaskName(), browserify.watchTaskName()])
 ```
 
 Run it with `gulp`.
@@ -40,12 +40,24 @@ Run it with `gulp`.
 ## How it works
 Each exported ES6 class is a recipe having configurable options that registers a task as well as a watch task if applicable.  These are simply common gulp build configurations.
 
-## I want it to work different
-
-Certainly!  There are a number of ways to accomplish this.
+## I want it to work different...what can I do?
+There are many things you can do here (not an exhaustive list):
 1.  Configure the options which are passed into the recipe that is instantiated.
-2.  Extend an existing recipe with customizations
-3.  Submit a PR!
+1. Extend the class and customize it to your liking
+1. Extend the `BaseRecipe` class to create your own recipe
+1. Create your own gulp task and simpy `#run` the recipe without registering tasks:
+```javascript
+gulp.task('foo', () => {
+  // do stuff
 
-## You don't have x
+  // run the recipe
+  new Sass(gulp, {task: false, watch: false}).run()
+  
+  // do other stuff
+})
+```
+1. Submit a PR to change the existing recipe to a better one!
+
+
+## You don't have a recipe that does ______
 Submit a PR and we'll include it!

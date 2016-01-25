@@ -11,67 +11,144 @@ var babelify = _interopDefault(require('babelify'));
 var browserify = _interopDefault(require('browserify'));
 var source = _interopDefault(require('vinyl-source-stream'));
 var watchify = _interopDefault(require('watchify'));
-var util = _interopDefault(require('gulp-util'));
+var Util = _interopDefault(require('gulp-util'));
 var autoprefixer = _interopDefault(require('gulp-autoprefixer'));
 var sass = _interopDefault(require('gulp-sass'));
 var sourcemaps = _interopDefault(require('gulp-sourcemaps'));
+var debug = _interopDefault(require('gulp-debug'));
 
-const BaseRecipe = (() => {
+var babelHelpers = {};
 
-  const Default = {
-    register: true,
-    watch: true
+babelHelpers.classCallCheck = function (instance, Constructor) {
+  if (!(instance instanceof Constructor)) {
+    throw new TypeError("Cannot call a class as a function");
+  }
+};
+
+babelHelpers.createClass = function () {
+  function defineProperties(target, props) {
+    for (var i = 0; i < props.length; i++) {
+      var descriptor = props[i];
+      descriptor.enumerable = descriptor.enumerable || false;
+      descriptor.configurable = true;
+      if ("value" in descriptor) descriptor.writable = true;
+      Object.defineProperty(target, descriptor.key, descriptor);
+    }
+  }
+
+  return function (Constructor, protoProps, staticProps) {
+    if (protoProps) defineProperties(Constructor.prototype, protoProps);
+    if (staticProps) defineProperties(Constructor, staticProps);
+    return Constructor;
   };
+}();
+
+babelHelpers.inherits = function (subClass, superClass) {
+  if (typeof superClass !== "function" && superClass !== null) {
+    throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
+  }
+
+  subClass.prototype = Object.create(superClass && superClass.prototype, {
+    constructor: {
+      value: subClass,
+      enumerable: false,
+      writable: true,
+      configurable: true
+    }
+  });
+  if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
+};
+
+babelHelpers.possibleConstructorReturn = function (self, call) {
+  if (!self) {
+    throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+  }
+
+  return call && (typeof call === "object" || typeof call === "function") ? call : self;
+};
+
+babelHelpers;
+
+var Default$3 = {
+  watch: true,
+  debug: false
+};
+
+/**
+ * ----------------------------------------------
+ * Class Definition
+ * ----------------------------------------------
+ */
+var BaseRecipe = function () {
 
   /**
-   * ----------------------------------------------
-   * Class Definition
-   * ----------------------------------------------
+   *
+   * @param gulp
+   * @param config
    */
-  class Base {
 
-    /**
-     *
-     * @param gulp
-     * @param config
-     */
-    constructor(gulp, config) {
-      this.gulp = gulp;
-      this.config = extend(true, {}, Default, config);
+  function BaseRecipe(gulp, config) {
+    var _this = this;
 
-      if (this.config.register) {
-        this.registerTasks();
-      }
-    }
+    babelHelpers.classCallCheck(this, BaseRecipe);
 
-    taskName() {
-      return this.config.task;
-    }
+    this.gulp = gulp;
+    this.config = extend(true, {}, Default$3, config);
 
-    watchTaskName() {
-      return `${ this.taskName() }:watch`;
-    }
-
-    registerTasks() {
+    if (this.config.task) {
       // generate primary task e.g. sass
-      this.gulp.task(this.taskName(), () => {
-        this.run();
+      var name = this.taskName();
+      this.debug('Registering task: ' + Util.colors.green(name));
+      this.gulp.task(name, function () {
+        _this.run();
       });
-
-      if (this.config.watch) {
-        // generate watch task e.g. sass:watch
-        this.gulp.task(this.watchTaskName(), () => {
-          this.watch();
-        });
-      }
     }
 
-    watch() {
-      this.gulp.watch(this.config.watch, [this.taskName()]);
+    if (this.config.watch) {
+      // generate watch task e.g. sass:watch
+      var name = this.watchTaskName();
+      this.debug('Registering task: ' + Util.colors.green(name));
+      this.gulp.task(name, function () {
+        _this.watch();
+      });
+    }
+  }
+
+  babelHelpers.createClass(BaseRecipe, [{
+    key: 'taskName',
+    value: function taskName() {
+      return this.config.task.name;
+    }
+  }, {
+    key: 'watchTaskName',
+    value: function watchTaskName() {
+      if (this.config.watch && this.config.watch.name) {
+        return this.config.watch.name;
+      } else {
+        return this.taskName() + ':watch';
+      }
+    }
+  }, {
+    key: 'watch',
+    value: function watch() {
+      this.gulp.watch(this.config.watch.glob, [this.taskName()]);
     }
 
     // ----------------------------------------------
     // protected
+
+  }, {
+    key: 'log',
+    value: function log(msg) {
+      Util.log(msg);
+    }
+  }, {
+    key: 'debug',
+    value: function debug(msg) {
+      if (this.config.debug) {
+        this.log(msg);
+      }
+    }
 
     // ----------------------------------------------
     // private
@@ -79,35 +156,40 @@ const BaseRecipe = (() => {
     // ----------------------------------------------
     // static
 
-  }
+  }]);
+  return BaseRecipe;
+}();
 
-  return Base;
-})();
+var Default = {
+  task: {
+    name: 'eslint'
+  },
+  options: {}
+};
 
-const EsLint = (() => {
-
-  const Default = {
-    task: 'eslint',
-    options: {}
-  };
+/**
+ * ----------------------------------------------
+ * Class Definition
+ * ----------------------------------------------
+ */
+var EsLint = function (_BaseRecipe) {
+  babelHelpers.inherits(EsLint, _BaseRecipe);
 
   /**
-   * ----------------------------------------------
-   * Class Definition
-   * ----------------------------------------------
+   *
+   * @param gulp
+   * @param config
    */
-  class EsLint extends BaseRecipe {
 
-    /**
-     *
-     * @param gulp
-     * @param config
-     */
-    constructor(gulp, config = {}) {
-      super(gulp, extend(true, {}, Default, config));
-    }
+  function EsLint(gulp) {
+    var config = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+    babelHelpers.classCallCheck(this, EsLint);
+    return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(EsLint).call(this, gulp, extend(true, {}, Default, config)));
+  }
 
-    run() {
+  babelHelpers.createClass(EsLint, [{
+    key: 'run',
+    value: function run() {
       return this.gulp.src(this.config.source)
       // eslint() attaches the lint output to the "eslint" property of the file object so it can be used by other modules.
       .pipe(eslint(this.config.options))
@@ -129,60 +211,78 @@ const EsLint = (() => {
     // ----------------------------------------------
     // static
 
-  }
-
+  }]);
   return EsLint;
-})();
+}(BaseRecipe);
 
 // TODO: sourcemaps
 
-const Browserify = (() => {
+var Default$1 = {
+  task: {
+    name: 'browserify'
+  },
+  watch: {
+    glob: './app/assets/javascripts/**/*.js'
+  },
+  source: './app/assets/javascripts/index.js',
+  dest: './public/assets',
+  options: {
+    debug: true
+  }
+};
 
-  const Default = {
-    task: 'browserify',
-    watch: './app/assets/javascripts/**/*.js',
-    source: './app/assets/javascripts/index.js',
-    dest: './public/assets',
-    browserify: {
-      options: {
-        debug: true
-      }
+/**
+ * ----------------------------------------------
+ * Class Definition
+ * ----------------------------------------------
+ */
+var Browserify = function (_BaseRecipe) {
+  babelHelpers.inherits(Browserify, _BaseRecipe);
+  babelHelpers.createClass(Browserify, null, [{
+    key: 'Default',
+    get: function get() {
+      return {};
     }
-  };
-
-  /**
-   * ----------------------------------------------
-   * Class Definition
-   * ----------------------------------------------
-   */
-  class Browserify extends BaseRecipe {
 
     /**
      *
      * @param gulp
      * @param config
      */
-    constructor(gulp, config = {}) {
-      super(gulp, extend(true, {}, Default, config));
 
-      // add the source to the browserify entries if unspecified - do this after initial config is merged
-      this.config = extend(true, { browserify: { entries: this.config.source } }, // default
-      this.config // override if passed in
-      );
+  }]);
 
-      this.browserSync = BrowserSync.create();
-      this.bundler = watchify(browserify(this.config.browserify.options).transform(babelify));
-    }
+  function Browserify(gulp) {
+    var config = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+    babelHelpers.classCallCheck(this, Browserify);
 
-    run() {
+    // add the source to the browserify entries if unspecified - do this after initial config is merged
+
+    var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Browserify).call(this, gulp, extend(true, {}, Default$1, config)));
+
+    _this.config = extend(true, { browserify: { entries: _this.config.source } }, // default
+    _this.config // override if passed in
+    );
+
+    _this.browserSync = BrowserSync.create();
+    _this.bundler = watchify(browserify(_this.config.options).transform(babelify));
+    return _this;
+  }
+
+  babelHelpers.createClass(Browserify, [{
+    key: 'run',
+    value: function run() {
       new EsLint(this.gulp, { source: this.config.source }).run();
-      this.bundler.bundle().on('error', util.log.bind(util, 'Browserify Error')).pipe(source('index.js')).pipe(this.gulp.dest(this.config.dest)).pipe(this.browserSync.stream());
+      this.bundler.bundle().on('error', Util.log.bind(Util, 'Browserify Error')).pipe(source('index.js')).pipe(this.gulp.dest(this.config.dest)).pipe(this.browserSync.stream());
     }
+  }, {
+    key: 'watch',
+    value: function watch() {
+      var _this2 = this;
 
-    watch() {
-      this.bundler.on('update', () => {
+      this.bundler.on('update', function () {
         console.log("Recompiling JS...");
-        this.run();
+        _this2.run();
       });
     }
 
@@ -195,74 +295,64 @@ const Browserify = (() => {
     // ----------------------------------------------
     // static
 
-  }
-
+  }]);
   return Browserify;
-})();
+}(BaseRecipe);
 
-// TODO: scsslint
+var Default$4 = {
+  options: { // from bootstrap
+    browsers: [
+    //
+    // Official browser support policy:
+    // http://v4-alpha.getbootstrap.com/getting-started/browsers-devices/#supported-browsers
+    //
+    'Chrome >= 35', // Exact version number here is kinda arbitrary
+    // Rather than using Autoprefixer's native "Firefox ESR" version specifier string,
+    // we deliberately hardcode the number. This is to avoid unwittingly severely breaking the previous ESR in the event that:
+    // (a) we happen to ship a new Bootstrap release soon after the release of a new ESR,
+    //     such that folks haven't yet had a reasonable amount of time to upgrade; and
+    // (b) the new ESR has unprefixed CSS properties/values whose absence would severely break webpages
+    //     (e.g. `box-sizing`, as opposed to `background: linear-gradient(...)`).
+    //     Since they've been unprefixed, Autoprefixer will stop prefixing them,
+    //     thus causing them to not work in the previous ESR (where the prefixes were required).
+    'Firefox >= 31', // Current Firefox Extended Support Release (ESR)
+    // Note: Edge versions in Autoprefixer & Can I Use refer to the EdgeHTML rendering engine version,
+    // NOT the Edge app version shown in Edge's "About" screen.
+    // For example, at the time of writing, Edge 20 on an up-to-date system uses EdgeHTML 12.
+    // See also https://github.com/Fyrd/caniuse/issues/1928
+    'Edge >= 12', 'Explorer >= 9',
+    // Out of leniency, we prefix these 1 version further back than the official policy.
+    'iOS >= 8', 'Safari >= 8',
+    // The following remain NOT officially supported, but we're lenient and include their prefixes to avoid severely breaking in them.
+    'Android 2.3', 'Android >= 4', 'Opera >= 12']
+  }
+};
 
-const Scss = (() => {
-
-  const Default = {
-    task: 'scss',
-    watch: './app/assets/stylesheets/**/*.scss',
-    source: './app/assets/stylesheets/application.scss',
-    dest: 'public/stylesheets',
-    options: {
-      indentedSyntax: true,
-      errLogToConsole: true,
-      includePaths: ['node_modules']
-    },
-    autoprefixer: {
-      options: { // from bootstrap
-        browsers: [
-        //
-        // Official browser support policy:
-        // http://v4-alpha.getbootstrap.com/getting-started/browsers-devices/#supported-browsers
-        //
-        'Chrome >= 35', // Exact version number here is kinda arbitrary
-        // Rather than using Autoprefixer's native "Firefox ESR" version specifier string,
-        // we deliberately hardcode the number. This is to avoid unwittingly severely breaking the previous ESR in the event that:
-        // (a) we happen to ship a new Bootstrap release soon after the release of a new ESR,
-        //     such that folks haven't yet had a reasonable amount of time to upgrade; and
-        // (b) the new ESR has unprefixed CSS properties/values whose absence would severely break webpages
-        //     (e.g. `box-sizing`, as opposed to `background: linear-gradient(...)`).
-        //     Since they've been unprefixed, Autoprefixer will stop prefixing them,
-        //     thus causing them to not work in the previous ESR (where the prefixes were required).
-        'Firefox >= 31', // Current Firefox Extended Support Release (ESR)
-        // Note: Edge versions in Autoprefixer & Can I Use refer to the EdgeHTML rendering engine version,
-        // NOT the Edge app version shown in Edge's "About" screen.
-        // For example, at the time of writing, Edge 20 on an up-to-date system uses EdgeHTML 12.
-        // See also https://github.com/Fyrd/caniuse/issues/1928
-        'Edge >= 12', 'Explorer >= 9',
-        // Out of leniency, we prefix these 1 version further back than the official policy.
-        'iOS >= 8', 'Safari >= 8',
-        // The following remain NOT officially supported, but we're lenient and include their prefixes to avoid severely breaking in them.
-        'Android 2.3', 'Android >= 4', 'Opera >= 12']
-      }
-    }
-  };
+/**
+ * ----------------------------------------------
+ * Class Definition
+ * ----------------------------------------------
+ */
+var Autoprefixer = function (_BaseRecipe) {
+  babelHelpers.inherits(Autoprefixer, _BaseRecipe);
 
   /**
-   * ----------------------------------------------
-   * Class Definition
-   * ----------------------------------------------
+   *
+   * @param gulp
+   * @param config
    */
-  class Scss extends BaseRecipe {
 
-    /**
-     *
-     * @param gulp
-     * @param config
-     */
-    constructor(gulp, config = {}) {
-      super(gulp, extend(true, {}, Default, config));
-      this.browserSync = BrowserSync.create();
-    }
+  function Autoprefixer(gulp) {
+    var config = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+    babelHelpers.classCallCheck(this, Autoprefixer);
+    return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Autoprefixer).call(this, gulp, extend(true, {}, Default$4, config)));
+  }
 
-    run() {
-      return this.gulp.src(this.config.source).pipe(sourcemaps.init()).pipe(sass(this.config.options)).pipe(sourcemaps.write()).pipe(autoprefixer(this.config.autoprefixer.options)).pipe(this.gulp.dest(this.config.dest)).pipe(this.browserSync.stream());
+  babelHelpers.createClass(Autoprefixer, [{
+    key: 'run',
+    value: function run() {
+      // FIXME: is this right or wrong?  this class initially was extracted for reuse of Default options
+      return this.gulp.src(this.config.source).pipe(autoprefixer(this.config.options)).pipe(this.gulp.dest(this.config.dest));
     }
 
     // ----------------------------------------------
@@ -274,12 +364,85 @@ const Scss = (() => {
     // ----------------------------------------------
     // static
 
+  }]);
+  return Autoprefixer;
+}(BaseRecipe);
+
+// TODO: scsslint
+
+var Default$2 = {
+  debug: true,
+  task: {
+    name: 'sass'
+  },
+  watch: {
+    glob: './app/assets/stylesheets/**/*.scss'
+  },
+  source: './app/assets/stylesheets/application.scss',
+  dest: 'public/stylesheets',
+  options: {
+    indentedSyntax: true,
+    errLogToConsole: true,
+    includePaths: ['node_modules']
+  },
+  // capture defaults from autoprefixer class
+  autoprefixer: {
+    options: Default$4.options
+  }
+};
+
+/**
+ * ----------------------------------------------
+ * Class Definition
+ * ----------------------------------------------
+ */
+var Sass = function (_BaseRecipe) {
+  babelHelpers.inherits(Sass, _BaseRecipe);
+
+  /**
+   *
+   * @param gulp
+   * @param config
+   */
+
+  function Sass(gulp) {
+    var config = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+    babelHelpers.classCallCheck(this, Sass);
+
+    var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Sass).call(this, gulp, extend(true, {}, Default$2, config)));
+
+    _this.browserSync = BrowserSync.create();
+    return _this;
   }
 
-  return Scss;
-})();
+  babelHelpers.createClass(Sass, [{
+    key: 'run',
+    value: function run() {
+      var bundle = this.gulp.src(this.config.source);
+
+      if (this.config.debug) {
+        bundle.pipe(debug());
+      }
+
+      bundle.pipe(sourcemaps.init()).pipe(sass(this.config.options)).pipe(sourcemaps.write()).pipe(autoprefixer(this.config.autoprefixer.options)).pipe(this.gulp.dest(this.config.dest)).pipe(this.browserSync.stream());
+
+      return bundle;
+    }
+
+    // ----------------------------------------------
+    // protected
+
+    // ----------------------------------------------
+    // private
+
+    // ----------------------------------------------
+    // static
+
+  }]);
+  return Sass;
+}(BaseRecipe);
 
 exports.EsLint = EsLint;
 exports.Browserify = Browserify;
-exports.Scss = Scss;
+exports.Sass = Sass;
 //# sourceMappingURL=gulp-pipeline.cjs.js.map

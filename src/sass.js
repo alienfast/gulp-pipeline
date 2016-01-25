@@ -22,7 +22,7 @@ export const Default = {
   dest: 'public/stylesheets',
   options: {
     indentedSyntax: true,
-    errLogToConsole: true,
+    errLogToConsole: false,
     includePaths: ['node_modules']
   },
   // capture defaults from autoprefixer class
@@ -56,10 +56,12 @@ const Sass = class extends BaseRecipe {
       bundle.pipe(debug())
     }
 
-    bundle.pipe(sourcemaps.init())
+    bundle
+      .pipe(sourcemaps.init())
       .pipe(sass(this.config.options))
-      .pipe(sourcemaps.write())
+      .on('error', (error) => { this.notifyError(error) })
       .pipe(autoprefixer(this.config.autoprefixer.options))
+      .pipe(sourcemaps.write())
       .pipe(this.gulp.dest(this.config.dest))
       .pipe(this.browserSync.stream())
 

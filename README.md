@@ -26,7 +26,7 @@ import { Sass, Browserify, TaskSequence } from 'gulp-pipeline'
 import gulp from 'gulp'
 
 // create the sass and sass:watch tasks
-let sass = new Sass(gulp, {source: './app/assets/stylesheets/index.scss'})
+let sass = new Sass(gulp)
 
 // create the browserify and browserify:watch tasks
 let browserify = new Browserify(gulp)
@@ -45,9 +45,12 @@ Each exported ES6 class is a recipe having configurable options that registers a
 
 There are many things you can do here (not an exhaustive list):
 
-1.  Configure the options which are passed into the recipe that is instantiated.
+1. Configure the options which are passed into the recipe that is instantiated.
+
 1. Extend the class and customize it to your liking
+
 1. Extend the `BaseRecipe` class to create your own recipe
+
 1. Create your own gulp task and simpy `#run` the recipe without registering tasks:
   ```javascript
   gulp.task('foo', () => {

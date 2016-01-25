@@ -1,3 +1,3 @@
-import EsLint from './eslint'
-import Browserify from './browserify'
-import Scss from './scss'
+export { default as EsLint } from './eslint'
+export { default as Browserify } from './browserify'
+export { default as Scss } from './scss'

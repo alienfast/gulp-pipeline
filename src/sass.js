@@ -17,9 +17,17 @@ export const Default = {
     name: 'sass'
   },
   watch: {
-    glob: './app/assets/stylesheets/**/*.scss'
+    glob: '**/*.scss',
+    options: {
+      cwd: 'app/assets/stylesheets'
+    }
   },
-  source: './app/assets/stylesheets/application.scss',
+  source: {
+    glob: ['*.scss', '!_*.scss'],
+    options: {
+      cwd: 'app/assets/stylesheets'
+    }
+  },
   dest: 'public/stylesheets',
   options: {
     indentedSyntax: true,
@@ -51,7 +59,7 @@ const Sass = class extends BaseRecipe {
   }
 
   run() {
-    let bundle = this.gulp.src(this.config.source)
+    let bundle = this.gulp.src(this.config.source.glob, this.config.source.options)
 
     if (this.config.debug) {
       bundle.pipe(debug())

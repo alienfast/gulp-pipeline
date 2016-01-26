@@ -9,9 +9,17 @@ export const Default = {
     name: 'scsslint'
   },
   watch: {
-    glob: './app/assets/stylesheets/**/*.scss'
+    glob: '**/*.scss',
+    options: {
+      cwd: 'app/assets/stylesheets'
+    }
   },
-  source: './app/assets/stylesheets/**/*.scss',
+  source: {
+    glob: '**/*.scss',
+    options: {
+      cwd: 'app/assets/stylesheets'
+    }
+  },
   options: {
     customReport: scssLintStylish
   }
@@ -34,7 +42,7 @@ const ScssLint = class extends BaseRecipe {
   }
 
   run() {
-    return this.gulp.src(this.config.source)
+    return this.gulp.src(this.config.source.glob, this.config.source.options)
       .pipe(scssLint(this.config.options))
 
   }

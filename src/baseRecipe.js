@@ -55,7 +55,7 @@ const BaseRecipe = class extends Base {
   }
 
   watch() {
-    this.gulp.watch(this.config.watch.glob, [this.taskName()])
+    this.gulp.watch(this.config.source.glob, this.config.source.options, [this.taskName()])
   }
 
   // ----------------------------------------------

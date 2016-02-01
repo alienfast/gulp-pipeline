@@ -13,7 +13,9 @@ import TaskSequence from './src/taskSequence'
 let platform = Platform.nodeSrc()
 
 
-// overkill to generate all of these, but what the hell, it's a fair example.
+// NOTE: it's overkill to generate all of these, but what the hell, it's a fair example.
+
+// instantiate ordered array of recipes (for each instantiation the tasks will be created e.g. rollup:es and rollup:es:watch)
 let recipes = [
   new RollupEs(gulp, platform, {options: {dest: 'dist/gulp-pipeline.es.js'}}),
   new RollupAmd(gulp, platform, {options: {dest: 'dist/gulp-pipeline.amd.js'}}),

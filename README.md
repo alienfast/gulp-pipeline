@@ -17,26 +17,30 @@ We are certainly not the first to consider this.  What we did see is that noone 
 Anyone that wants gulp recipes in a reusable/extensible/modular way.  While we certainly want to provide recipes that can be reused and replace the rails pipeline, these recipes should be modular enough that any project (node, angular, etc) can utilize them.
 
 ## Usage
-NOTE: very much a work in progress
-
-Here's an ES6 authored `gulpfile.babel.js` that provides tasks to build and watch an ES6/SCSS project.  Simple enough?
+Here's a `gulpfile.babel.js` that provides tasks to build and watch an ES2015/SCSS project.  Simple enough?
  
 ```javascript
-import { Sass, Browserify, TaskSequence } from 'gulp-pipeline'
+// Assuming project named: acme
+
+import { ScssLint, Sass, RollupEs, RollupIife, TaskSequence } from 'gulp-pipeline'
 import gulp from 'gulp'
 
-// create the sass and sass:watch tasks
-let sass = new Sass(gulp)
+// Utilize one of the common configs
+let platform = Platform.rails() // a.k.a rails, nodeSrc, nodeLib - see platform.js and submit PRs with other common configs
 
-// create the scsslint and scsslint:watch tasks
-let scsslint = new ScssLint(gulp)
+// instantiate ordered array of recipes (for each instantiation the tasks will be created e.g. sass and sass:watch)
+let recipes = [
+  new ScssLint(gulp),
+  new Sass(gulp),
+  new RollupEs(gulp, platform, {options: {dest: 'dist/acme.es.js'}}),                        // es
+  new RollupCjs(gulp, platform, {options: {dest: 'dist/acme.cjs.js'}}),                      // commonjs
+  new RollupIife(gulp, platform, {options: {dest: 'dist/acme.iife.js', moduleName: 'acme'}}) // iife self executing bundle for the browser
+]
 
-// create the browserify and browserify:watch tasks
-let browserify = new Browserify(gulp)
 
 // Simple helper to create the default and watch tasks as a sequence of the recipes already defined
-new TaskSequence(gulp, 'default', [scsslint, sass, browserify])
-new TaskSequence(gulp, 'watch', [scsslint, sass, browserify], {watch: true})
+new TaskSequence(gulp, 'default', recipes)
+new TaskSequence(gulp, 'watch', recipes, {watch: true})
 ```
 
 Run it with `gulp`.

@@ -5,19 +5,20 @@ import scssLintStylish from 'gulp-scss-lint-stylish'
 
 export const Default = {
   debug: true,
+  platformType: 'stylesheets',
   task: {
     name: 'scsslint'
   },
   watch: {
     glob: '**/*.scss',
     options: {
-      cwd: 'app/assets/stylesheets'
+      //cwd: ** resolved from platform **
     }
   },
   source: {
     glob: '**/*.scss',
     options: {
-      cwd: 'app/assets/stylesheets'
+      //cwd: ** resolved from platform **
     }
   },
   options: {
@@ -38,8 +39,8 @@ const ScssLint = class extends BaseRecipe {
    * @param platform - base platform configuration - either one from platform.js or a custom hash
    * @param config - customized overrides for this recipe
    */
-  constructor(gulp, config = {}) {
-    super(gulp, extend(true, {}, Default, config))
+  constructor(gulp, platform, config = {}) {
+    super(gulp, platform, extend(true, {}, Default, config))
   }
 
   run() {

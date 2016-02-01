@@ -19,8 +19,8 @@ const BaseRecipe = class extends Base {
    * @param gulp
    * @param config
    */
-  constructor(gulp, config) {
-    super(gulp, extend(true, {}, Default, config))
+  constructor(gulp, platform, config) {
+    super(gulp, platform, extend(true, {}, Default, config))
 
     if (this.config.task) {
       // generate primary task e.g. sass

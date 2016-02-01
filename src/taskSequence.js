@@ -15,8 +15,8 @@ const TaskSequence = class extends Base {
 
   /**
    *
-   * @param gulp
-   * @param config
+   * @param gulp - gulp instance
+   * @param config - customized overrides
    */
   constructor(gulp, taskName, recipes, config = {}) {
     super(gulp, extend(true, {}, Default, config))

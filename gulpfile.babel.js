@@ -1,70 +1,28 @@
 import gulp from 'gulp'
-import extend from 'extend'
-import { rollup } from 'rollup'
-//import babel from 'rollup-plugin-babel';
-
-//import NodeSrc from './src/platform'
 import Platform from './src/platform'
 import RollupEs from './src/rollupEs'
+import RollupAmd from './src/rollupAmd'
+import RollupCjs from './src/rollupCjs'
+import RollupUmd from './src/rollupUmd'
+import RollupIife from './src/rollupIife'
+import TaskSequence from './src/taskSequence'
 
 
 
-//let rollupBaseSettings = {
-//  entry: 'src/index.js',
-//  //plugins: [],
-//  sourceMap: true,
-//  format: 'es6',
-//}
-//
-//gulp.task('rollup:es2015', () => {
-//  let settings = extend(true, {}, rollupBaseSettings, {dest: 'dist/gulp-pipeline.es2015.js'})
-//  return rollup(settings).then((bundle) => {
-//    return bundle.write(settings)
-//  })
-//})
-//
-//gulp.task('rollup:cjs', () => {
-//  let settings = extend(true, {}, rollupBaseSettings, {
-//    dest: 'dist/gulp-pipeline.cjs.js',
-//    format: 'cjs',
-//    plugins: [babel({
-//      babelrc: false,
-//      presets: ['es2015-rollup']
-//    })]
-//  })
-//  return rollup(settings).then((bundle) => {
-//    return bundle.write(settings)
-//  })
-//})
-//
-//gulp.task('rollup', ['rollup:es2015', 'rollup:cjs'])
-
-
-//let rollupConfig = {
-//  source: {options: {cwd: './src'}}
-//}
-
+// Let's eat our own dogfood and use our own recipes to generate our dist packages
 let platform = Platform.nodeSrc()
 
-//console.log(`platform`, platform)
 
-// es2015
-let es = new RollupEs(gulp, platform, {options: {dest: 'dist/gulp-pipeline.es.js'}})
+// overkill to generate all of these, but what the hell, it's a fair example.
+let recipes = [
+  new RollupEs(gulp, platform, {options: {dest: 'dist/gulp-pipeline.es.js'}}),
+  new RollupAmd(gulp, platform, {options: {dest: 'dist/gulp-pipeline.amd.js'}}),
+  new RollupCjs(gulp, platform, {options: {dest: 'dist/gulp-pipeline.cjs.js'}}),
+  new RollupUmd(gulp, platform, {options: {dest: 'dist/gulp-pipeline.umd.js', moduleName: 'gulpPipeline'}}),
+  new RollupIife(gulp, platform, {options: {dest: 'dist/gulp-pipeline.iife.js', moduleName: 'gulpPipeline'}}),
+]
 
 
-let manual =
-{
-  entry: '/Users/kross/projects/gulp-pipeline/src/index.js',
-  onwarn: (message) => {
-    console.error(`foo: ${message}`);
-  },
-  sourceMap: true,
-  format: 'es6',
-  dest: 'dist/gulp-pipeline.es.js'
-}
-
-gulp.task('manual', () => {
-  return rollup(manual).then((bundle) => {
-    return bundle.write(manual)
-  })
-})
+// Simple helper to create the default and watch tasks as a sequence of the recipes already defined
+new TaskSequence(gulp, 'default', recipes)
+new TaskSequence(gulp, 'watch', recipes, {watch: true})

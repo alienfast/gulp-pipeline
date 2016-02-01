@@ -17,29 +17,12 @@ const Base = class {
 
   /**
    *
-   * @param gulp
-   * @param config
+   * @param gulp - gulp instance
+   * @param config - customized overrides
    */
-  constructor(gulp, platform, config) {
-
-    if(!platform){
-      throw new Error(`Platform must be specified.  Please use one from the platform.js or specify a custom platform configuration.`)
-    }
-
-    if(!config || !config.platformType){
-      throw new Error(`'platformType' must be specified in the config (usually the Default config).  See platform.js for a list of types such as javascripts, stylesheets, etc.`)
-    }
-
-    let platformTypeConfig = platform[config.platformType]
-    if(!platformTypeConfig){
-      throw new Error(`Unable to resolve configuration for platformType: ${config.platformType} from platform: ${stringify(platform)}`)
-    }
-
+  constructor(gulp, config) {
     this.gulp = gulp
-    this.config = extend(true, {}, Default, platformTypeConfig, config)
-
-
-    //this.debug(`Using platformTypeConfig: ${stringify(platformTypeConfig)}`)
+    this.config = extend(true, {}, Default, config)
     this.debug(`[${this.constructor.name}] using resolved config: ${stringify(this.config)}`)
   }
 

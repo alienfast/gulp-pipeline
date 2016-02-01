@@ -28,10 +28,10 @@ export const Default = {
   //dest: './public/assets',
   options: {
     //entry: 'src/index.js', // is created from the source glob/cwd
-    //plugins: [],
     //dest: '', // required
     sourceMap: true,
     format: 'es6'
+    //plugins: [],
   }
 }
 
@@ -44,12 +44,12 @@ const RollupEs = class extends BaseRecipe {
 
   /**
    *
-   * @param gulp
-   * @param config
+   * @param gulp - gulp instance
+   * @param platform - base platform configuration - either one from platform.js or a custom hash
+   * @param config - customized overrides for this recipe
    */
   constructor(gulp, platform, config = {}) {
     super(gulp, platform, extend(true, {}, Default, config))
-
     //this.browserSync = BrowserSync.create()
   }
 

@@ -1,6 +1,7 @@
 import Base from './base'
 import extend from 'extend'
 import Util from 'gulp-util'
+import stringify from 'stringify-object'
 
 export const Default = {
   watch: true,
@@ -16,11 +17,26 @@ const BaseRecipe = class extends Base {
 
   /**
    *
-   * @param gulp
-   * @param config
+   * @param gulp - gulp instance
+   * @param platform - base platform configuration - either one from platform.js or a custom hash
+   * @param config - customized overrides for this recipe
    */
   constructor(gulp, platform, config) {
-    super(gulp, platform, extend(true, {}, Default, config))
+
+    if(!platform){
+      throw new Error(`Platform must be specified.  Please use one from the platform.js or specify a custom platform configuration.`)
+    }
+
+    if(!config || !config.platformType){
+      throw new Error(`'platformType' must be specified in the config (usually the Default config).  See platform.js for a list of types such as javascripts, stylesheets, etc.`)
+    }
+
+    let platformTypeConfig = platform[config.platformType]
+    if(!platformTypeConfig){
+      throw new Error(`Unable to resolve configuration for platformType: ${config.platformType} from platform: ${stringify(platform)}`)
+    }
+
+    super(gulp, extend(true, {}, Default, platformTypeConfig, config))
 
     if (this.config.task) {
       // generate primary task e.g. sass

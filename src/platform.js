@@ -1,5 +1,8 @@
 import extend from 'extend'
 
+// NOTE: `source` and `watch` are node-glob options hashes. e.g. gulp.src(source.glob, source.options)
+
+
 const Rails = {
   javascripts: {
     source: {options: {cwd: './app/assets/javascripts'}},
@@ -7,7 +10,8 @@ const Rails = {
   },
   stylesheets: {
     source: {options: {cwd: './app/assets/stylesheets'}},
-    watch: {options: {cwd: './app/assets/stylesheets'}}
+    watch: {options: {cwd: './app/assets/stylesheets'}},
+    dest: './public/stylesheets'
   }
 }
 
@@ -18,7 +22,8 @@ const NodeLib = {
   },
   stylesheets: {
     source: {options: {cwd: './lib'}},
-    watch: {options: {cwd: './lib'}}
+    watch: {options: {cwd: './lib'}},
+    dest: './dist'
   }
 }
 
@@ -29,7 +34,8 @@ const NodeSrc = {
   },
   stylesheets: {
     source: {options: {cwd: './src'}},
-    watch: {options: {cwd: './src'}}
+    watch: {options: {cwd: './src'}},
+    dest: './dist'
   }
 }
 

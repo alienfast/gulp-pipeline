@@ -8,27 +8,24 @@ import sass from 'gulp-sass'
 import sourcemaps from 'gulp-sourcemaps'
 import Util from 'gulp-util'
 
-
-// TODO: scsslint
-
 export const Default = {
   debug: true,
+  platformType: 'stylesheets',
   task: {
     name: 'sass'
   },
   watch: {
     glob: '**/*.scss',
     options: {
-      cwd: 'app/assets/stylesheets'
+      //cwd: ** resolved from platform **
     }
   },
   source: {
     glob: ['*.scss', '!_*.scss'],
     options: {
-      cwd: 'app/assets/stylesheets'
+      //cwd: ** resolved from platform **
     }
   },
-  dest: 'public/stylesheets',
   options: {
     indentedSyntax: true,
     errLogToConsole: false,
@@ -54,8 +51,8 @@ const Sass = class extends BaseRecipe {
    * @param platform - base platform configuration - either one from platform.js or a custom hash
    * @param config - customized overrides for this recipe
    */
-  constructor(gulp, config = {}) {
-    super(gulp, extend(true, {}, Default, config))
+  constructor(gulp, platform, config = {}) {
+    super(gulp, platform, extend(true, {}, Default, config))
     this.browserSync = BrowserSync.create()
   }
 

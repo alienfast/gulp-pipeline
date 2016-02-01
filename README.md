@@ -1,7 +1,7 @@
 # gulp-pipeline
-Meta gulp plugin recipes modularized as ES6 classes. Fully configurable. Fully extensible. Full pipeline in a few lines of code.
+Meta gulp plugin recipes modularized as ES2015 classes. Fully configurable. Fully extensible. Full pipeline in a few lines of code.
 
-ES6, reusable, modular, extensible gulp recipes.
+ES2015, reusable, modular, extensible gulp recipes.  This **is not** just for rails, it's for anything.
 
 ## Why?
 
@@ -11,10 +11,10 @@ The javascript community is iterating on asset tooling faster than others, indee
 Why don't we just use the same tools for the asset pipeline?  Now we can.  
 
 ### Reuse, modularity, extensibility
-We are certainly not the first to consider this.  What we did see is that noone was actually reusing shared code in a way that benefits many.  We have seen people share code in a repository, but only in a way that could be cloned or copied.  We want actual reuse, in that we never want to copy code again. When we transpile ES6, we want check it with EsLint.  When we transpile SCSS, we want to check it with ScssLint...and we never want to copy that code again.
+We are certainly not the first to consider this.  What we did see is that noone was actually reusing shared code in a way that benefits many.  We have seen people share code in a repository, but only in a way that could be cloned or copied.  We want actual reuse, in that we never want to copy code again. When we transpile ES6, we want check it with EsLint.  When we transpile SCSS, we want to check it with ScssLint...and we never want to copy that code again.  That error handling gotcha?  Don't create a gist, update and share the recipe.
 
 ## Who is this for?
-Anyone that wants gulp recipes in a reusable/extensible/modular way.  While we certainly want to provide recipes that can be reused and replace the rails pipeline, these recipes should be modular enough that any project (node, angular, etc) can utilize them.
+**Any project** that wants gulp recipes in a reusable/extensible/modular way (node, rails, angular, etc, etc).  While we certainly want to provide recipes that can be reused and replace the conveniences of a full rails pipeline, these recipes are modular enough that any project (node, angular, etc) can utilize them.
 
 ## Usage
 Here's a `gulpfile.babel.js` that provides tasks to build and watch an ES2015/SCSS project.  Simple enough?
@@ -26,7 +26,7 @@ import { ScssLint, Sass, RollupEs, RollupIife, TaskSequence } from 'gulp-pipelin
 import gulp from 'gulp'
 
 // Utilize one of the common configs
-let platform = Platform.rails() // a.k.a rails, nodeSrc, nodeLib - see platform.js and submit PRs with other common configs
+let platform = Platform.nodeSrc() // other pre-configured platforms: nodeLib, rails - see platform.js and submit PRs with other common configs
 
 // instantiate ordered array of recipes (for each instantiation the tasks will be created e.g. sass and sass:watch)
 let recipes = [
@@ -45,9 +45,33 @@ new TaskSequence(gulp, 'watch', recipes, {watch: true})
 
 Run it with `gulp`.
 
-## How it works
-Each exported ES6 class is a recipe having configurable options that registers a task as well as a watch task if applicable.  These are simply common gulp build configurations.
+## Recipes
+- Autoprefixer
+- EsLint
+- Rollup (variations include amd, cjs, es, iife, umd)
+- Sass
+- ScssLint
 
+## Error handling
+Error handling is baked into the recipes and the `Base.notifyError()` sends messages to you through [`gulp-notify`](https://github.com/mikaelbr/gulp-notify) with some nice console colors, a beep, and an OS notification (if possible).
+
+## How it works
+
+### Recipes
+Each recipe is an ES2015 class having configurable options that registers a task as well as a watch task if applicable.  These are simply common gulp build configurations.
+
+### Common config
+Each recipe depends on a common configuration for the `source` and `watch` that can be fed directly to `gulp.src`, this is the `node-glob` format with options.  Even when interfacing with other libraries that don't use `gulp.src` directly (such as rollup), these recipes use a common config for ease of use and to enable generic platform definitions.
+
+### Platform definitions
+Common platform definitions are maintained in [platform.js](src/platform.js).  These are simply common configurations for different structures found in common stacks such as node, rails, etc.  Recipes will fallback on these for configurations such as the `node-glob` `cwd`.  One example would be the `cwd` for all javascript.
+
+### Merged configurations
+Each recipe's ultimate configuration is merged with your overrides - this provides a great deal of flexibility since any configuration you provide will override the defaults.  This is all provided via the [`node-extend`](https://github.com/justmoon/node-extend#usage) library.  Familiarity with how this works should allow you to specify just about anything.
+
+## Debugging
+Initialize any recipe with `{debug: true}` and additional information can be found in the log.
+                                                                                     
 ## I want it to work different...what can I do?
 
 There are many things you can do here (not an exhaustive list):

@@ -11,7 +11,7 @@ export const Default = {
   debug: true,
   platformType: 'javascripts',
   task: {
-    name: 'esLint'
+    name: 'eslint'
   },
   watch: {
     glob: '**/*.js',

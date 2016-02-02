@@ -37,12 +37,6 @@ export const Default = {
   }
 }
 
-
-/**
- * ----------------------------------------------
- * Class Definition
- * ----------------------------------------------
- */
 const Sass = class extends BaseRecipe {
 
   /**
@@ -70,16 +64,6 @@ const Sass = class extends BaseRecipe {
       .pipe(this.gulp.dest(this.config.dest))
       .pipe(this.browserSync.stream())
   }
-
-  // ----------------------------------------------
-  // protected
-
-  // ----------------------------------------------
-  // private
-
-  // ----------------------------------------------
-  // static
-
 }
 
 export default Sass

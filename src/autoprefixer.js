@@ -38,11 +38,6 @@ export const Default = {
   }
 }
 
-/**
- * ----------------------------------------------
- * Class Definition
- * ----------------------------------------------
- */
 const Autoprefixer = class extends BaseRecipe {
 
   /**
@@ -65,16 +60,6 @@ const Autoprefixer = class extends BaseRecipe {
       })
       .pipe(this.gulp.dest(this.config.dest))
   }
-
-  // ----------------------------------------------
-  // protected
-
-  // ----------------------------------------------
-  // private
-
-  // ----------------------------------------------
-  // static
-
 }
 
 export default Autoprefixer

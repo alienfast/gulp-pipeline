@@ -27,11 +27,6 @@ export const Default = {
   options: {}
 }
 
-/**
- * ----------------------------------------------
- * Class Definition
- * ----------------------------------------------
- */
 const EsLint = class extends BaseRecipe {
 
   /**
@@ -59,16 +54,6 @@ const EsLint = class extends BaseRecipe {
 
     return bundle
   }
-
-  // ----------------------------------------------
-  // protected
-
-  // ----------------------------------------------
-  // private
-
-  // ----------------------------------------------
-  // static
-
 }
 
 export default EsLint

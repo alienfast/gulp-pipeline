@@ -28,12 +28,6 @@ export const Default = {
   options: {}
 }
 
-
-/**
- * ----------------------------------------------
- * Class Definition
- * ----------------------------------------------
- */
 const Images = class extends BaseRecipe {
 
   /**

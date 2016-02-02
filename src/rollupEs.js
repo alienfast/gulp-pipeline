@@ -35,11 +35,6 @@ export const Default = {
   }
 }
 
-/**
- * ----------------------------------------------
- * Class Definition
- * ----------------------------------------------
- */
 const RollupEs = class extends BaseRecipe {
 
   /**
@@ -98,17 +93,6 @@ const RollupEs = class extends BaseRecipe {
         this.notifyError(error, watching)
       })
   }
-
-
-  // ----------------------------------------------
-  // protected
-
-  // ----------------------------------------------
-  // private
-
-  // ----------------------------------------------
-  // static
-
 }
 
 export default RollupEs

@@ -8,11 +8,6 @@ export const Default = {
   debug: false
 }
 
-/**
- * ----------------------------------------------
- * Class Definition
- * ----------------------------------------------
- */
 const Base = class {
 
   /**
@@ -72,13 +67,6 @@ ${error.message}`
   debugOptions() {
     return {title: `[${Util.colors.cyan('debug')}][${Util.colors.cyan(this.taskName())}]`}
   }
-
-  // ----------------------------------------------
-  // private
-
-  // ----------------------------------------------
-  // static
-
 }
 
 export default Base

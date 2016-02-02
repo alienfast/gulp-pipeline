@@ -28,11 +28,6 @@ export const Default = {
   }
 }
 
-/**
- * ----------------------------------------------
- * Class Definition
- * ----------------------------------------------
- */
 const ScssLint = class extends BaseRecipe {
 
   /**

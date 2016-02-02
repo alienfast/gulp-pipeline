@@ -2,7 +2,6 @@ import extend from 'extend'
 
 // NOTE: `source` and `watch` are node-glob options hashes. e.g. gulp.src(source.glob, source.options)
 
-
 const Rails = {
   javascripts: {
     source: {options: {cwd: './app/assets/javascripts'}},

@@ -8,11 +8,6 @@ export const Default = {
   debug: false
 }
 
-/**
- * ----------------------------------------------
- * Class Definition
- * ----------------------------------------------
- */
 const BaseRecipe = class extends Base {
 
   /**
@@ -57,7 +52,6 @@ const BaseRecipe = class extends Base {
     }
   }
 
-
   registerTask() {
     if (this.config.task) {
       // generate primary task e.g. sass
@@ -81,16 +75,6 @@ const BaseRecipe = class extends Base {
       return `${this.taskName()}:watch`
     }
   }
-
-  // ----------------------------------------------
-  // protected
-
-  // ----------------------------------------------
-  // private
-
-  // ----------------------------------------------
-  // static
-
 }
 
 export default BaseRecipe

@@ -6,11 +6,6 @@ const Default = {
   watch: false
 }
 
-/**
- * ----------------------------------------------
- * Class Definition
- * ----------------------------------------------
- */
 const TaskSequence = class extends Base {
 
   /**

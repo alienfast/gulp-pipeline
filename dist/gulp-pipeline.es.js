@@ -1,7 +1,9 @@
 import autoprefixer from 'gulp-autoprefixer';
 import extend from 'extend';
+import gulpif from 'gulp-if';
 import eslint from 'gulp-eslint';
-import debug from 'gulp-debug';
+import debug$1 from 'gulp-debug';
+import glob from 'glob';
 import BrowserSync from 'browser-sync';
 import sass from 'gulp-sass';
 import sourcemaps from 'gulp-sourcemaps';
@@ -9,7 +11,6 @@ import Util from 'gulp-util';
 import scssLint from 'gulp-scss-lint';
 import scssLintStylish from 'gulp-scss-lint-stylish';
 import { rollup } from 'rollup';
-import glob from 'glob';
 import stringify from 'stringify-object';
 import babel from 'rollup-plugin-babel';
 import notify from 'gulp-notify';
@@ -78,6 +79,10 @@ ${error.message}`
     this.gulp.emit('end')
   }
 
+  debugOptions() {
+    return {title: `[${Util.colors.cyan('debug')}][${Util.colors.cyan(this.taskName())}]`}
+  }
+
   // ----------------------------------------------
   // private
 
@@ -111,6 +116,7 @@ const BaseRecipe = class extends Base {
     }
 
     if(!config || !config.platformType){
+      console.log(`${stringify(config)}`)
       throw new Error(`'platformType' must be specified in the config (usually the Default config).  See platform.js for a list of types such as javascripts, stylesheets, etc.`)
     }
 
@@ -160,6 +166,9 @@ const BaseRecipe = class extends Base {
   // ----------------------------------------------
   // protected
 
+  conditionalDebug(){
+
+  }
   // ----------------------------------------------
   // private
 
@@ -222,6 +231,7 @@ const Autoprefixer = class extends BaseRecipe {
   run() {
     // FIXME: is this right or wrong?  this class initially was extracted for reuse of Default options
     return this.gulp.src(this.config.source)
+      .pipe(gulpif(this.config.debug, debug(this.debugOptions())))
       .pipe(autoprefixer(this.config.options))
       .pipe(this.gulp.dest(this.config.dest))
   }
@@ -239,19 +249,20 @@ const Autoprefixer = class extends BaseRecipe {
 
 const Default = {
   debug: true,
+  platformType: 'javascripts',
   task: {
-    name: 'esLint'
+    name: 'eslint'
   },
   watch: {
     glob: '**/*.js',
     options: {
-      cwd: 'app/assets/javascripts'
+      //cwd: ** resolved from platform **
     }
   },
   source: {
     glob: '**/*.js',
     options: {
-      cwd: 'app/assets/javascripts'
+      //cwd: ** resolved from platform **
     }
   },
   options: {}
@@ -270,19 +281,15 @@ const EsLint = class extends BaseRecipe {
    * @param platform - base platform configuration - either one from platform.js or a custom hash
    * @param config - customized overrides for this recipe
    */
-  constructor(gulp, config = {}) {
-    super(gulp, extend(true, {}, Default, config))
+  constructor(gulp, platform, config = {}) {
+    super(gulp, platform, extend(true, {}, Default, config))
   }
 
   run() {
-    let bundle = this.gulp.src(this.config.source.glob, this.config.source.options)
-
-    if (this.config.debug) {
-      bundle.pipe(debug())
-    }
 
     // eslint() attaches the lint output to the "eslint" property of the file object so it can be used by other modules.
-    bundle
+    let bundle = this.gulp.src(this.config.source.glob, this.config.source.options)
+      .pipe(gulpif(this.config.debug, debug$1(this.debugOptions())))
       .pipe(eslint(this.config.options))
       .pipe(eslint.format()) // outputs the lint results to the console. Alternatively use eslint.formatEach() (see Docs).
       .pipe(eslint.failAfterError()) // To have the process exit with an error code (1) on lint error, return the stream and pipe to failAfterError last.
@@ -306,26 +313,24 @@ const EsLint = class extends BaseRecipe {
 
 }
 
-// TODO: scsslint
-
 const Default$1 = {
   debug: true,
+  platformType: 'stylesheets',
   task: {
     name: 'sass'
   },
   watch: {
     glob: '**/*.scss',
     options: {
-      cwd: 'app/assets/stylesheets'
+      //cwd: ** resolved from platform **
     }
   },
   source: {
     glob: ['*.scss', '!_*.scss'],
     options: {
-      cwd: 'app/assets/stylesheets'
+      //cwd: ** resolved from platform **
     }
   },
-  dest: 'public/stylesheets',
   options: {
     indentedSyntax: true,
     errLogToConsole: false,
@@ -351,19 +356,15 @@ const Sass = class extends BaseRecipe {
    * @param platform - base platform configuration - either one from platform.js or a custom hash
    * @param config - customized overrides for this recipe
    */
-  constructor(gulp, config = {}) {
-    super(gulp, extend(true, {}, Default$1, config))
+  constructor(gulp, platform, config = {}) {
+    super(gulp, platform, extend(true, {}, Default$1, config))
     this.browserSync = BrowserSync.create()
   }
 
   run() {
     let bundle = this.gulp.src(this.config.source.glob, this.config.source.options)
 
-    if (this.config.debug) {
-      bundle.pipe(debug())
-    }
-
-    bundle
+      .pipe(gulpif(this.config.debug, debug$1(this.debugOptions())))
       .pipe(sourcemaps.init())
       .pipe(sass(this.config.options))
       .on('error', (error) => {
@@ -390,19 +391,20 @@ const Sass = class extends BaseRecipe {
 
 const Default$2 = {
   debug: true,
+  platformType: 'stylesheets',
   task: {
     name: 'scsslint'
   },
   watch: {
     glob: '**/*.scss',
     options: {
-      cwd: 'app/assets/stylesheets'
+      //cwd: ** resolved from platform **
     }
   },
   source: {
     glob: '**/*.scss',
     options: {
-      cwd: 'app/assets/stylesheets'
+      //cwd: ** resolved from platform **
     }
   },
   options: {
@@ -423,12 +425,13 @@ const ScssLint = class extends BaseRecipe {
    * @param platform - base platform configuration - either one from platform.js or a custom hash
    * @param config - customized overrides for this recipe
    */
-  constructor(gulp, config = {}) {
-    super(gulp, extend(true, {}, Default$2, config))
+  constructor(gulp, platform, config = {}) {
+    super(gulp, platform, extend(true, {}, Default$2, config))
   }
 
   run() {
     return this.gulp.src(this.config.source.glob, this.config.source.options)
+      .pipe(gulpif(this.config.debug, debug$1(this.debugOptions())))
       .pipe(scssLint(this.config.options))
 
   }

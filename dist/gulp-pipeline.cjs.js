@@ -4,8 +4,10 @@ function _interopDefault (ex) { return 'default' in ex ? ex['default'] : ex; }
 
 var autoprefixer = _interopDefault(require('gulp-autoprefixer'));
 var extend = _interopDefault(require('extend'));
+var gulpif = _interopDefault(require('gulp-if'));
 var eslint = _interopDefault(require('gulp-eslint'));
-var debug = _interopDefault(require('gulp-debug'));
+var debug$1 = _interopDefault(require('gulp-debug'));
+var glob = _interopDefault(require('glob'));
 var BrowserSync = _interopDefault(require('browser-sync'));
 var sass = _interopDefault(require('gulp-sass'));
 var sourcemaps = _interopDefault(require('gulp-sourcemaps'));
@@ -13,7 +15,6 @@ var Util = _interopDefault(require('gulp-util'));
 var scssLint = _interopDefault(require('gulp-scss-lint'));
 var scssLintStylish = _interopDefault(require('gulp-scss-lint-stylish'));
 var rollup = require('rollup');
-var glob = _interopDefault(require('glob'));
 var stringify = _interopDefault(require('stringify-object'));
 var babel = _interopDefault(require('rollup-plugin-babel'));
 var notify = _interopDefault(require('gulp-notify'));
@@ -136,6 +137,11 @@ var Base = function () {
       // Prevent the 'watch' task from stopping
       this.gulp.emit('end');
     }
+  }, {
+    key: 'debugOptions',
+    value: function debugOptions() {
+      return { title: '[' + Util.colors.cyan('debug') + '][' + Util.colors.cyan(this.taskName()) + ']' };
+    }
 
     // ----------------------------------------------
     // private
@@ -175,6 +181,7 @@ var BaseRecipe = function (_Base) {
     }
 
     if (!config || !config.platformType) {
+      console.log('' + stringify(config));
       throw new Error('\'platformType\' must be specified in the config (usually the Default config).  See platform.js for a list of types such as javascripts, stylesheets, etc.');
     }
 
@@ -228,6 +235,9 @@ var BaseRecipe = function (_Base) {
     // ----------------------------------------------
     // protected
 
+  }, {
+    key: 'conditionalDebug',
+    value: function conditionalDebug() {}
     // ----------------------------------------------
     // private
 
@@ -292,7 +302,7 @@ var Autoprefixer = function (_BaseRecipe) {
     key: 'run',
     value: function run() {
       // FIXME: is this right or wrong?  this class initially was extracted for reuse of Default options
-      return this.gulp.src(this.config.source).pipe(autoprefixer(this.config.options)).pipe(this.gulp.dest(this.config.dest));
+      return this.gulp.src(this.config.source).pipe(gulpif(this.config.debug, debug(this.debugOptions()))).pipe(autoprefixer(this.config.options)).pipe(this.gulp.dest(this.config.dest));
     }
 
     // ----------------------------------------------
@@ -310,19 +320,20 @@ var Autoprefixer = function (_BaseRecipe) {
 
 var Default = {
   debug: true,
+  platformType: 'javascripts',
   task: {
-    name: 'esLint'
+    name: 'eslint'
   },
   watch: {
     glob: '**/*.js',
     options: {
-      cwd: 'app/assets/javascripts'
+      //cwd: ** resolved from platform **
     }
   },
   source: {
     glob: '**/*.js',
     options: {
-      cwd: 'app/assets/javascripts'
+      //cwd: ** resolved from platform **
     }
   },
   options: {}
@@ -343,23 +354,18 @@ var EsLint = function (_BaseRecipe) {
    * @param config - customized overrides for this recipe
    */
 
-  function EsLint(gulp) {
-    var config = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+  function EsLint(gulp, platform) {
+    var config = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
     babelHelpers.classCallCheck(this, EsLint);
-    return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(EsLint).call(this, gulp, extend(true, {}, Default, config)));
+    return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(EsLint).call(this, gulp, platform, extend(true, {}, Default, config)));
   }
 
   babelHelpers.createClass(EsLint, [{
     key: 'run',
     value: function run() {
-      var bundle = this.gulp.src(this.config.source.glob, this.config.source.options);
-
-      if (this.config.debug) {
-        bundle.pipe(debug());
-      }
 
       // eslint() attaches the lint output to the "eslint" property of the file object so it can be used by other modules.
-      bundle.pipe(eslint(this.config.options)).pipe(eslint.format()) // outputs the lint results to the console. Alternatively use eslint.formatEach() (see Docs).
+      var bundle = this.gulp.src(this.config.source.glob, this.config.source.options).pipe(gulpif(this.config.debug, debug$1(this.debugOptions()))).pipe(eslint(this.config.options)).pipe(eslint.format()) // outputs the lint results to the console. Alternatively use eslint.formatEach() (see Docs).
       .pipe(eslint.failAfterError()); // To have the process exit with an error code (1) on lint error, return the stream and pipe to failAfterError last.
 
       // FIXME: even including any remnant of JSCS at this point broke everything through the unfound requirement of babel 5.x through babel-jscs.  I can't tell where this occurred, but omitting gulp-jscs for now gets me past this issue.  Revisit this when there are clear updates to use babel 6
@@ -383,26 +389,24 @@ var EsLint = function (_BaseRecipe) {
   return EsLint;
 }(BaseRecipe);
 
-// TODO: scsslint
-
 var Default$1 = {
   debug: true,
+  platformType: 'stylesheets',
   task: {
     name: 'sass'
   },
   watch: {
     glob: '**/*.scss',
     options: {
-      cwd: 'app/assets/stylesheets'
+      //cwd: ** resolved from platform **
     }
   },
   source: {
     glob: ['*.scss', '!_*.scss'],
     options: {
-      cwd: 'app/assets/stylesheets'
+      //cwd: ** resolved from platform **
     }
   },
-  dest: 'public/stylesheets',
   options: {
     indentedSyntax: true,
     errLogToConsole: false,
@@ -429,11 +433,11 @@ var Sass = function (_BaseRecipe) {
    * @param config - customized overrides for this recipe
    */
 
-  function Sass(gulp) {
-    var config = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+  function Sass(gulp, platform) {
+    var config = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
     babelHelpers.classCallCheck(this, Sass);
 
-    var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Sass).call(this, gulp, extend(true, {}, Default$1, config)));
+    var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Sass).call(this, gulp, platform, extend(true, {}, Default$1, config)));
 
     _this.browserSync = BrowserSync.create();
     return _this;
@@ -444,13 +448,7 @@ var Sass = function (_BaseRecipe) {
     value: function run() {
       var _this2 = this;
 
-      var bundle = this.gulp.src(this.config.source.glob, this.config.source.options);
-
-      if (this.config.debug) {
-        bundle.pipe(debug());
-      }
-
-      bundle.pipe(sourcemaps.init()).pipe(sass(this.config.options)).on('error', function (error) {
+      var bundle = this.gulp.src(this.config.source.glob, this.config.source.options).pipe(gulpif(this.config.debug, debug$1(this.debugOptions()))).pipe(sourcemaps.init()).pipe(sass(this.config.options)).on('error', function (error) {
         _this2.notifyError(error);
       }).pipe(autoprefixer(this.config.autoprefixer.options)).pipe(sourcemaps.write()).pipe(this.gulp.dest(this.config.dest)).pipe(this.browserSync.stream());
 
@@ -472,19 +470,20 @@ var Sass = function (_BaseRecipe) {
 
 var Default$2 = {
   debug: true,
+  platformType: 'stylesheets',
   task: {
     name: 'scsslint'
   },
   watch: {
     glob: '**/*.scss',
     options: {
-      cwd: 'app/assets/stylesheets'
+      //cwd: ** resolved from platform **
     }
   },
   source: {
     glob: '**/*.scss',
     options: {
-      cwd: 'app/assets/stylesheets'
+      //cwd: ** resolved from platform **
     }
   },
   options: {
@@ -507,16 +506,16 @@ var ScssLint = function (_BaseRecipe) {
    * @param config - customized overrides for this recipe
    */
 
-  function ScssLint(gulp) {
-    var config = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+  function ScssLint(gulp, platform) {
+    var config = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
     babelHelpers.classCallCheck(this, ScssLint);
-    return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(ScssLint).call(this, gulp, extend(true, {}, Default$2, config)));
+    return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(ScssLint).call(this, gulp, platform, extend(true, {}, Default$2, config)));
   }
 
   babelHelpers.createClass(ScssLint, [{
     key: 'run',
     value: function run() {
-      return this.gulp.src(this.config.source.glob, this.config.source.options).pipe(scssLint(this.config.options));
+      return this.gulp.src(this.config.source.glob, this.config.source.options).pipe(gulpif(this.config.debug, debug$1(this.debugOptions()))).pipe(scssLint(this.config.options));
     }
 
     // ----------------------------------------------

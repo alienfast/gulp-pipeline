@@ -4,22 +4,25 @@ import extend from 'extend'
 //import jscs from 'gulp-jscs'
 //import stylish from 'gulp-jscs-stylish'
 import debug from 'gulp-debug'
+import glob from 'glob'
+import gulpif from 'gulp-if'
 
 export const Default = {
   debug: true,
+  platformType: 'javascripts',
   task: {
     name: 'esLint'
   },
   watch: {
     glob: '**/*.js',
     options: {
-      cwd: 'app/assets/javascripts'
+      //cwd: ** resolved from platform **
     }
   },
   source: {
     glob: '**/*.js',
     options: {
-      cwd: 'app/assets/javascripts'
+      //cwd: ** resolved from platform **
     }
   },
   options: {}
@@ -38,19 +41,15 @@ const EsLint = class extends BaseRecipe {
    * @param platform - base platform configuration - either one from platform.js or a custom hash
    * @param config - customized overrides for this recipe
    */
-  constructor(gulp, config = {}) {
-    super(gulp, extend(true, {}, Default, config))
+  constructor(gulp, platform, config = {}) {
+    super(gulp, platform, extend(true, {}, Default, config))
   }
 
   run() {
-    let bundle = this.gulp.src(this.config.source.glob, this.config.source.options)
-
-    if (this.config.debug) {
-      bundle.pipe(debug())
-    }
 
     // eslint() attaches the lint output to the "eslint" property of the file object so it can be used by other modules.
-    bundle
+    let bundle = this.gulp.src(this.config.source.glob, this.config.source.options)
+      .pipe(gulpif(this.config.debug, debug(this.debugOptions())))
       .pipe(eslint(this.config.options))
       .pipe(eslint.format()) // outputs the lint results to the console. Alternatively use eslint.formatEach() (see Docs).
       .pipe(eslint.failAfterError()) // To have the process exit with an error code (1) on lint error, return the stream and pipe to failAfterError last.

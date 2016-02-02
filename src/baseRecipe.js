@@ -28,6 +28,7 @@ const BaseRecipe = class extends Base {
     }
 
     if(!config || !config.platformType){
+      console.log(`${stringify(config)}`)
       throw new Error(`'platformType' must be specified in the config (usually the Default config).  See platform.js for a list of types such as javascripts, stylesheets, etc.`)
     }
 
@@ -77,6 +78,9 @@ const BaseRecipe = class extends Base {
   // ----------------------------------------------
   // protected
 
+  conditionalDebug(){
+
+  }
   // ----------------------------------------------
   // private
 

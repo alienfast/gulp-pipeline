@@ -67,6 +67,10 @@ ${error.message}`
     this.gulp.emit('end')
   }
 
+  debugOptions() {
+    return {title: `[${Util.colors.cyan('debug')}][${Util.colors.cyan(this.taskName())}]`}
+  }
+
   // ----------------------------------------------
   // private
 

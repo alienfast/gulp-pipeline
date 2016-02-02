@@ -2,6 +2,7 @@ import BaseRecipe from './baseRecipe'
 import extend from 'extend'
 import scssLint from 'gulp-scss-lint'
 import scssLintStylish from 'gulp-scss-lint-stylish'
+import gulpif from 'gulp-if'
 
 export const Default = {
   debug: true,
@@ -45,6 +46,7 @@ const ScssLint = class extends BaseRecipe {
 
   run() {
     return this.gulp.src(this.config.source.glob, this.config.source.options)
+      .pipe(gulpif(this.config.debug, debug(this.debugOptions())))
       .pipe(scssLint(this.config.options))
 
   }

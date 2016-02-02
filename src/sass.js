@@ -7,6 +7,7 @@ import extend from 'extend'
 import sass from 'gulp-sass'
 import sourcemaps from 'gulp-sourcemaps'
 import Util from 'gulp-util'
+import gulpif from 'gulp-if'
 
 export const Default = {
   debug: true,
@@ -59,11 +60,7 @@ const Sass = class extends BaseRecipe {
   run() {
     let bundle = this.gulp.src(this.config.source.glob, this.config.source.options)
 
-    if (this.config.debug) {
-      bundle.pipe(debug())
-    }
-
-    bundle
+      .pipe(gulpif(this.config.debug, debug(this.debugOptions())))
       .pipe(sourcemaps.init())
       .pipe(sass(this.config.options))
       .on('error', (error) => {

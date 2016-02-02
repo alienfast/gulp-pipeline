@@ -1,21 +1,23 @@
 import autoprefixer from 'gulp-autoprefixer';
 import extend from 'extend';
 import gulpif from 'gulp-if';
+import debug from 'gulp-debug';
 import eslint from 'gulp-eslint';
-import debug$1 from 'gulp-debug';
-import glob from 'glob';
 import BrowserSync from 'browser-sync';
+import changed from 'gulp-changed';
+import imagemin from 'gulp-imagemin';
 import sass from 'gulp-sass';
 import sourcemaps from 'gulp-sourcemaps';
-import Util from 'gulp-util';
 import scssLint from 'gulp-scss-lint';
 import scssLintStylish from 'gulp-scss-lint-stylish';
+import Util from 'gulp-util';
 import { rollup } from 'rollup';
+import glob from 'glob';
 import stringify from 'stringify-object';
 import babel from 'rollup-plugin-babel';
 import notify from 'gulp-notify';
 
-const Default$10 = {
+const Default$11 = {
   watch: true,
   debug: false
 }
@@ -34,7 +36,7 @@ const Base = class {
    */
   constructor(gulp, config) {
     this.gulp = gulp
-    this.config = extend(true, {}, Default$10, config)
+    this.config = extend(true, {}, Default$11, config)
     this.debug(`[${this.constructor.name}] using resolved config: ${stringify(this.config)}`)
   }
 
@@ -50,7 +52,7 @@ const Base = class {
     }
   }
 
-  notifyError(error) {
+  notifyError(error, watching = false) {
     let lineNumber = (error.lineNumber) ? `Line ${error.lineNumber} -- ` : ''
 
     notify({
@@ -76,7 +78,9 @@ ${error.message}`
     this.log(report)
 
     // Prevent the 'watch' task from stopping
-    this.gulp.emit('end')
+    if(!watching) {
+      this.gulp.emit('end')
+    }
   }
 
   debugOptions() {
@@ -91,7 +95,7 @@ ${error.message}`
 
 }
 
-const Default$9 = {
+const Default$10 = {
   watch: true,
   debug: false
 }
@@ -111,37 +115,48 @@ const BaseRecipe = class extends Base {
    */
   constructor(gulp, platform, config) {
 
-    if(!platform){
+    if (!platform) {
       throw new Error(`Platform must be specified.  Please use one from the platform.js or specify a custom platform configuration.`)
     }
 
-    if(!config || !config.platformType){
-      console.log(`${stringify(config)}`)
+    if (!config || !config.platformType) {
       throw new Error(`'platformType' must be specified in the config (usually the Default config).  See platform.js for a list of types such as javascripts, stylesheets, etc.`)
     }
 
     let platformTypeConfig = platform[config.platformType]
-    if(!platformTypeConfig){
+    if (!platformTypeConfig) {
       throw new Error(`Unable to resolve configuration for platformType: ${config.platformType} from platform: ${stringify(platform)}`)
     }
 
-    super(gulp, extend(true, {}, Default$9, platformTypeConfig, config))
+    super(gulp, extend(true, {}, Default$10, platformTypeConfig, config))
+    this.registerTask()
+    this.registerWatchTask()
+  }
 
+  registerWatchTask() {
+    if (this.config.watch) {
+      // generate watch task e.g. sass:watch
+      let name = this.watchTaskName()
+      this.debug(`Registering task: ${Util.colors.green(name)}`)
+      this.gulp.task(name, () => {
+        //this.gulp.watch(this.config.source.glob, this.config.source.options, [this.taskName()])
+
+        this.gulp.watch(this.config.source.glob, this.config.source.options, (event) => {
+          this.log(`File ${event.path} was ${event.type}, running ${this.taskName()}...`);
+          this.run(true)
+        })
+      })
+    }
+  }
+
+
+  registerTask() {
     if (this.config.task) {
       // generate primary task e.g. sass
       let name = this.taskName()
       this.debug(`Registering task: ${Util.colors.green(name)}`)
       this.gulp.task(name, () => {
         this.run()
-      })
-    }
-
-    if (this.config.watch) {
-      // generate watch task e.g. sass:watch
-      let name = this.watchTaskName()
-      this.debug(`Registering task: ${Util.colors.green(name)}`)
-      this.gulp.task(name, () => {
-        this.watch()
       })
     }
   }
@@ -159,16 +174,9 @@ const BaseRecipe = class extends Base {
     }
   }
 
-  watch() {
-    this.gulp.watch(this.config.source.glob, this.config.source.options, [this.taskName()])
-  }
-
   // ----------------------------------------------
   // protected
 
-  conditionalDebug(){
-
-  }
   // ----------------------------------------------
   // private
 
@@ -228,11 +236,14 @@ const Autoprefixer = class extends BaseRecipe {
     super(gulp, extend(true, {}, AutoprefixerDefault, config))
   }
 
-  run() {
+  run(watching = false) {
     // FIXME: is this right or wrong?  this class initially was extracted for reuse of Default options
     return this.gulp.src(this.config.source)
       .pipe(gulpif(this.config.debug, debug(this.debugOptions())))
       .pipe(autoprefixer(this.config.options))
+      .on('error', (error) => {
+        this.notifyError(error, watching)
+      })
       .pipe(this.gulp.dest(this.config.dest))
   }
 
@@ -285,14 +296,13 @@ const EsLint = class extends BaseRecipe {
     super(gulp, platform, extend(true, {}, Default, config))
   }
 
-  run() {
-
+  run(watching = false) {
     // eslint() attaches the lint output to the "eslint" property of the file object so it can be used by other modules.
     let bundle = this.gulp.src(this.config.source.glob, this.config.source.options)
-      .pipe(gulpif(this.config.debug, debug$1(this.debugOptions())))
+      .pipe(gulpif(this.config.debug, debug(this.debugOptions())))
       .pipe(eslint(this.config.options))
       .pipe(eslint.format()) // outputs the lint results to the console. Alternatively use eslint.formatEach() (see Docs).
-      .pipe(eslint.failAfterError()) // To have the process exit with an error code (1) on lint error, return the stream and pipe to failAfterError last.
+      .pipe(gulpif(!watching, eslint.failAfterError())) // To have the process exit with an error code (1) on lint error, return the stream and pipe to failAfterError last.
 
     // FIXME: even including any remnant of JSCS at this point broke everything through the unfound requirement of babel 5.x through babel-jscs.  I can't tell where this occurred, but omitting gulp-jscs for now gets me past this issue.  Revisit this when there are clear updates to use babel 6
     //.pipe(jscs())      // enforce style guide
@@ -314,6 +324,59 @@ const EsLint = class extends BaseRecipe {
 }
 
 const Default$1 = {
+  debug: true,
+  platformType: 'images',
+  task: {
+    name: 'images'
+  },
+  watch: {
+    glob: '**',
+    options: {
+      //cwd: ** resolved from platform **
+    }
+  },
+  source: {
+    glob: '**',
+    options: {
+      //cwd: ** resolved from platform **
+    }
+  },
+  options: {}
+}
+
+
+/**
+ * ----------------------------------------------
+ * Class Definition
+ * ----------------------------------------------
+ */
+const Images = class extends BaseRecipe {
+
+  /**
+   *
+   * @param gulp - gulp instance
+   * @param platform - base platform configuration - either one from platform.js or a custom hash
+   * @param config - customized overrides for this recipe
+   */
+  constructor(gulp, platform, config = {}) {
+    super(gulp, platform, extend(true, {}, Default$1, config))
+    this.browserSync = BrowserSync.create()
+  }
+
+  run(watching = false) {
+    return this.gulp.src(this.config.source.glob, this.config.source.options)
+      .pipe(changed(this.config.dest)) // ignore unchanged files
+      .pipe(gulpif(this.config.debug, debug(this.debugOptions())))
+      .pipe(imagemin(this.config.options))
+      .on('error', (error) => {
+        this.notifyError(error, watching)
+      })
+      .pipe(this.gulp.dest(this.config.dest))
+      .pipe(this.browserSync.stream())
+  }
+}
+
+const Default$2 = {
   debug: true,
   platformType: 'stylesheets',
   task: {
@@ -357,25 +420,23 @@ const Sass = class extends BaseRecipe {
    * @param config - customized overrides for this recipe
    */
   constructor(gulp, platform, config = {}) {
-    super(gulp, platform, extend(true, {}, Default$1, config))
+    super(gulp, platform, extend(true, {}, Default$2, config))
     this.browserSync = BrowserSync.create()
   }
 
-  run() {
-    let bundle = this.gulp.src(this.config.source.glob, this.config.source.options)
+  run(watching = false) {
+    return this.gulp.src(this.config.source.glob, this.config.source.options)
 
-      .pipe(gulpif(this.config.debug, debug$1(this.debugOptions())))
+      .pipe(gulpif(this.config.debug, debug(this.debugOptions())))
       .pipe(sourcemaps.init())
       .pipe(sass(this.config.options))
       .on('error', (error) => {
-        this.notifyError(error)
+        this.notifyError(error, watching)
       })
       .pipe(autoprefixer(this.config.autoprefixer.options))
       .pipe(sourcemaps.write())
       .pipe(this.gulp.dest(this.config.dest))
       .pipe(this.browserSync.stream())
-
-    return bundle
   }
 
   // ----------------------------------------------
@@ -389,7 +450,7 @@ const Sass = class extends BaseRecipe {
 
 }
 
-const Default$2 = {
+const Default$3 = {
   debug: true,
   platformType: 'stylesheets',
   task: {
@@ -426,28 +487,20 @@ const ScssLint = class extends BaseRecipe {
    * @param config - customized overrides for this recipe
    */
   constructor(gulp, platform, config = {}) {
-    super(gulp, platform, extend(true, {}, Default$2, config))
+    super(gulp, platform, extend(true, {}, Default$3, config))
   }
 
-  run() {
+  run(watching = false) {
     return this.gulp.src(this.config.source.glob, this.config.source.options)
-      .pipe(gulpif(this.config.debug, debug$1(this.debugOptions())))
+      .pipe(gulpif(this.config.debug, debug(this.debugOptions())))
       .pipe(scssLint(this.config.options))
-
+      .on('error', (error) => {
+        this.notifyError(error, watching)
+      })
   }
-
-  // ----------------------------------------------
-  // protected
-
-  // ----------------------------------------------
-  // private
-
-  // ----------------------------------------------
-  // static
-
 }
 
-const Default$3 = {
+const Default$4 = {
   watch: false
 }
 
@@ -464,7 +517,7 @@ const TaskSequence = class extends Base {
    * @param config - customized overrides
    */
   constructor(gulp, taskName, recipes, config = {}) {
-    super(gulp, extend(true, {}, Default$3, config))
+    super(gulp, extend(true, {}, Default$4, config))
 
     // generate the task sequence
     let tasks = []
@@ -479,20 +532,9 @@ const TaskSequence = class extends Base {
     this.debug(`Registering task: ${Util.colors.green(taskName)}`)
     this.gulp.task(taskName, tasks)
   }
-
-
-  // ----------------------------------------------
-  // protected
-
-  // ----------------------------------------------
-  // private
-
-  // ----------------------------------------------
-  // static
-
 }
 
-const Default$4 = {
+const Default$5 = {
   debug: true,
   platformType: 'javascripts',
   task: {
@@ -536,7 +578,7 @@ const RollupEs = class extends BaseRecipe {
    * @param config - customized overrides for this recipe
    */
   constructor(gulp, platform, config = {}) {
-    super(gulp, platform, extend(true, {}, Default$4, config))
+    super(gulp, platform, extend(true, {}, Default$5, config))
     //this.browserSync = BrowserSync.create()
   }
 
@@ -560,12 +602,12 @@ const RollupEs = class extends BaseRecipe {
     return entry[0]
   }
 
-  run() {
+  run(watching = false) {
     let options = extend(true, {
         entry: this.resolveEntry(),
-        //onwarn: (message) => this.onwarn(message)
         onwarn: (message) => {
-          console.error(message)
+          //this.notifyError(message, watching)
+          this.log(message)
         }
       },
       this.config.options)
@@ -582,7 +624,7 @@ const RollupEs = class extends BaseRecipe {
       })
       .catch((error) => {
         error.plugin = 'rollup'
-        this.notifyError(error)
+        this.notifyError(error, watching)
       })
   }
 
@@ -598,7 +640,7 @@ const RollupEs = class extends BaseRecipe {
 
 }
 
-const Default$5 = {
+const Default$6 = {
   task: {
     name: 'rollup:cjs'
   },
@@ -626,17 +668,17 @@ const RollupCjs = class extends RollupEs {
    * @param config - customized overrides for this recipe
    */
   constructor(gulp, platform, config = {}) {
-    super(gulp, platform, extend(true, {}, Default$5, config))
+    super(gulp, platform, extend(true, {}, Default$6, config))
   }
 }
 
-const Default$6 = {
+const Default$7 = {
   task: {
     name: 'rollup:iife'
   },
   options: {
     //dest: '', // required
-    format: 'iife',
+    format: 'iife'
   }
 }
 
@@ -654,17 +696,17 @@ const RollupIife = class extends RollupCjs {
    * @param config - customized overrides for this recipe
    */
   constructor(gulp, platform, config = {}) {
-    super(gulp, platform, extend(true, {}, Default$6, config))
+    super(gulp, platform, extend(true, {}, Default$7, config))
   }
 }
 
-const Default$7 = {
+const Default$8 = {
   task: {
     name: 'rollup:amd'
   },
   options: {
     //dest: '', // required
-    format: 'amd',
+    format: 'amd'
   }
 }
 
@@ -682,17 +724,17 @@ const RollupAmd = class extends RollupCjs {
    * @param config - customized overrides for this recipe
    */
   constructor(gulp, platform, config = {}) {
-    super(gulp, platform, extend(true, {}, Default$7, config))
+    super(gulp, platform, extend(true, {}, Default$8, config))
   }
 }
 
-const Default$8 = {
+const Default$9 = {
   task: {
     name: 'rollup:umd'
   },
   options: {
     //dest: '', // required
-    format: 'umd',
+    format: 'umd'
   }
 }
 
@@ -710,9 +752,9 @@ const RollupUmd = class extends RollupCjs {
    * @param config - customized overrides for this recipe
    */
   constructor(gulp, platform, config = {}) {
-    super(gulp, platform, extend(true, {}, Default$8, config))
+    super(gulp, platform, extend(true, {}, Default$9, config))
   }
 }
 
-export { Autoprefixer, EsLint, Sass, ScssLint, TaskSequence, RollupEs, RollupCjs, RollupIife, RollupAmd, RollupUmd };
+export { Autoprefixer, EsLint, Images, Sass, ScssLint, TaskSequence, RollupEs, RollupCjs, RollupIife, RollupAmd, RollupUmd };
 //# sourceMappingURL=gulp-pipeline.es.js.map

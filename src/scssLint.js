@@ -6,7 +6,7 @@ import debug from 'gulp-debug'
 import gulpif from 'gulp-if'
 
 export const Default = {
-  debug: true,
+  debug: false,
   presetType: 'stylesheets',
   task: {
     name: 'scsslint'

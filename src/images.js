@@ -8,7 +8,7 @@ import imagemin   from 'gulp-imagemin'
 
 
 export const Default = {
-  debug: true,
+  debug: false,
   presetType: 'images',
   task: {
     name: 'images'

@@ -33,6 +33,10 @@ const Base = class {
     }
   }
 
+  debugDump(msg, obj){
+    this.debug(`${msg}:\n${stringify(obj)}`)
+  }
+
   notifyError(error, watching = false) {
     let lineNumber = (error.lineNumber) ? `Line ${error.lineNumber} -- ` : ''
 

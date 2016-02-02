@@ -10,3 +10,8 @@ export { default as RollupCjs } from './rollupCjs'
 export { default as RollupIife } from './rollupIife'
 export { default as RollupAmd } from './rollupAmd'
 export { default as RollupUmd } from './rollupUmd'
+
+export { default as CleanImages } from './cleanImages'
+export { default as CleanStylesheets } from './cleanStylesheets'
+export { default as CleanJavascripts } from './cleanJavascripts'
+export { default as Clean } from './clean'

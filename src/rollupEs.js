@@ -6,7 +6,7 @@ import glob from 'glob'
 import stringify from 'stringify-object'
 
 export const Default = {
-  debug: true,
+  debug: false,
   presetType: 'javascripts',
   task: {
     name: 'rollup:es'

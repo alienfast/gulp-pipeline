@@ -9,7 +9,7 @@ import sourcemaps from 'gulp-sourcemaps'
 import gulpif from 'gulp-if'
 
 export const Default = {
-  debug: true,
+  debug: false,
   presetType: 'stylesheets',
   task: {
     name: 'sass'

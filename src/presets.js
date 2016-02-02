@@ -56,7 +56,7 @@ const NodeSrc = {
   }
 }
 
-const Platform = class {
+const Presets = class {
   static nodeLib(overrides = {}) {
     return extend(true, {}, NodeLib, overrides)
   }
@@ -69,4 +69,4 @@ const Platform = class {
     return extend(true, {}, Rails, overrides)
   }
 }
-export default Platform
+export default Presets

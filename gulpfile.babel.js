@@ -1,5 +1,5 @@
 import gulp from 'gulp'
-import Platform from './src/platform'
+import Platform from './src/presets'
 import EsLint from './src/eslint'
 import RollupEs from './src/rollupEs'
 import RollupAmd from './src/rollupAmd'

@@ -10,20 +10,20 @@ import gulpif from 'gulp-if'
 
 export const Default = {
   debug: true,
-  platformType: 'stylesheets',
+  presetType: 'stylesheets',
   task: {
     name: 'sass'
   },
   watch: {
     glob: '**/*.scss',
     options: {
-      //cwd: ** resolved from platform **
+      //cwd: ** resolved from preset **
     }
   },
   source: {
     glob: ['*.scss', '!_*.scss'],
     options: {
-      //cwd: ** resolved from platform **
+      //cwd: ** resolved from preset **
     }
   },
   options: {
@@ -42,11 +42,11 @@ const Sass = class extends BaseRecipe {
   /**
    *
    * @param gulp - gulp instance
-   * @param platform - base platform configuration - either one from platform.js or a custom hash
+   * @param preset - base preset configuration - either one from presets.js or a custom hash
    * @param config - customized overrides for this recipe
    */
-  constructor(gulp, platform, config = {}) {
-    super(gulp, platform, extend(true, {}, Default, config))
+  constructor(gulp, preset, config = {}) {
+    super(gulp, preset, extend(true, {}, Default, config))
     this.browserSync = BrowserSync.create()
   }
 

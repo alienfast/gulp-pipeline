@@ -8,20 +8,20 @@ import gulpif from 'gulp-if'
 
 export const Default = {
   debug: true,
-  platformType: 'javascripts',
+  presetType: 'javascripts',
   task: {
     name: 'eslint'
   },
   watch: {
     glob: '**/*.js',
     options: {
-      //cwd: ** resolved from platform **
+      //cwd: ** resolved from preset **
     }
   },
   source: {
     glob: '**/*.js',
     options: {
-      //cwd: ** resolved from platform **
+      //cwd: ** resolved from preset **
     }
   },
   options: {}
@@ -32,11 +32,11 @@ const EsLint = class extends BaseRecipe {
   /**
    *
    * @param gulp - gulp instance
-   * @param platform - base platform configuration - either one from platform.js or a custom hash
+   * @param preset - base preset configuration - either one from presets.js or a custom hash
    * @param config - customized overrides for this recipe
    */
-  constructor(gulp, platform, config = {}) {
-    super(gulp, platform, extend(true, {}, Default, config))
+  constructor(gulp, preset, config = {}) {
+    super(gulp, preset, extend(true, {}, Default, config))
   }
 
   run(watching = false) {

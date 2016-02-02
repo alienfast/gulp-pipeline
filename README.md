@@ -13,15 +13,15 @@ import { ScssLint, Sass, RollupEs, RollupIife, TaskSequence } from 'gulp-pipelin
 import gulp from 'gulp'
 
 // Utilize one of the common configs
-let platform = Platform.nodeSrc() // other pre-configured platforms: nodeLib, rails - see platform.js and submit PRs with other common configs
+let preset = Presets.nodeSrc() // other pre-configured presets: nodeLib, rails - see presets.js and submit PRs with other common configs
 
 // instantiate ordered array of recipes (for each instantiation the tasks will be created e.g. sass and sass:watch)
 let recipes = [
   new ScssLint(gulp),
   new Sass(gulp),
-  new RollupEs(gulp, platform, {options: {dest: 'dist/acme.es.js'}}),                        // es
-  new RollupCjs(gulp, platform, {options: {dest: 'dist/acme.cjs.js'}}),                      // commonjs
-  new RollupIife(gulp, platform, {options: {dest: 'dist/acme.iife.js', moduleName: 'acme'}}) // iife self executing bundle for the browser
+  new RollupEs(gulp, preset, {options: {dest: 'dist/acme.es.js'}}),                        // es
+  new RollupCjs(gulp, preset, {options: {dest: 'dist/acme.cjs.js'}}),                      // commonjs
+  new RollupIife(gulp, preset, {options: {dest: 'dist/acme.iife.js', moduleName: 'acme'}}) // iife self executing bundle for the browser
 ]
 
 
@@ -61,10 +61,10 @@ Error handling is baked into the recipes and the `Base.notifyError()` sends mess
 Each recipe is an ES2015 class having configurable options that registers a task as well as a watch task if applicable.  These are simply common gulp build configurations.
 
 ### Common config
-Each recipe depends on a common configuration for the `source` and `watch` that can be fed directly to `gulp.src`, this is the `node-glob` format with options.  Even when interfacing with other libraries that don't use `gulp.src` directly (such as rollup), these recipes use a common config for ease of use and to enable generic platform definitions.
+Each recipe depends on a common configuration for the `source` and `watch` that can be fed directly to `gulp.src`, this is the `node-glob` format with options.  Even when interfacing with other libraries that don't use `gulp.src` directly (such as rollup), these recipes use a common config for ease of use and to enable generic preset definitions.
 
-### Platform definitions
-Common platform definitions are maintained in [platform.js](src/platform.js).  These are simply common configurations for different structures found in common stacks such as node, rails, etc.  Recipes will fallback on these for configurations such as the `node-glob` `cwd`.  One example would be the `cwd` for all javascript.
+### Presets definitions
+Common preset definitions are maintained in [presets.js](src/presets.js).  These are simply common configurations for different structures found in common stacks such as node, rails, etc.  Recipes will fallback on these for configurations such as the `node-glob` `cwd`.  One example would be the `cwd` for all javascript.
 
 ### Merged configurations
 Each recipe's ultimate configuration is merged with your overrides - this provides a great deal of flexibility since any configuration you provide will override the defaults.  This is all provided via the [`node-extend`](https://github.com/justmoon/node-extend#usage) library.  Familiarity with how this works should allow you to specify just about anything.

@@ -13,25 +13,25 @@ const BaseRecipe = class extends Base {
   /**
    *
    * @param gulp - gulp instance
-   * @param platform - base platform configuration - either one from platform.js or a custom hash
+   * @param preset - base preset configuration - either one from presets.js or a custom hash
    * @param config - customized overrides for this recipe
    */
-  constructor(gulp, platform, config) {
+  constructor(gulp, preset, config) {
 
-    if (!platform) {
-      throw new Error(`Platform must be specified.  Please use one from the platform.js or specify a custom platform configuration.`)
+    if (!preset) {
+      throw new Error(`Preset must be specified.  Please use one from the preset.js or specify a custom preset configuration.`)
     }
 
-    if (!config || !config.platformType) {
-      throw new Error(`'platformType' must be specified in the config (usually the Default config).  See platform.js for a list of types such as javascripts, stylesheets, etc.`)
+    if (!config || !config.presetType) {
+      throw new Error(`'presetType' must be specified in the config (usually the Default config).  See preset.js for a list of types such as javascripts, stylesheets, etc.`)
     }
 
-    let platformTypeConfig = platform[config.platformType]
-    if (!platformTypeConfig) {
-      throw new Error(`Unable to resolve configuration for platformType: ${config.platformType} from platform: ${stringify(platform)}`)
+    let presetTypeConfig = preset[config.presetType]
+    if (!presetTypeConfig) {
+      throw new Error(`Unable to resolve configuration for presetType: ${config.presetType} from preset: ${stringify(preset)}`)
     }
 
-    super(gulp, extend(true, {}, Default, platformTypeConfig, config))
+    super(gulp, extend(true, {}, Default, presetTypeConfig, config))
     this.registerTask()
     this.registerWatchTask()
   }

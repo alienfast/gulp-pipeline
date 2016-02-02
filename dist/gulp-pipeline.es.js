@@ -22,11 +22,6 @@ const Default$11 = {
   debug: false
 }
 
-/**
- * ----------------------------------------------
- * Class Definition
- * ----------------------------------------------
- */
 const Base = class {
 
   /**
@@ -86,13 +81,6 @@ ${error.message}`
   debugOptions() {
     return {title: `[${Util.colors.cyan('debug')}][${Util.colors.cyan(this.taskName())}]`}
   }
-
-  // ----------------------------------------------
-  // private
-
-  // ----------------------------------------------
-  // static
-
 }
 
 const Default$10 = {
@@ -100,35 +88,30 @@ const Default$10 = {
   debug: false
 }
 
-/**
- * ----------------------------------------------
- * Class Definition
- * ----------------------------------------------
- */
 const BaseRecipe = class extends Base {
 
   /**
    *
    * @param gulp - gulp instance
-   * @param platform - base platform configuration - either one from platform.js or a custom hash
+   * @param preset - base preset configuration - either one from presets.js or a custom hash
    * @param config - customized overrides for this recipe
    */
-  constructor(gulp, platform, config) {
+  constructor(gulp, preset, config) {
 
-    if (!platform) {
-      throw new Error(`Platform must be specified.  Please use one from the platform.js or specify a custom platform configuration.`)
+    if (!preset) {
+      throw new Error(`Preset must be specified.  Please use one from the preset.js or specify a custom preset configuration.`)
     }
 
-    if (!config || !config.platformType) {
-      throw new Error(`'platformType' must be specified in the config (usually the Default config).  See platform.js for a list of types such as javascripts, stylesheets, etc.`)
+    if (!config || !config.presetType) {
+      throw new Error(`'presetType' must be specified in the config (usually the Default config).  See preset.js for a list of types such as javascripts, stylesheets, etc.`)
     }
 
-    let platformTypeConfig = platform[config.platformType]
-    if (!platformTypeConfig) {
-      throw new Error(`Unable to resolve configuration for platformType: ${config.platformType} from platform: ${stringify(platform)}`)
+    let presetTypeConfig = preset[config.presetType]
+    if (!presetTypeConfig) {
+      throw new Error(`Unable to resolve configuration for presetType: ${config.presetType} from preset: ${stringify(preset)}`)
     }
 
-    super(gulp, extend(true, {}, Default$10, platformTypeConfig, config))
+    super(gulp, extend(true, {}, Default$10, presetTypeConfig, config))
     this.registerTask()
     this.registerWatchTask()
   }
@@ -148,7 +131,6 @@ const BaseRecipe = class extends Base {
       })
     }
   }
-
 
   registerTask() {
     if (this.config.task) {
@@ -173,16 +155,6 @@ const BaseRecipe = class extends Base {
       return `${this.taskName()}:watch`
     }
   }
-
-  // ----------------------------------------------
-  // protected
-
-  // ----------------------------------------------
-  // private
-
-  // ----------------------------------------------
-  // static
-
 }
 
 const AutoprefixerDefault = {
@@ -219,21 +191,16 @@ const AutoprefixerDefault = {
   }
 }
 
-/**
- * ----------------------------------------------
- * Class Definition
- * ----------------------------------------------
- */
 const Autoprefixer = class extends BaseRecipe {
 
   /**
    *
    * @param gulp - gulp instance
-   * @param platform - base platform configuration - either one from platform.js or a custom hash
+   * @param preset - base preset configuration - either one from presets.js or a custom hash
    * @param config - customized overrides for this recipe
    */
-  constructor(gulp, config = {}) {
-    super(gulp, extend(true, {}, AutoprefixerDefault, config))
+  constructor(gulp, preset, config = {}) {
+    super(gulp, preset, extend(true, {}, AutoprefixerDefault, config))
   }
 
   run(watching = false) {
@@ -246,54 +213,39 @@ const Autoprefixer = class extends BaseRecipe {
       })
       .pipe(this.gulp.dest(this.config.dest))
   }
-
-  // ----------------------------------------------
-  // protected
-
-  // ----------------------------------------------
-  // private
-
-  // ----------------------------------------------
-  // static
-
 }
 
 const Default = {
   debug: true,
-  platformType: 'javascripts',
+  presetType: 'javascripts',
   task: {
     name: 'eslint'
   },
   watch: {
     glob: '**/*.js',
     options: {
-      //cwd: ** resolved from platform **
+      //cwd: ** resolved from preset **
     }
   },
   source: {
     glob: '**/*.js',
     options: {
-      //cwd: ** resolved from platform **
+      //cwd: ** resolved from preset **
     }
   },
   options: {}
 }
 
-/**
- * ----------------------------------------------
- * Class Definition
- * ----------------------------------------------
- */
 const EsLint = class extends BaseRecipe {
 
   /**
    *
    * @param gulp - gulp instance
-   * @param platform - base platform configuration - either one from platform.js or a custom hash
+   * @param preset - base preset configuration - either one from presets.js or a custom hash
    * @param config - customized overrides for this recipe
    */
-  constructor(gulp, platform, config = {}) {
-    super(gulp, platform, extend(true, {}, Default, config))
+  constructor(gulp, preset, config = {}) {
+    super(gulp, preset, extend(true, {}, Default, config))
   }
 
   run(watching = false) {
@@ -311,55 +263,39 @@ const EsLint = class extends BaseRecipe {
 
     return bundle
   }
-
-  // ----------------------------------------------
-  // protected
-
-  // ----------------------------------------------
-  // private
-
-  // ----------------------------------------------
-  // static
-
 }
 
 const Default$1 = {
   debug: true,
-  platformType: 'images',
+  presetType: 'images',
   task: {
     name: 'images'
   },
   watch: {
     glob: '**',
     options: {
-      //cwd: ** resolved from platform **
+      //cwd: ** resolved from preset **
     }
   },
   source: {
     glob: '**',
     options: {
-      //cwd: ** resolved from platform **
+      //cwd: ** resolved from preset **
     }
   },
   options: {}
 }
 
-
-/**
- * ----------------------------------------------
- * Class Definition
- * ----------------------------------------------
- */
 const Images = class extends BaseRecipe {
 
   /**
    *
    * @param gulp - gulp instance
-   * @param platform - base platform configuration - either one from platform.js or a custom hash
+   * @param preset - base preset configuration - either one from presets.js or a custom hash
    * @param config - customized overrides for this recipe
    */
-  constructor(gulp, platform, config = {}) {
-    super(gulp, platform, extend(true, {}, Default$1, config))
+  constructor(gulp, preset, config = {}) {
+    super(gulp, preset, extend(true, {}, Default$1, config))
     this.browserSync = BrowserSync.create()
   }
 
@@ -378,20 +314,20 @@ const Images = class extends BaseRecipe {
 
 const Default$2 = {
   debug: true,
-  platformType: 'stylesheets',
+  presetType: 'stylesheets',
   task: {
     name: 'sass'
   },
   watch: {
     glob: '**/*.scss',
     options: {
-      //cwd: ** resolved from platform **
+      //cwd: ** resolved from preset **
     }
   },
   source: {
     glob: ['*.scss', '!_*.scss'],
     options: {
-      //cwd: ** resolved from platform **
+      //cwd: ** resolved from preset **
     }
   },
   options: {
@@ -405,22 +341,16 @@ const Default$2 = {
   }
 }
 
-
-/**
- * ----------------------------------------------
- * Class Definition
- * ----------------------------------------------
- */
 const Sass = class extends BaseRecipe {
 
   /**
    *
    * @param gulp - gulp instance
-   * @param platform - base platform configuration - either one from platform.js or a custom hash
+   * @param preset - base preset configuration - either one from presets.js or a custom hash
    * @param config - customized overrides for this recipe
    */
-  constructor(gulp, platform, config = {}) {
-    super(gulp, platform, extend(true, {}, Default$2, config))
+  constructor(gulp, preset, config = {}) {
+    super(gulp, preset, extend(true, {}, Default$2, config))
     this.browserSync = BrowserSync.create()
   }
 
@@ -438,34 +368,24 @@ const Sass = class extends BaseRecipe {
       .pipe(this.gulp.dest(this.config.dest))
       .pipe(this.browserSync.stream())
   }
-
-  // ----------------------------------------------
-  // protected
-
-  // ----------------------------------------------
-  // private
-
-  // ----------------------------------------------
-  // static
-
 }
 
 const Default$3 = {
   debug: true,
-  platformType: 'stylesheets',
+  presetType: 'stylesheets',
   task: {
     name: 'scsslint'
   },
   watch: {
     glob: '**/*.scss',
     options: {
-      //cwd: ** resolved from platform **
+      //cwd: ** resolved from preset **
     }
   },
   source: {
     glob: '**/*.scss',
     options: {
-      //cwd: ** resolved from platform **
+      //cwd: ** resolved from preset **
     }
   },
   options: {
@@ -473,21 +393,16 @@ const Default$3 = {
   }
 }
 
-/**
- * ----------------------------------------------
- * Class Definition
- * ----------------------------------------------
- */
 const ScssLint = class extends BaseRecipe {
 
   /**
    *
    * @param gulp - gulp instance
-   * @param platform - base platform configuration - either one from platform.js or a custom hash
+   * @param preset - base preset configuration - either one from presets.js or a custom hash
    * @param config - customized overrides for this recipe
    */
-  constructor(gulp, platform, config = {}) {
-    super(gulp, platform, extend(true, {}, Default$3, config))
+  constructor(gulp, preset, config = {}) {
+    super(gulp, preset, extend(true, {}, Default$3, config))
   }
 
   run(watching = false) {
@@ -504,11 +419,6 @@ const Default$4 = {
   watch: false
 }
 
-/**
- * ----------------------------------------------
- * Class Definition
- * ----------------------------------------------
- */
 const TaskSequence = class extends Base {
 
   /**
@@ -536,7 +446,7 @@ const TaskSequence = class extends Base {
 
 const Default$5 = {
   debug: true,
-  platformType: 'javascripts',
+  presetType: 'javascripts',
   task: {
     name: 'rollup:es'
   },
@@ -544,13 +454,13 @@ const Default$5 = {
   watch: {
     glob: '**/*.js',
     options: {
-      //cwd: ** resolved from platform **
+      //cwd: ** resolved from preset **
     }
   },
   source: {
     glob: 'index.js',
     options: {
-      //cwd: ** resolved from platform **
+      //cwd: ** resolved from preset **
     }
   },
 
@@ -564,21 +474,16 @@ const Default$5 = {
   }
 }
 
-/**
- * ----------------------------------------------
- * Class Definition
- * ----------------------------------------------
- */
 const RollupEs = class extends BaseRecipe {
 
   /**
    *
    * @param gulp - gulp instance
-   * @param platform - base platform configuration - either one from platform.js or a custom hash
+   * @param preset - base preset configuration - either one from presets.js or a custom hash
    * @param config - customized overrides for this recipe
    */
-  constructor(gulp, platform, config = {}) {
-    super(gulp, platform, extend(true, {}, Default$5, config))
+  constructor(gulp, preset, config = {}) {
+    super(gulp, preset, extend(true, {}, Default$5, config))
     //this.browserSync = BrowserSync.create()
   }
 
@@ -627,17 +532,6 @@ const RollupEs = class extends BaseRecipe {
         this.notifyError(error, watching)
       })
   }
-
-
-  // ----------------------------------------------
-  // protected
-
-  // ----------------------------------------------
-  // private
-
-  // ----------------------------------------------
-  // static
-
 }
 
 const Default$6 = {
@@ -664,11 +558,11 @@ const RollupCjs = class extends RollupEs {
   /**
    *
    * @param gulp - gulp instance
-   * @param platform - base platform configuration - either one from platform.js or a custom hash
+   * @param preset - base preset configuration - either one from presets.js or a custom hash
    * @param config - customized overrides for this recipe
    */
-  constructor(gulp, platform, config = {}) {
-    super(gulp, platform, extend(true, {}, Default$6, config))
+  constructor(gulp, preset, config = {}) {
+    super(gulp, preset, extend(true, {}, Default$6, config))
   }
 }
 
@@ -692,11 +586,11 @@ const RollupIife = class extends RollupCjs {
   /**
    *
    * @param gulp - gulp instance
-   * @param platform - base platform configuration - either one from platform.js or a custom hash
+   * @param preset - base preset configuration - either one from presets.js or a custom hash
    * @param config - customized overrides for this recipe
    */
-  constructor(gulp, platform, config = {}) {
-    super(gulp, platform, extend(true, {}, Default$7, config))
+  constructor(gulp, preset, config = {}) {
+    super(gulp, preset, extend(true, {}, Default$7, config))
   }
 }
 
@@ -720,11 +614,11 @@ const RollupAmd = class extends RollupCjs {
   /**
    *
    * @param gulp - gulp instance
-   * @param platform - base platform configuration - either one from platform.js or a custom hash
+   * @param preset - base preset configuration - either one from presets.js or a custom hash
    * @param config - customized overrides for this recipe
    */
-  constructor(gulp, platform, config = {}) {
-    super(gulp, platform, extend(true, {}, Default$8, config))
+  constructor(gulp, preset, config = {}) {
+    super(gulp, preset, extend(true, {}, Default$8, config))
   }
 }
 
@@ -748,11 +642,11 @@ const RollupUmd = class extends RollupCjs {
   /**
    *
    * @param gulp - gulp instance
-   * @param platform - base platform configuration - either one from platform.js or a custom hash
+   * @param preset - base preset configuration - either one from presets.js or a custom hash
    * @param config - customized overrides for this recipe
    */
-  constructor(gulp, platform, config = {}) {
-    super(gulp, platform, extend(true, {}, Default$9, config))
+  constructor(gulp, preset, config = {}) {
+    super(gulp, preset, extend(true, {}, Default$9, config))
   }
 }
 

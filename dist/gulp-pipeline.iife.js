@@ -76,11 +76,6 @@
     debug: false
   };
 
-  /**
-   * ----------------------------------------------
-   * Class Definition
-   * ----------------------------------------------
-   */
   var Base = function () {
 
     /**
@@ -146,13 +141,6 @@
       value: function debugOptions() {
         return { title: '[' + Util.colors.cyan('debug') + '][' + Util.colors.cyan(this.taskName()) + ']' };
       }
-
-      // ----------------------------------------------
-      // private
-
-      // ----------------------------------------------
-      // static
-
     }]);
     return Base;
   }();
@@ -162,38 +150,33 @@
     debug: false
   };
 
-  /**
-   * ----------------------------------------------
-   * Class Definition
-   * ----------------------------------------------
-   */
   var BaseRecipe = function (_Base) {
     babelHelpers.inherits(BaseRecipe, _Base);
 
     /**
      *
      * @param gulp - gulp instance
-     * @param platform - base platform configuration - either one from platform.js or a custom hash
+     * @param preset - base preset configuration - either one from presets.js or a custom hash
      * @param config - customized overrides for this recipe
      */
 
-    function BaseRecipe(gulp, platform, config) {
+    function BaseRecipe(gulp, preset, config) {
       babelHelpers.classCallCheck(this, BaseRecipe);
 
-      if (!platform) {
-        throw new Error('Platform must be specified.  Please use one from the platform.js or specify a custom platform configuration.');
+      if (!preset) {
+        throw new Error('Preset must be specified.  Please use one from the preset.js or specify a custom preset configuration.');
       }
 
-      if (!config || !config.platformType) {
-        throw new Error('\'platformType\' must be specified in the config (usually the Default config).  See platform.js for a list of types such as javascripts, stylesheets, etc.');
+      if (!config || !config.presetType) {
+        throw new Error('\'presetType\' must be specified in the config (usually the Default config).  See preset.js for a list of types such as javascripts, stylesheets, etc.');
       }
 
-      var platformTypeConfig = platform[config.platformType];
-      if (!platformTypeConfig) {
-        throw new Error('Unable to resolve configuration for platformType: ' + config.platformType + ' from platform: ' + stringify(platform));
+      var presetTypeConfig = preset[config.presetType];
+      if (!presetTypeConfig) {
+        throw new Error('Unable to resolve configuration for presetType: ' + config.presetType + ' from preset: ' + stringify(preset));
       }
 
-      var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(BaseRecipe).call(this, gulp, extend(true, {}, Default$10, platformTypeConfig, config)));
+      var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(BaseRecipe).call(this, gulp, extend(true, {}, Default$10, presetTypeConfig, config)));
 
       _this.registerTask();
       _this.registerWatchTask();
@@ -247,16 +230,6 @@
           return this.taskName() + ':watch';
         }
       }
-
-      // ----------------------------------------------
-      // protected
-
-      // ----------------------------------------------
-      // private
-
-      // ----------------------------------------------
-      // static
-
     }]);
     return BaseRecipe;
   }(Base);
@@ -290,25 +263,20 @@
     }
   };
 
-  /**
-   * ----------------------------------------------
-   * Class Definition
-   * ----------------------------------------------
-   */
   var Autoprefixer = function (_BaseRecipe) {
     babelHelpers.inherits(Autoprefixer, _BaseRecipe);
 
     /**
      *
      * @param gulp - gulp instance
-     * @param platform - base platform configuration - either one from platform.js or a custom hash
+     * @param preset - base preset configuration - either one from presets.js or a custom hash
      * @param config - customized overrides for this recipe
      */
 
-    function Autoprefixer(gulp) {
-      var config = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+    function Autoprefixer(gulp, preset) {
+      var config = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
       babelHelpers.classCallCheck(this, Autoprefixer);
-      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Autoprefixer).call(this, gulp, extend(true, {}, AutoprefixerDefault, config)));
+      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Autoprefixer).call(this, gulp, preset, extend(true, {}, AutoprefixerDefault, config)));
     }
 
     babelHelpers.createClass(Autoprefixer, [{
@@ -323,60 +291,45 @@
           _this2.notifyError(error, watching);
         }).pipe(this.gulp.dest(this.config.dest));
       }
-
-      // ----------------------------------------------
-      // protected
-
-      // ----------------------------------------------
-      // private
-
-      // ----------------------------------------------
-      // static
-
     }]);
     return Autoprefixer;
   }(BaseRecipe);
 
   var Default = {
     debug: true,
-    platformType: 'javascripts',
+    presetType: 'javascripts',
     task: {
       name: 'eslint'
     },
     watch: {
       glob: '**/*.js',
       options: {
-        //cwd: ** resolved from platform **
+        //cwd: ** resolved from preset **
       }
     },
     source: {
       glob: '**/*.js',
       options: {
-        //cwd: ** resolved from platform **
+        //cwd: ** resolved from preset **
       }
     },
     options: {}
   };
 
-  /**
-   * ----------------------------------------------
-   * Class Definition
-   * ----------------------------------------------
-   */
   var EsLint = function (_BaseRecipe) {
     babelHelpers.inherits(EsLint, _BaseRecipe);
 
     /**
      *
      * @param gulp - gulp instance
-     * @param platform - base platform configuration - either one from platform.js or a custom hash
+     * @param preset - base preset configuration - either one from presets.js or a custom hash
      * @param config - customized overrides for this recipe
      */
 
-    function EsLint(gulp, platform) {
+    function EsLint(gulp, preset) {
       var config = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
       babelHelpers.classCallCheck(this, EsLint);
-      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(EsLint).call(this, gulp, platform, extend(true, {}, Default, config)));
+      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(EsLint).call(this, gulp, preset, extend(true, {}, Default, config)));
     }
 
     babelHelpers.createClass(EsLint, [{
@@ -395,61 +348,46 @@
 
         return bundle;
       }
-
-      // ----------------------------------------------
-      // protected
-
-      // ----------------------------------------------
-      // private
-
-      // ----------------------------------------------
-      // static
-
     }]);
     return EsLint;
   }(BaseRecipe);
 
   var Default$1 = {
     debug: true,
-    platformType: 'images',
+    presetType: 'images',
     task: {
       name: 'images'
     },
     watch: {
       glob: '**',
       options: {
-        //cwd: ** resolved from platform **
+        //cwd: ** resolved from preset **
       }
     },
     source: {
       glob: '**',
       options: {
-        //cwd: ** resolved from platform **
+        //cwd: ** resolved from preset **
       }
     },
     options: {}
   };
 
-  /**
-   * ----------------------------------------------
-   * Class Definition
-   * ----------------------------------------------
-   */
   var Images = function (_BaseRecipe) {
     babelHelpers.inherits(Images, _BaseRecipe);
 
     /**
      *
      * @param gulp - gulp instance
-     * @param platform - base platform configuration - either one from platform.js or a custom hash
+     * @param preset - base preset configuration - either one from presets.js or a custom hash
      * @param config - customized overrides for this recipe
      */
 
-    function Images(gulp, platform) {
+    function Images(gulp, preset) {
       var config = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
       babelHelpers.classCallCheck(this, Images);
 
-      var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Images).call(this, gulp, platform, extend(true, {}, Default$1, config)));
+      var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Images).call(this, gulp, preset, extend(true, {}, Default$1, config)));
 
       _this.browserSync = BrowserSync.create();
       return _this;
@@ -473,20 +411,20 @@
 
   var Default$2 = {
     debug: true,
-    platformType: 'stylesheets',
+    presetType: 'stylesheets',
     task: {
       name: 'sass'
     },
     watch: {
       glob: '**/*.scss',
       options: {
-        //cwd: ** resolved from platform **
+        //cwd: ** resolved from preset **
       }
     },
     source: {
       glob: ['*.scss', '!_*.scss'],
       options: {
-        //cwd: ** resolved from platform **
+        //cwd: ** resolved from preset **
       }
     },
     options: {
@@ -500,26 +438,21 @@
     }
   };
 
-  /**
-   * ----------------------------------------------
-   * Class Definition
-   * ----------------------------------------------
-   */
   var Sass = function (_BaseRecipe) {
     babelHelpers.inherits(Sass, _BaseRecipe);
 
     /**
      *
      * @param gulp - gulp instance
-     * @param platform - base platform configuration - either one from platform.js or a custom hash
+     * @param preset - base preset configuration - either one from presets.js or a custom hash
      * @param config - customized overrides for this recipe
      */
 
-    function Sass(gulp, platform) {
+    function Sass(gulp, preset) {
       var config = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
       babelHelpers.classCallCheck(this, Sass);
 
-      var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Sass).call(this, gulp, platform, extend(true, {}, Default$2, config)));
+      var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Sass).call(this, gulp, preset, extend(true, {}, Default$2, config)));
 
       _this.browserSync = BrowserSync.create();
       return _this;
@@ -536,36 +469,26 @@
           _this2.notifyError(error, watching);
         }).pipe(autoprefixer(this.config.autoprefixer.options)).pipe(sourcemaps.write()).pipe(this.gulp.dest(this.config.dest)).pipe(this.browserSync.stream());
       }
-
-      // ----------------------------------------------
-      // protected
-
-      // ----------------------------------------------
-      // private
-
-      // ----------------------------------------------
-      // static
-
     }]);
     return Sass;
   }(BaseRecipe);
 
   var Default$3 = {
     debug: true,
-    platformType: 'stylesheets',
+    presetType: 'stylesheets',
     task: {
       name: 'scsslint'
     },
     watch: {
       glob: '**/*.scss',
       options: {
-        //cwd: ** resolved from platform **
+        //cwd: ** resolved from preset **
       }
     },
     source: {
       glob: '**/*.scss',
       options: {
-        //cwd: ** resolved from platform **
+        //cwd: ** resolved from preset **
       }
     },
     options: {
@@ -573,25 +496,20 @@
     }
   };
 
-  /**
-   * ----------------------------------------------
-   * Class Definition
-   * ----------------------------------------------
-   */
   var ScssLint = function (_BaseRecipe) {
     babelHelpers.inherits(ScssLint, _BaseRecipe);
 
     /**
      *
      * @param gulp - gulp instance
-     * @param platform - base platform configuration - either one from platform.js or a custom hash
+     * @param preset - base preset configuration - either one from presets.js or a custom hash
      * @param config - customized overrides for this recipe
      */
 
-    function ScssLint(gulp, platform) {
+    function ScssLint(gulp, preset) {
       var config = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
       babelHelpers.classCallCheck(this, ScssLint);
-      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(ScssLint).call(this, gulp, platform, extend(true, {}, Default$3, config)));
+      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(ScssLint).call(this, gulp, preset, extend(true, {}, Default$3, config)));
     }
 
     babelHelpers.createClass(ScssLint, [{
@@ -613,11 +531,6 @@
     watch: false
   };
 
-  /**
-   * ----------------------------------------------
-   * Class Definition
-   * ----------------------------------------------
-   */
   var TaskSequence = function (_Base) {
     babelHelpers.inherits(TaskSequence, _Base);
 
@@ -675,7 +588,7 @@
 
   var Default$5 = {
     debug: true,
-    platformType: 'javascripts',
+    presetType: 'javascripts',
     task: {
       name: 'rollup:es'
     },
@@ -683,13 +596,13 @@
     watch: {
       glob: '**/*.js',
       options: {
-        //cwd: ** resolved from platform **
+        //cwd: ** resolved from preset **
       }
     },
     source: {
       glob: 'index.js',
       options: {
-        //cwd: ** resolved from platform **
+        //cwd: ** resolved from preset **
       }
     },
 
@@ -703,25 +616,20 @@
     }
   };
 
-  /**
-   * ----------------------------------------------
-   * Class Definition
-   * ----------------------------------------------
-   */
   var RollupEs = function (_BaseRecipe) {
     babelHelpers.inherits(RollupEs, _BaseRecipe);
 
     /**
      *
      * @param gulp - gulp instance
-     * @param platform - base platform configuration - either one from platform.js or a custom hash
+     * @param preset - base preset configuration - either one from presets.js or a custom hash
      * @param config - customized overrides for this recipe
      */
 
-    function RollupEs(gulp, platform) {
+    function RollupEs(gulp, preset) {
       var config = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
       babelHelpers.classCallCheck(this, RollupEs);
-      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(RollupEs).call(this, gulp, platform, extend(true, {}, Default$5, config)));
+      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(RollupEs).call(this, gulp, preset, extend(true, {}, Default$5, config)));
       //this.browserSync = BrowserSync.create()
     }
 
@@ -774,16 +682,6 @@
           _this2.notifyError(error, watching);
         });
       }
-
-      // ----------------------------------------------
-      // protected
-
-      // ----------------------------------------------
-      // private
-
-      // ----------------------------------------------
-      // static
-
     }]);
     return RollupEs;
   }(BaseRecipe);
@@ -813,14 +711,14 @@
     /**
      *
      * @param gulp - gulp instance
-     * @param platform - base platform configuration - either one from platform.js or a custom hash
+     * @param preset - base preset configuration - either one from presets.js or a custom hash
      * @param config - customized overrides for this recipe
      */
 
-    function RollupCjs(gulp, platform) {
+    function RollupCjs(gulp, preset) {
       var config = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
       babelHelpers.classCallCheck(this, RollupCjs);
-      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(RollupCjs).call(this, gulp, platform, extend(true, {}, Default$6, config)));
+      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(RollupCjs).call(this, gulp, preset, extend(true, {}, Default$6, config)));
     }
 
     return RollupCjs;
@@ -847,14 +745,14 @@
     /**
      *
      * @param gulp - gulp instance
-     * @param platform - base platform configuration - either one from platform.js or a custom hash
+     * @param preset - base preset configuration - either one from presets.js or a custom hash
      * @param config - customized overrides for this recipe
      */
 
-    function RollupIife(gulp, platform) {
+    function RollupIife(gulp, preset) {
       var config = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
       babelHelpers.classCallCheck(this, RollupIife);
-      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(RollupIife).call(this, gulp, platform, extend(true, {}, Default$7, config)));
+      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(RollupIife).call(this, gulp, preset, extend(true, {}, Default$7, config)));
     }
 
     return RollupIife;
@@ -881,14 +779,14 @@
     /**
      *
      * @param gulp - gulp instance
-     * @param platform - base platform configuration - either one from platform.js or a custom hash
+     * @param preset - base preset configuration - either one from presets.js or a custom hash
      * @param config - customized overrides for this recipe
      */
 
-    function RollupAmd(gulp, platform) {
+    function RollupAmd(gulp, preset) {
       var config = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
       babelHelpers.classCallCheck(this, RollupAmd);
-      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(RollupAmd).call(this, gulp, platform, extend(true, {}, Default$8, config)));
+      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(RollupAmd).call(this, gulp, preset, extend(true, {}, Default$8, config)));
     }
 
     return RollupAmd;
@@ -915,14 +813,14 @@
     /**
      *
      * @param gulp - gulp instance
-     * @param platform - base platform configuration - either one from platform.js or a custom hash
+     * @param preset - base preset configuration - either one from presets.js or a custom hash
      * @param config - customized overrides for this recipe
      */
 
-    function RollupUmd(gulp, platform) {
+    function RollupUmd(gulp, preset) {
       var config = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
       babelHelpers.classCallCheck(this, RollupUmd);
-      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(RollupUmd).call(this, gulp, platform, extend(true, {}, Default$9, config)));
+      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(RollupUmd).call(this, gulp, preset, extend(true, {}, Default$9, config)));
     }
 
     return RollupUmd;

@@ -45,22 +45,14 @@ const ScssLint = class extends BaseRecipe {
     super(gulp, platform, extend(true, {}, Default, config))
   }
 
-  run() {
+  run(watching = false) {
     return this.gulp.src(this.config.source.glob, this.config.source.options)
       .pipe(gulpif(this.config.debug, debug(this.debugOptions())))
       .pipe(scssLint(this.config.options))
-
+      .on('error', (error) => {
+        this.notifyError(error, watching)
+      })
   }
-
-  // ----------------------------------------------
-  // protected
-
-  // ----------------------------------------------
-  // private
-
-  // ----------------------------------------------
-  // static
-
 }
 
 export default ScssLint

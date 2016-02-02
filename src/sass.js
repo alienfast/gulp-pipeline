@@ -57,21 +57,19 @@ const Sass = class extends BaseRecipe {
     this.browserSync = BrowserSync.create()
   }
 
-  run() {
-    let bundle = this.gulp.src(this.config.source.glob, this.config.source.options)
+  run(watching = false) {
+    return this.gulp.src(this.config.source.glob, this.config.source.options)
 
       .pipe(gulpif(this.config.debug, debug(this.debugOptions())))
       .pipe(sourcemaps.init())
       .pipe(sass(this.config.options))
       .on('error', (error) => {
-        this.notifyError(error)
+        this.notifyError(error, watching)
       })
       .pipe(autoprefixer(this.config.autoprefixer.options))
       .pipe(sourcemaps.write())
       .pipe(this.gulp.dest(this.config.dest))
       .pipe(this.browserSync.stream())
-
-    return bundle
   }
 
   // ----------------------------------------------

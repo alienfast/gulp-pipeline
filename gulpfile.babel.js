@@ -1,5 +1,6 @@
 import gulp from 'gulp'
 import Platform from './src/platform'
+import EsLint from './src/eslint'
 import RollupEs from './src/rollupEs'
 import RollupAmd from './src/rollupAmd'
 import RollupCjs from './src/rollupCjs'
@@ -17,6 +18,7 @@ let platform = Platform.nodeSrc()
 
 // instantiate ordered array of recipes (for each instantiation the tasks will be created e.g. rollup:es and rollup:es:watch)
 let recipes = [
+  new EsLint(gulp, platform),
   new RollupEs(gulp, platform, {options: {dest: 'dist/gulp-pipeline.es.js'}}),
   new RollupAmd(gulp, platform, {options: {dest: 'dist/gulp-pipeline.amd.js'}}),
   new RollupCjs(gulp, platform, {options: {dest: 'dist/gulp-pipeline.cjs.js'}}),

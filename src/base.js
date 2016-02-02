@@ -38,7 +38,7 @@ const Base = class {
     }
   }
 
-  notifyError(error) {
+  notifyError(error, watching = false) {
     let lineNumber = (error.lineNumber) ? `Line ${error.lineNumber} -- ` : ''
 
     notify({
@@ -64,7 +64,9 @@ ${error.message}`
     this.log(report)
 
     // Prevent the 'watch' task from stopping
-    this.gulp.emit('end')
+    if(!watching) {
+      this.gulp.emit('end')
+    }
   }
 
   debugOptions() {

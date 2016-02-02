@@ -73,12 +73,12 @@ const RollupEs = class extends BaseRecipe {
     return entry[0]
   }
 
-  run() {
+  run(watching = false) {
     let options = extend(true, {
         entry: this.resolveEntry(),
-        //onwarn: (message) => this.onwarn(message)
         onwarn: (message) => {
-          console.error(message)
+          //this.notifyError(message, watching)
+          this.log(message)
         }
       },
       this.config.options)
@@ -95,7 +95,7 @@ const RollupEs = class extends BaseRecipe {
       })
       .catch((error) => {
         error.plugin = 'rollup'
-        this.notifyError(error)
+        this.notifyError(error, watching)
       })
   }
 

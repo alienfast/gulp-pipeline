@@ -34,17 +34,6 @@ const TaskSequence = class extends Base {
     this.debug(`Registering task: ${Util.colors.green(taskName)}`)
     this.gulp.task(taskName, tasks)
   }
-
-
-  // ----------------------------------------------
-  // protected
-
-  // ----------------------------------------------
-  // private
-
-  // ----------------------------------------------
-  // static
-
 }
 
 export default TaskSequence

@@ -23,37 +23,49 @@ const BaseRecipe = class extends Base {
    */
   constructor(gulp, platform, config) {
 
-    if(!platform){
+    if (!platform) {
       throw new Error(`Platform must be specified.  Please use one from the platform.js or specify a custom platform configuration.`)
     }
 
-    if(!config || !config.platformType){
+    if (!config || !config.platformType) {
       console.log(`${stringify(config)}`)
       throw new Error(`'platformType' must be specified in the config (usually the Default config).  See platform.js for a list of types such as javascripts, stylesheets, etc.`)
     }
 
     let platformTypeConfig = platform[config.platformType]
-    if(!platformTypeConfig){
+    if (!platformTypeConfig) {
       throw new Error(`Unable to resolve configuration for platformType: ${config.platformType} from platform: ${stringify(platform)}`)
     }
 
     super(gulp, extend(true, {}, Default, platformTypeConfig, config))
+    this.registerTask()
+    this.registerWatchTask()
+  }
 
+  registerWatchTask() {
+    if (this.config.watch) {
+      // generate watch task e.g. sass:watch
+      let name = this.watchTaskName()
+      this.debug(`Registering task: ${Util.colors.green(name)}`)
+      this.gulp.task(name, () => {
+        //this.gulp.watch(this.config.source.glob, this.config.source.options, [this.taskName()])
+
+        this.gulp.watch(this.config.source.glob, this.config.source.options, (event) => {
+          this.log(`File ${event.path} was ${event.type}, running ${this.taskName()}...`);
+          this.run(true)
+        })
+      })
+    }
+  }
+
+
+  registerTask() {
     if (this.config.task) {
       // generate primary task e.g. sass
       let name = this.taskName()
       this.debug(`Registering task: ${Util.colors.green(name)}`)
       this.gulp.task(name, () => {
         this.run()
-      })
-    }
-
-    if (this.config.watch) {
-      // generate watch task e.g. sass:watch
-      let name = this.watchTaskName()
-      this.debug(`Registering task: ${Util.colors.green(name)}`)
-      this.gulp.task(name, () => {
-        this.watch()
       })
     }
   }
@@ -71,16 +83,9 @@ const BaseRecipe = class extends Base {
     }
   }
 
-  watch() {
-    this.gulp.watch(this.config.source.glob, this.config.source.options, [this.taskName()])
-  }
-
   // ----------------------------------------------
   // protected
 
-  conditionalDebug(){
-
-  }
   // ----------------------------------------------
   // private
 

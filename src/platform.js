@@ -6,21 +6,33 @@ import extend from 'extend'
 const Rails = {
   javascripts: {
     source: {options: {cwd: './app/assets/javascripts'}},
-    watch: {options: {cwd: './app/assets/javascripts'}}
+    watch: {options: {cwd: './app/assets/javascripts'}},
+    dest: './public/javascripts'
   },
   stylesheets: {
     source: {options: {cwd: './app/assets/stylesheets'}},
     watch: {options: {cwd: './app/assets/stylesheets'}},
     dest: './public/stylesheets'
+  },
+  images: {
+    source: {options: {cwd: './app/assets/images'}},
+    watch: {options: {cwd: './app/assets/images'}},
+    dest: './public/images'
   }
 }
 
 const NodeLib = {
   javascripts: {
     source: {options: {cwd: './lib'}},
-    watch: {options: {cwd: './lib'}}
+    watch: {options: {cwd: './lib'}},
+    dest: './dist'
   },
   stylesheets: {
+    source: {options: {cwd: './lib'}},
+    watch: {options: {cwd: './lib'}},
+    dest: './dist'
+  },
+  images: {
     source: {options: {cwd: './lib'}},
     watch: {options: {cwd: './lib'}},
     dest: './dist'
@@ -30,11 +42,17 @@ const NodeLib = {
 const NodeSrc = {
   javascripts: {
     source: {options: {cwd: './src'}},
-    watch: {options: {cwd: './src'}}
+    watch: {options: {cwd: './src'}},
+    dest: './dist'
   },
   stylesheets: {
     source: {options: {cwd: './src'}},
     watch: {options: {cwd: './src'}},
+    dest: './dist'
+  },
+  images: {
+    source: {options: {cwd: './lib'}},
+    watch: {options: {cwd: './lib'}},
     dest: './dist'
   }
 }

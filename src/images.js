@@ -2,7 +2,6 @@ import BaseRecipe from './baseRecipe'
 import BrowserSync from 'browser-sync'
 import debug from 'gulp-debug'
 import extend from 'extend'
-import Util from 'gulp-util'
 import gulpif from 'gulp-if'
 import changed    from 'gulp-changed'
 import imagemin   from 'gulp-imagemin'
@@ -62,4 +61,3 @@ const Images = class extends BaseRecipe {
 }
 
 export default Images
-

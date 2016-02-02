@@ -2,7 +2,7 @@ import Base from './base'
 import extend from 'extend'
 import Util from 'gulp-util'
 
-export const Default = {
+const Default = {
   watch: false
 }
 

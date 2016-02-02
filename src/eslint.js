@@ -4,7 +4,6 @@ import extend from 'extend'
 //import jscs from 'gulp-jscs'
 //import stylish from 'gulp-jscs-stylish'
 import debug from 'gulp-debug'
-import glob from 'glob'
 import gulpif from 'gulp-if'
 
 export const Default = {

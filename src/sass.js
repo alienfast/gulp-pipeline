@@ -6,7 +6,6 @@ import debug from 'gulp-debug'
 import extend from 'extend'
 import sass from 'gulp-sass'
 import sourcemaps from 'gulp-sourcemaps'
-import Util from 'gulp-util'
 import gulpif from 'gulp-if'
 
 export const Default = {

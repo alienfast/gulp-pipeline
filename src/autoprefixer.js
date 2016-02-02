@@ -2,6 +2,7 @@ import BaseRecipe from './baseRecipe'
 import autoprefixer from 'gulp-autoprefixer'
 import extend from 'extend'
 import gulpif from 'gulp-if'
+import debug from 'gulp-debug'
 
 export const Default = {
   options: {  // from bootstrap
@@ -59,6 +60,9 @@ const Autoprefixer = class extends BaseRecipe {
     return this.gulp.src(this.config.source)
       .pipe(gulpif(this.config.debug, debug(this.debugOptions())))
       .pipe(autoprefixer(this.config.options))
+      .on('error', (error) => {
+        this.notifyError(error, watching)
+      })
       .pipe(this.gulp.dest(this.config.dest))
   }
 

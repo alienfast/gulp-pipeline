@@ -1,10 +1,11 @@
 {
   "root": true,
-//  "parser": "babel-eslint",
+  "parser": "babel-eslint",
   "extends": "eslint:recommended",
+//  "ecmaFeatures": { "modules": true },
   "env": {
-    "browser": true,
-    "jquery": true
+    "browser": false,
+    "jquery": false
   }
 //,
 //  "rules": {

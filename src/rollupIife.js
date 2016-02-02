@@ -7,7 +7,7 @@ export const Default = {
   },
   options: {
     //dest: '', // required
-    format: 'iife',
+    format: 'iife'
   }
 }
 

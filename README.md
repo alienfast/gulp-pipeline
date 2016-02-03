@@ -18,7 +18,7 @@ let preset = Presets.nodeSrc() // other pre-configured presets: nodeLib, rails -
 // Instantiate ordered array of recipes (for each instantiation the tasks will be created e.g. sass and sass:watch)
 //  Note: these are run by the run-sequence, allowing series and parallel execution 
 let recipes = [
-  new Clean(gulp, platform),
+  new Clean(gulp, preset),
   [
     new EsLint(gulp),
     new ScssLint(gulp),

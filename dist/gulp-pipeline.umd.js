@@ -1,8 +1,8 @@
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('gulp-autoprefixer'), require('extend'), require('gulp-if'), require('gulp-debug'), require('gulp-eslint'), require('browser-sync'), require('gulp-changed'), require('gulp-imagemin'), require('gulp-sass'), require('gulp-sourcemaps'), require('gulp-scss-lint'), require('gulp-scss-lint-stylish'), require('gulp-util'), require('rollup'), require('glob'), require('stringify-object'), require('rollup-plugin-babel'), require('gulp-notify')) :
-  typeof define === 'function' && define.amd ? define(['exports', 'gulp-autoprefixer', 'extend', 'gulp-if', 'gulp-debug', 'gulp-eslint', 'browser-sync', 'gulp-changed', 'gulp-imagemin', 'gulp-sass', 'gulp-sourcemaps', 'gulp-scss-lint', 'gulp-scss-lint-stylish', 'gulp-util', 'rollup', 'glob', 'stringify-object', 'rollup-plugin-babel', 'gulp-notify'], factory) :
-  (factory((global.gulpPipeline = {}),global.autoprefixer,global.extend,global.gulpif,global.debug,global.eslint,global.BrowserSync,global.changed,global.imagemin,global.sass,global.sourcemaps,global.scssLint,global.scssLintStylish,global.Util,global.rollup,global.glob,global.stringify,global.babel,global.notify));
-}(this, function (exports,autoprefixer,extend,gulpif,debug,eslint,BrowserSync,changed,imagemin,sass,sourcemaps,scssLint,scssLintStylish,Util,rollup,glob,stringify,babel,notify) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('gulp-autoprefixer'), require('extend'), require('gulp-if'), require('gulp-debug'), require('gulp-eslint'), require('browser-sync'), require('gulp-changed'), require('gulp-imagemin'), require('gulp-sass'), require('gulp-sourcemaps'), require('gulp-scss-lint'), require('gulp-scss-lint-stylish'), require('gulp-util'), require('stringify-object'), require('run-sequence'), require('rollup'), require('glob'), require('rollup-plugin-babel'), require('gulp-notify'), require('del')) :
+  typeof define === 'function' && define.amd ? define(['exports', 'gulp-autoprefixer', 'extend', 'gulp-if', 'gulp-debug', 'gulp-eslint', 'browser-sync', 'gulp-changed', 'gulp-imagemin', 'gulp-sass', 'gulp-sourcemaps', 'gulp-scss-lint', 'gulp-scss-lint-stylish', 'gulp-util', 'stringify-object', 'run-sequence', 'rollup', 'glob', 'rollup-plugin-babel', 'gulp-notify', 'del'], factory) :
+  (factory((global.gulpPipeline = {}),global.autoprefixer,global.extend,global.gulpif,global.debug,global.eslint,global.BrowserSync,global.changed,global.imagemin,global.sass,global.sourcemaps,global.scssLint,global.scssLintStylish,global.Util,global.stringify,global.runSequence,global.rollup,global.glob,global.babel,global.notify,global.del));
+}(this, function (exports,autoprefixer,extend,gulpif,debug,eslint,BrowserSync,changed,imagemin,sass,sourcemaps,scssLint,scssLintStylish,Util,stringify,runSequence,rollup,glob,babel,notify,del) { 'use strict';
 
   autoprefixer = 'default' in autoprefixer ? autoprefixer['default'] : autoprefixer;
   extend = 'default' in extend ? extend['default'] : extend;
@@ -17,10 +17,12 @@
   scssLint = 'default' in scssLint ? scssLint['default'] : scssLint;
   scssLintStylish = 'default' in scssLintStylish ? scssLintStylish['default'] : scssLintStylish;
   Util = 'default' in Util ? Util['default'] : Util;
-  glob = 'default' in glob ? glob['default'] : glob;
   stringify = 'default' in stringify ? stringify['default'] : stringify;
+  runSequence = 'default' in runSequence ? runSequence['default'] : runSequence;
+  glob = 'default' in glob ? glob['default'] : glob;
   babel = 'default' in babel ? babel['default'] : babel;
   notify = 'default' in notify ? notify['default'] : notify;
+  del = 'default' in del ? del['default'] : del;
 
   var babelHelpers = {};
 
@@ -74,7 +76,7 @@
 
   babelHelpers;
 
-  var Default$11 = {
+  var Default$15 = {
     watch: true,
     debug: false
   };
@@ -91,7 +93,7 @@
       babelHelpers.classCallCheck(this, Base);
 
       this.gulp = gulp;
-      this.config = extend(true, {}, Default$11, config);
+      this.config = extend(true, {}, Default$15, config);
       this.debug('[' + this.constructor.name + '] using resolved config: ' + stringify(this.config));
     }
 
@@ -109,6 +111,11 @@
         if (this.config.debug) {
           this.log('[' + Util.colors.cyan('debug') + '] ' + msg);
         }
+      }
+    }, {
+      key: 'debugDump',
+      value: function debugDump(msg, obj) {
+        this.debug(msg + ':\n' + stringify(obj));
       }
     }, {
       key: 'notifyError',
@@ -148,7 +155,7 @@
     return Base;
   }();
 
-  var Default$10 = {
+  var Default$14 = {
     watch: true,
     debug: false
   };
@@ -174,12 +181,17 @@
         throw new Error('\'presetType\' must be specified in the config (usually the Default config).  See preset.js for a list of types such as javascripts, stylesheets, etc.');
       }
 
-      var presetTypeConfig = preset[config.presetType];
-      if (!presetTypeConfig) {
-        throw new Error('Unable to resolve configuration for presetType: ' + config.presetType + ' from preset: ' + stringify(preset));
+      var presetTypeConfig = null;
+      if (config.presetType !== 'macro') {
+        presetTypeConfig = preset[config.presetType];
+        if (!presetTypeConfig) {
+          throw new Error('Unable to resolve configuration for presetType: ' + config.presetType + ' from preset: ' + stringify(preset));
+        }
+      } else {
+        presetTypeConfig = {};
       }
 
-      var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(BaseRecipe).call(this, gulp, extend(true, {}, Default$10, presetTypeConfig, config)));
+      var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(BaseRecipe).call(this, gulp, extend(true, {}, Default$14, presetTypeConfig, config)));
 
       _this.registerTask();
       _this.registerWatchTask();
@@ -215,6 +227,7 @@
           var name = this.taskName();
           this.debug('Registering task: ' + Util.colors.green(name));
           this.gulp.task(name, function () {
+            //this.log(`Running task: ${Util.colors.green(name)}`)
             _this3.run();
           });
         }
@@ -299,7 +312,7 @@
   }(BaseRecipe);
 
   var Default = {
-    debug: true,
+    debug: false,
     presetType: 'javascripts',
     task: {
       name: 'eslint'
@@ -356,7 +369,7 @@
   }(BaseRecipe);
 
   var Default$1 = {
-    debug: true,
+    debug: false,
     presetType: 'images',
     task: {
       name: 'images'
@@ -413,7 +426,7 @@
   }(BaseRecipe);
 
   var Default$2 = {
-    debug: true,
+    debug: false,
     presetType: 'stylesheets',
     task: {
       name: 'sass'
@@ -477,7 +490,7 @@
   }(BaseRecipe);
 
   var Default$3 = {
-    debug: true,
+    debug: false,
     presetType: 'stylesheets',
     task: {
       name: 'scsslint'
@@ -531,11 +544,12 @@
   }(BaseRecipe);
 
   var Default$4 = {
+    debug: false,
     watch: false
   };
 
-  var TaskSequence = function (_Base) {
-    babelHelpers.inherits(TaskSequence, _Base);
+  var TaskSeries = function (_Base) {
+    babelHelpers.inherits(TaskSeries, _Base);
 
     /**
      *
@@ -543,54 +557,72 @@
      * @param config - customized overrides
      */
 
-    function TaskSequence(gulp, taskName, recipes) {
+    function TaskSeries(gulp, taskName, recipes) {
       var config = arguments.length <= 3 || arguments[3] === undefined ? {} : arguments[3];
-      babelHelpers.classCallCheck(this, TaskSequence);
+      babelHelpers.classCallCheck(this, TaskSeries);
 
       // generate the task sequence
 
-      var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(TaskSequence).call(this, gulp, extend(true, {}, Default$4, config)));
+      var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(TaskSeries).call(this, gulp, extend(true, {}, Default$4, config)));
 
       var tasks = [];
-      var _iteratorNormalCompletion = true;
-      var _didIteratorError = false;
-      var _iteratorError = undefined;
+      _this.toTaskNames(recipes, tasks);
 
-      try {
-        for (var _iterator = recipes[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-          var recipe = _step.value;
-
-          if (_this.config.watch) {
-            tasks.push(recipe.watchTaskName());
-          } else {
-            tasks.push(recipe.taskName());
-          }
-        }
-      } catch (err) {
-        _didIteratorError = true;
-        _iteratorError = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion && _iterator.return) {
-            _iterator.return();
-          }
-        } finally {
-          if (_didIteratorError) {
-            throw _iteratorError;
-          }
-        }
-      }
-
-      _this.debug('Registering task: ' + Util.colors.green(taskName));
-      _this.gulp.task(taskName, tasks);
+      _this.debug('Registering task: ' + Util.colors.green(taskName) + ' for ' + stringify(tasks));
+      _this.gulp.task(taskName, function () {
+        //this.log(`Running task: ${Util.colors.green(taskName)}`)
+        runSequence.apply(undefined, tasks);
+      });
       return _this;
     }
 
-    return TaskSequence;
+    babelHelpers.createClass(TaskSeries, [{
+      key: 'toTaskNames',
+      value: function toTaskNames(recipes, tasks) {
+        var _iteratorNormalCompletion = true;
+        var _didIteratorError = false;
+        var _iteratorError = undefined;
+
+        try {
+          for (var _iterator = recipes[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+            var recipe = _step.value;
+
+            if (Array.isArray(recipe)) {
+              var series = [];
+              this.toTaskNames(recipe, series);
+              tasks.push(series);
+            } else {
+              if (this.config.watch) {
+                // if the series is a 'watch', only add 'watch' enabled recipes
+                if (recipe.config.watch) {
+                  tasks.push(recipe.watchTaskName());
+                }
+              } else {
+                tasks.push(recipe.taskName());
+              }
+            }
+          }
+        } catch (err) {
+          _didIteratorError = true;
+          _iteratorError = err;
+        } finally {
+          try {
+            if (!_iteratorNormalCompletion && _iterator.return) {
+              _iterator.return();
+            }
+          } finally {
+            if (_didIteratorError) {
+              throw _iteratorError;
+            }
+          }
+        }
+      }
+    }]);
+    return TaskSeries;
   }(Base);
 
   var Default$5 = {
-    debug: true,
+    debug: false,
     presetType: 'javascripts',
     task: {
       name: 'rollup:es'
@@ -829,17 +861,216 @@
     return RollupUmd;
   }(RollupCjs);
 
+  var Default$16 = {
+    debug: false,
+    watch: false,
+    sync: true // necessary so that tasks can be run in a series, can be overriden for other purposes
+  };
+
+  var BaseClean = function (_BaseRecipe) {
+    babelHelpers.inherits(BaseClean, _BaseRecipe);
+
+    /**
+     *
+     * @param gulp - gulp instance
+     * @param preset - base preset configuration - either one from presets.js or a custom hash
+     * @param config - customized overrides for this recipe
+     */
+
+    function BaseClean(gulp, preset) {
+      var config = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
+      babelHelpers.classCallCheck(this, BaseClean);
+      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(BaseClean).call(this, gulp, preset, extend(true, {}, Default$16, config)));
+    }
+
+    babelHelpers.createClass(BaseClean, [{
+      key: 'run',
+      value: function run() {
+        var _this2 = this;
+
+        var watching = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
+
+        if (this.config.sync) {
+          var paths = del.sync(this.config.dest);
+          this.logDeleted(paths);
+        } else {
+          return del(this.config.dest).then(function (paths) {
+            _this2.logDeleted(paths);
+          }).catch(function (error) {
+            error.plugin = 'del';
+            _this2.notifyError(error, watching);
+          });
+        }
+      }
+    }, {
+      key: 'logDeleted',
+      value: function logDeleted(paths) {
+        if (paths.length > 0) {
+          this.log('Deleted files and folders:');
+          var _iteratorNormalCompletion = true;
+          var _didIteratorError = false;
+          var _iteratorError = undefined;
+
+          try {
+            for (var _iterator = paths[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+              var path = _step.value;
+
+              this.log('    ' + path);
+            }
+          } catch (err) {
+            _didIteratorError = true;
+            _iteratorError = err;
+          } finally {
+            try {
+              if (!_iteratorNormalCompletion && _iterator.return) {
+                _iterator.return();
+              }
+            } finally {
+              if (_didIteratorError) {
+                throw _iteratorError;
+              }
+            }
+          }
+        }
+      }
+    }]);
+    return BaseClean;
+  }(BaseRecipe);
+
+  var Default$10 = {
+    presetType: 'images',
+    task: {
+      name: 'clean:images'
+    }
+  };
+
+  var CleanImages = function (_BaseClean) {
+    babelHelpers.inherits(CleanImages, _BaseClean);
+
+    /**
+     *
+     * @param gulp - gulp instance
+     * @param preset - base preset configuration - either one from presets.js or a custom hash
+     * @param config - customized overrides for this recipe
+     */
+
+    function CleanImages(gulp, preset) {
+      var config = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
+      babelHelpers.classCallCheck(this, CleanImages);
+      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(CleanImages).call(this, gulp, preset, extend(true, {}, Default$10, config)));
+    }
+
+    return CleanImages;
+  }(BaseClean);
+
+  var Default$11 = {
+    presetType: 'stylesheets',
+    task: {
+      name: 'clean:stylesheets'
+    }
+  };
+
+  var CleanStylesheets = function (_BaseClean) {
+    babelHelpers.inherits(CleanStylesheets, _BaseClean);
+
+    /**
+     *
+     * @param gulp - gulp instance
+     * @param preset - base preset configuration - either one from presets.js or a custom hash
+     * @param config - customized overrides for this recipe
+     */
+
+    function CleanStylesheets(gulp, preset) {
+      var config = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
+      babelHelpers.classCallCheck(this, CleanStylesheets);
+      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(CleanStylesheets).call(this, gulp, preset, extend(true, {}, Default$11, config)));
+    }
+
+    return CleanStylesheets;
+  }(BaseClean);
+
+  var Default$12 = {
+    presetType: 'javascripts',
+    task: {
+      name: 'clean:javascripts'
+    }
+  };
+
+  var CleanJavascripts = function (_BaseClean) {
+    babelHelpers.inherits(CleanJavascripts, _BaseClean);
+
+    /**
+     *
+     * @param gulp - gulp instance
+     * @param preset - base preset configuration - either one from presets.js or a custom hash
+     * @param config - customized overrides for this recipe
+     */
+
+    function CleanJavascripts(gulp, preset) {
+      var config = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
+      babelHelpers.classCallCheck(this, CleanJavascripts);
+      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(CleanJavascripts).call(this, gulp, preset, extend(true, {}, Default$12, config)));
+    }
+
+    return CleanJavascripts;
+  }(BaseClean);
+
+  var Default$13 = {
+    debug: false,
+    watch: false,
+    presetType: 'macro',
+    task: {
+      name: 'clean'
+    }
+  };
+
+  var Clean = function (_BaseRecipe) {
+    babelHelpers.inherits(Clean, _BaseRecipe);
+
+    /**
+     *
+     * @param gulp - gulp instance
+     * @param config - customized overrides
+     */
+
+    function Clean(gulp, preset) {
+      var config = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
+      babelHelpers.classCallCheck(this, Clean);
+
+      var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Clean).call(this, gulp, preset, extend(true, {}, Default$13, config)));
+
+      _this.cleanImages = new CleanImages(gulp, preset);
+      _this.cleanStylesheets = new CleanStylesheets(gulp, preset);
+      _this.cleanJavascripts = new CleanJavascripts(gulp, preset);
+      return _this;
+    }
+
+    babelHelpers.createClass(Clean, [{
+      key: 'run',
+      value: function run() {
+        this.cleanImages.run();
+        this.cleanStylesheets.run();
+        this.cleanJavascripts.run();
+      }
+    }]);
+    return Clean;
+  }(BaseRecipe);
+
   exports.Autoprefixer = Autoprefixer;
   exports.EsLint = EsLint;
   exports.Images = Images;
   exports.Sass = Sass;
   exports.ScssLint = ScssLint;
-  exports.TaskSequence = TaskSequence;
+  exports.TaskSeries = TaskSeries;
   exports.RollupEs = RollupEs;
   exports.RollupCjs = RollupCjs;
   exports.RollupIife = RollupIife;
   exports.RollupAmd = RollupAmd;
   exports.RollupUmd = RollupUmd;
+  exports.CleanImages = CleanImages;
+  exports.CleanStylesheets = CleanStylesheets;
+  exports.CleanJavascripts = CleanJavascripts;
+  exports.Clean = Clean;
 
 }));
 //# sourceMappingURL=gulp-pipeline.umd.js.map

@@ -11,13 +11,15 @@ import sourcemaps from 'gulp-sourcemaps';
 import scssLint from 'gulp-scss-lint';
 import scssLintStylish from 'gulp-scss-lint-stylish';
 import Util from 'gulp-util';
+import stringify from 'stringify-object';
+import runSequence from 'run-sequence';
 import { rollup } from 'rollup';
 import glob from 'glob';
-import stringify from 'stringify-object';
 import babel from 'rollup-plugin-babel';
 import notify from 'gulp-notify';
+import del from 'del';
 
-const Default$11 = {
+const Default$15 = {
   watch: true,
   debug: false
 }
@@ -31,7 +33,7 @@ const Base = class {
    */
   constructor(gulp, config) {
     this.gulp = gulp
-    this.config = extend(true, {}, Default$11, config)
+    this.config = extend(true, {}, Default$15, config)
     this.debug(`[${this.constructor.name}] using resolved config: ${stringify(this.config)}`)
   }
 
@@ -45,6 +47,10 @@ const Base = class {
     if (this.config.debug) {
       this.log(`[${Util.colors.cyan('debug')}] ${msg}`)
     }
+  }
+
+  debugDump(msg, obj){
+    this.debug(`${msg}:\n${stringify(obj)}`)
   }
 
   notifyError(error, watching = false) {
@@ -83,7 +89,7 @@ ${error.message}`
   }
 }
 
-const Default$10 = {
+const Default$14 = {
   watch: true,
   debug: false
 }
@@ -106,12 +112,18 @@ const BaseRecipe = class extends Base {
       throw new Error(`'presetType' must be specified in the config (usually the Default config).  See preset.js for a list of types such as javascripts, stylesheets, etc.`)
     }
 
-    let presetTypeConfig = preset[config.presetType]
-    if (!presetTypeConfig) {
-      throw new Error(`Unable to resolve configuration for presetType: ${config.presetType} from preset: ${stringify(preset)}`)
+    let presetTypeConfig = null
+    if(config.presetType !== 'macro') {
+      presetTypeConfig = preset[config.presetType]
+      if (!presetTypeConfig) {
+        throw new Error(`Unable to resolve configuration for presetType: ${config.presetType} from preset: ${stringify(preset)}`)
+      }
+    }
+    else {
+      presetTypeConfig = {}
     }
 
-    super(gulp, extend(true, {}, Default$10, presetTypeConfig, config))
+    super(gulp, extend(true, {}, Default$14, presetTypeConfig, config))
     this.registerTask()
     this.registerWatchTask()
   }
@@ -138,6 +150,7 @@ const BaseRecipe = class extends Base {
       let name = this.taskName()
       this.debug(`Registering task: ${Util.colors.green(name)}`)
       this.gulp.task(name, () => {
+        //this.log(`Running task: ${Util.colors.green(name)}`)
         this.run()
       })
     }
@@ -216,7 +229,7 @@ const Autoprefixer = class extends BaseRecipe {
 }
 
 const Default = {
-  debug: true,
+  debug: false,
   presetType: 'javascripts',
   task: {
     name: 'eslint'
@@ -266,7 +279,7 @@ const EsLint = class extends BaseRecipe {
 }
 
 const Default$1 = {
-  debug: true,
+  debug: false,
   presetType: 'images',
   task: {
     name: 'images'
@@ -313,7 +326,7 @@ const Images = class extends BaseRecipe {
 }
 
 const Default$2 = {
-  debug: true,
+  debug: false,
   presetType: 'stylesheets',
   task: {
     name: 'sass'
@@ -371,7 +384,7 @@ const Sass = class extends BaseRecipe {
 }
 
 const Default$3 = {
-  debug: true,
+  debug: false,
   presetType: 'stylesheets',
   task: {
     name: 'scsslint'
@@ -416,10 +429,11 @@ const ScssLint = class extends BaseRecipe {
 }
 
 const Default$4 = {
+  debug: false,
   watch: false
 }
 
-const TaskSequence = class extends Base {
+const TaskSeries = class extends Base {
 
   /**
    *
@@ -431,21 +445,38 @@ const TaskSequence = class extends Base {
 
     // generate the task sequence
     let tasks = []
+    this.toTaskNames(recipes, tasks);
+
+    this.debug(`Registering task: ${Util.colors.green(taskName)} for ${stringify(tasks)}`)
+    this.gulp.task(taskName, () => {
+      //this.log(`Running task: ${Util.colors.green(taskName)}`)
+      runSequence(...tasks)
+    })
+  }
+
+  toTaskNames(recipes, tasks) {
     for (let recipe of recipes) {
-      if (this.config.watch) {
-        tasks.push(recipe.watchTaskName())
-      } else {
-        tasks.push(recipe.taskName())
+      if (Array.isArray(recipe)) {
+        let series = []
+        this.toTaskNames(recipe, series)
+        tasks.push(series)
+      }
+      else {
+        if (this.config.watch) {
+          // if the series is a 'watch', only add 'watch' enabled recipes
+          if( recipe.config.watch) {
+            tasks.push(recipe.watchTaskName())
+          }
+        } else {
+          tasks.push(recipe.taskName())
+        }
       }
     }
-
-    this.debug(`Registering task: ${Util.colors.green(taskName)}`)
-    this.gulp.task(taskName, tasks)
   }
 }
 
 const Default$5 = {
-  debug: true,
+  debug: false,
   presetType: 'javascripts',
   task: {
     name: 'rollup:es'
@@ -650,5 +681,141 @@ const RollupUmd = class extends RollupCjs {
   }
 }
 
-export { Autoprefixer, EsLint, Images, Sass, ScssLint, TaskSequence, RollupEs, RollupCjs, RollupIife, RollupAmd, RollupUmd };
+const Default$16 = {
+  debug: false,
+  watch: false,
+  sync: true  // necessary so that tasks can be run in a series, can be overriden for other purposes
+}
+
+const BaseClean = class extends BaseRecipe {
+
+  /**
+   *
+   * @param gulp - gulp instance
+   * @param preset - base preset configuration - either one from presets.js or a custom hash
+   * @param config - customized overrides for this recipe
+   */
+  constructor(gulp, preset, config = {}) {
+    super(gulp, preset, extend(true, {}, Default$16, config))
+  }
+
+  run(watching = false) {
+    if (this.config.sync) {
+      let paths = del.sync(this.config.dest)
+      this.logDeleted(paths)
+    }
+    else {
+      return del(this.config.dest)
+        .then((paths) => {
+          this.logDeleted(paths)
+        })
+        .catch((error) => {
+          error.plugin = 'del'
+          this.notifyError(error, watching)
+        })
+    }
+  }
+
+  logDeleted(paths) {
+    if (paths.length > 0) {
+      this.log(`Deleted files and folders:`)
+      for(let path of paths){
+        this.log(`    ${path}`)
+      }
+    }
+  }
+}
+
+const Default$10 = {
+  presetType: 'images',
+  task: {
+    name: 'clean:images'
+  }
+}
+
+const CleanImages = class extends BaseClean {
+
+  /**
+   *
+   * @param gulp - gulp instance
+   * @param preset - base preset configuration - either one from presets.js or a custom hash
+   * @param config - customized overrides for this recipe
+   */
+  constructor(gulp, preset, config = {}) {
+    super(gulp, preset, extend(true, {}, Default$10, config))
+  }
+}
+
+const Default$11 = {
+  presetType: 'stylesheets',
+  task: {
+    name: 'clean:stylesheets'
+  }
+}
+
+const CleanStylesheets = class extends BaseClean {
+
+  /**
+   *
+   * @param gulp - gulp instance
+   * @param preset - base preset configuration - either one from presets.js or a custom hash
+   * @param config - customized overrides for this recipe
+   */
+  constructor(gulp, preset, config = {}) {
+    super(gulp, preset, extend(true, {}, Default$11, config))
+  }
+}
+
+const Default$12 = {
+  presetType: 'javascripts',
+  task: {
+    name: 'clean:javascripts'
+  }
+}
+
+const CleanJavascripts = class extends BaseClean {
+
+  /**
+   *
+   * @param gulp - gulp instance
+   * @param preset - base preset configuration - either one from presets.js or a custom hash
+   * @param config - customized overrides for this recipe
+   */
+  constructor(gulp, preset, config = {}) {
+    super(gulp, preset, extend(true, {}, Default$12, config))
+  }
+}
+
+const Default$13 = {
+  debug: false,
+  watch: false,
+  presetType: 'macro',
+  task: {
+    name: 'clean'
+  }
+}
+
+const Clean = class extends BaseRecipe {
+
+  /**
+   *
+   * @param gulp - gulp instance
+   * @param config - customized overrides
+   */
+  constructor(gulp, preset, config = {}) {
+    super(gulp, preset, extend(true, {}, Default$13, config))
+
+    this.cleanImages = new CleanImages(gulp, preset)
+    this.cleanStylesheets = new CleanStylesheets(gulp, preset)
+    this.cleanJavascripts = new CleanJavascripts(gulp, preset)
+  }
+
+  run() {
+    this.cleanImages.run()
+    this.cleanStylesheets.run()
+    this.cleanJavascripts.run()
+  }
+}
+
+export { Autoprefixer, EsLint, Images, Sass, ScssLint, TaskSeries, RollupEs, RollupCjs, RollupIife, RollupAmd, RollupUmd, CleanImages, CleanStylesheets, CleanJavascripts, Clean };
 //# sourceMappingURL=gulp-pipeline.es.js.map

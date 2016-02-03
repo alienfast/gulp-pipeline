@@ -43,13 +43,14 @@ Run it with `gulp`.
 ## Recipes
 - Autoprefixer
 - EsLint
+- Images
 - Rollup (variations include amd, cjs, es, iife, umd)
 - Sass
 - ScssLint
 - Clean (subvariations include javascripts, stylesheets, images)
 
 ## TaskSeries
-TaskSeries allows tasks to be run in a sequence or in a heterogeneous set of sequence/parallel executions through the [run-sequence](https://github.com/OverZealous/run-sequence) plugin.  A simple array will run in series, nested arrays will allow those tasks to run in parallel.  In the example above, the following are executed:
+TaskSeries allows tasks to be run in a sequence or in a heterogeneous set of sequence/parallel executions (using the implementation from [run-sequence](https://github.com/OverZealous/run-sequence)).  A simple array will run in series, nested arrays will allow those tasks to run in parallel.  In the example above, the following are executed:
 
     1. clean
     2. eslint && scsslint tasks in parallel

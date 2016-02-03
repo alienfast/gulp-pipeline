@@ -64,6 +64,7 @@ const BaseRecipe = class extends Base {
       let name = this.taskName()
       this.debug(`Registering task: ${Util.colors.green(name)}`)
       this.gulp.task(name, () => {
+        //this.log(`Running task: ${Util.colors.green(name)}`)
         this.run()
       })
     }

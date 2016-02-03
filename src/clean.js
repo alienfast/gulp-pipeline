@@ -6,6 +6,7 @@ import CleanJavascripts from './cleanJavascripts'
 
 const Default = {
   debug: false,
+  watch: false,
   presetType: 'macro',
   task: {
     name: 'clean'

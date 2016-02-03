@@ -5,7 +5,7 @@ import stringify from 'stringify-object'
 import runSequence from 'run-sequence'
 
 const Default = {
-  debug: true,
+  debug: false,
   watch: false
 }
 
@@ -24,10 +24,11 @@ const TaskSeries = class extends Base {
     this.toTaskNames(recipes, tasks);
 
     this.debug(`Registering task: ${Util.colors.green(taskName)} for ${stringify(tasks)}`)
-
-    this.gulp.task(taskName, runSequence(tasks))
+    this.gulp.task(taskName, () => {
+      //this.log(`Running task: ${Util.colors.green(taskName)}`)
+      runSequence(...tasks)
+    })
   }
-
 
   toTaskNames(recipes, tasks) {
     for (let recipe of recipes) {
@@ -38,7 +39,10 @@ const TaskSeries = class extends Base {
       }
       else {
         if (this.config.watch) {
-          tasks.push(recipe.watchTaskName())
+          // if the series is a 'watch', only add 'watch' enabled recipes
+          if( recipe.config.watch) {
+            tasks.push(recipe.watchTaskName())
+          }
         } else {
           tasks.push(recipe.taskName())
         }

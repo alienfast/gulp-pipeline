@@ -9,7 +9,7 @@ Here's a `gulpfile.babel.js` that provides tasks to build and watch an ES2015/SC
 ```javascript
 // Assuming project named: acme
 
-import { Presets, Clean, EsLint, ScssLint, Sass, RollupEs, RollupCjs, RollupIife, TaskSeries } from 'gulp-pipeline'
+import { Presets, Clean, EsLint, Images, ScssLint, Sass, RollupEs, RollupCjs, RollupIife, TaskSeries } from 'gulp-pipeline'
 import gulp from 'gulp'
 
 // Utilize one of the common configs
@@ -20,11 +20,12 @@ let preset = Presets.nodeSrc() // other pre-configured presets: nodeLib, rails -
 let recipes = [
   new Clean(gulp, preset),
   [
-    new EsLint(gulp),
-    new ScssLint(gulp),
+    new EsLint(gulp, preset),
+    new ScssLint(gulp, preset),
   ],
   [
-    new Sass(gulp),
+    new Images(gulp, preset),  
+    new Sass(gulp, preset),
     new RollupEs(gulp, preset, {options: {dest: 'dist/acme.es.js'}}),                        // es
     new RollupCjs(gulp, preset, {options: {dest: 'dist/acme.cjs.js'}}),                      // commonjs
     new RollupIife(gulp, preset, {options: {dest: 'dist/acme.iife.js', moduleName: 'acme'}}) // iife self executing bundle for the browser
@@ -52,7 +53,7 @@ TaskSeries allows tasks to be run in a sequence or in a heterogeneous set of seq
 
     1. clean
     2. eslint && scsslint tasks in parallel
-    3. sass, rollup* tasks in parallel
+    3. images, sass, && rollup* tasks in parallel
 
 ## Why?
 

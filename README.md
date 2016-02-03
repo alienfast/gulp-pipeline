@@ -118,8 +118,7 @@ Submit a PR and we'll include it!
 
 
 ## Credits
-> If I have seen further, it is by standing on the shoulders of giants.
-  - Sir Isaac Newton
+> If I have seen further, it is by standing on the shoulders of giants. - Sir Isaac Newton
   
 - VigetLabs for their blog post _[Gulp on Rails: Replacing the Asset Pipeline](https://viget.com/extend/gulp-rails-asset-pipeline)_ and [gulp-rails-pipeline starter project](https://github.com/vigetlabs/gulp-rails-pipeline)
 - Argency for their blog post _[Gulp - a modern approach to asset pipeline for Rails developers](http://blog.arkency.com/2015/03/gulp-modern-approach-to-asset-pipeline-for-rails-developers/)_ 

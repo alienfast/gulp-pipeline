@@ -20,13 +20,13 @@ let preset = Presets.nodeSrc()
 let recipes = [
   new Clean(gulp, preset),
   new EsLint(gulp, preset),
-  //[
+  [
     new RollupEs(gulp, preset, {options: {dest: 'dist/gulp-pipeline.es.js'}}),
     new RollupAmd(gulp, preset, {options: {dest: 'dist/gulp-pipeline.amd.js'}}),
     new RollupCjs(gulp, preset, {options: {dest: 'dist/gulp-pipeline.cjs.js'}}),
     new RollupUmd(gulp, preset, {options: {dest: 'dist/gulp-pipeline.umd.js', moduleName: 'gulpPipeline'}}),
     new RollupIife(gulp, preset, {options: {dest: 'dist/gulp-pipeline.iife.js', moduleName: 'gulpPipeline'}})
-  //]
+  ]
 ]
 
 

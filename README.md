@@ -9,24 +9,30 @@ Here's a `gulpfile.babel.js` that provides tasks to build and watch an ES2015/SC
 ```javascript
 // Assuming project named: acme
 
-import { Presets, Clean, ScssLint, Sass, RollupEs, RollupCjs, RollupIife, TaskSeries } from 'gulp-pipeline'
+import { Presets, Clean, EsLint, ScssLint, Sass, RollupEs, RollupCjs, RollupIife, TaskSeries } from 'gulp-pipeline'
 import gulp from 'gulp'
 
 // Utilize one of the common configs
 let preset = Presets.nodeSrc() // other pre-configured presets: nodeLib, rails - see presets.js and submit PRs with other common configs
 
-// instantiate ordered array of recipes (for each instantiation the tasks will be created e.g. sass and sass:watch)
+// Instantiate ordered array of recipes (for each instantiation the tasks will be created e.g. sass and sass:watch)
+//  Note: these are run by the run-sequence, allowing series and parallel execution 
 let recipes = [
   new Clean(gulp, platform),
-  new ScssLint(gulp),
-  new Sass(gulp),
-  new RollupEs(gulp, preset, {options: {dest: 'dist/acme.es.js'}}),                        // es
-  new RollupCjs(gulp, preset, {options: {dest: 'dist/acme.cjs.js'}}),                      // commonjs
-  new RollupIife(gulp, preset, {options: {dest: 'dist/acme.iife.js', moduleName: 'acme'}}) // iife self executing bundle for the browser
+  [
+    new EsLint(gulp),
+    new ScssLint(gulp),
+  ],
+  [
+    new Sass(gulp),
+    new RollupEs(gulp, preset, {options: {dest: 'dist/acme.es.js'}}),                        // es
+    new RollupCjs(gulp, preset, {options: {dest: 'dist/acme.cjs.js'}}),                      // commonjs
+    new RollupIife(gulp, preset, {options: {dest: 'dist/acme.iife.js', moduleName: 'acme'}}) // iife self executing bundle for the browser
+  ]
 ]
 
 
-// Simple helper to create the default and watch tasks as a sequence of the recipes already defined
+// Simple helper to create the default and watch tasks as a series of the recipes already defined
 new TaskSeries(gulp, 'default', recipes)
 new TaskSeries(gulp, 'watch', recipes, {watch: true})
 ```
@@ -39,6 +45,13 @@ Run it with `gulp`.
 - Rollup (variations include amd, cjs, es, iife, umd)
 - Sass
 - ScssLint
+- Clean (subvariations include javascripts, stylesheets, images)
+
+## TaskSeries
+TaskSeries allows tasks to be run in a sequence or in a heterogeneous set of sequence/parallel executions through the [run-sequence](https://github.com/OverZealous/run-sequence) plugin.  A simple array will run in series, nested arrays will allow those tasks to run in parallel.  In the example above, the following are executed:
+    1. clean
+    2. eslint && scsslint tasks in parallel
+    3. sass, rollup* tasks in parallel
 
 ## Why?
 

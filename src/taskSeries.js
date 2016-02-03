@@ -7,7 +7,7 @@ const Default = {
   watch: false
 }
 
-const TaskSequence = class extends Base {
+const TaskSeries = class extends Base {
 
   /**
    *
@@ -36,4 +36,4 @@ const TaskSequence = class extends Base {
   }
 }
 
-export default TaskSequence
+export default TaskSeries

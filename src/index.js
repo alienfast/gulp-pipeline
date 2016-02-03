@@ -3,7 +3,7 @@ export { default as EsLint } from './eslint'
 export { default as Images } from './images'
 export { default as Sass } from './sass'
 export { default as ScssLint } from './scssLint'
-export { default as TaskSequence } from './taskSequence'
+export { default as TaskSeries } from './taskSeries'
 
 export { default as RollupEs } from './rollupEs'
 export { default as RollupCjs } from './rollupCjs'

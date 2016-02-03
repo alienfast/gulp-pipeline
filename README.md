@@ -9,7 +9,7 @@ Here's a `gulpfile.babel.js` that provides tasks to build and watch an ES2015/SC
 ```javascript
 // Assuming project named: acme
 
-import { Presets, Clean, ScssLint, Sass, RollupEs, RollupCjs, RollupIife, TaskSequence } from 'gulp-pipeline'
+import { Presets, Clean, ScssLint, Sass, RollupEs, RollupCjs, RollupIife, TaskSeries } from 'gulp-pipeline'
 import gulp from 'gulp'
 
 // Utilize one of the common configs
@@ -27,8 +27,8 @@ let recipes = [
 
 
 // Simple helper to create the default and watch tasks as a sequence of the recipes already defined
-new TaskSequence(gulp, 'default', recipes)
-new TaskSequence(gulp, 'watch', recipes, {watch: true})
+new TaskSeries(gulp, 'default', recipes)
+new TaskSeries(gulp, 'watch', recipes, {watch: true})
 ```
 
 Run it with `gulp`.

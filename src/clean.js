@@ -3,7 +3,6 @@ import extend from 'extend'
 import CleanImages from './cleanImages'
 import CleanStylesheets from './cleanStylesheets'
 import CleanJavascripts from './cleanJavascripts'
-import TaskSequence from './taskSequence'
 
 const Default = {
   debug: false,

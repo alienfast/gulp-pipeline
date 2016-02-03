@@ -1,9 +1,11 @@
 import Base from './base'
 import extend from 'extend'
 import Util from 'gulp-util'
+import stringify from 'stringify-object'
+import runSequence from 'run-sequence'
 
 const Default = {
-  debug: false,
+  debug: true,
   watch: false
 }
 
@@ -17,22 +19,31 @@ const TaskSeries = class extends Base {
   constructor(gulp, taskName, recipes, config = {}) {
     super(gulp, extend(true, {}, Default, config))
 
-    this.registerTask(taskName, recipes)
-  }
-
-  registerTask(taskName, recipes){
     // generate the task sequence
     let tasks = []
+    this.toTaskNames(recipes, tasks);
+
+    this.debug(`Registering task: ${Util.colors.green(taskName)} for ${stringify(tasks)}`)
+
+    this.gulp.task(taskName, runSequence(tasks))
+  }
+
+
+  toTaskNames(recipes, tasks) {
     for (let recipe of recipes) {
-      if (this.config.watch) {
-        tasks.push(recipe.watchTaskName())
-      } else {
-        tasks.push(recipe.taskName())
+      if (Array.isArray(recipe)) {
+        let series = []
+        this.toTaskNames(recipe, series)
+        tasks.push(series)
+      }
+      else {
+        if (this.config.watch) {
+          tasks.push(recipe.watchTaskName())
+        } else {
+          tasks.push(recipe.taskName())
+        }
       }
     }
-
-    this.debug(`Registering task: ${Util.colors.green(taskName)}`)
-    this.gulp.task(taskName, tasks)
   }
 }
 

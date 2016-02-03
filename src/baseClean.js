@@ -4,7 +4,8 @@ import del from 'del'
 
 export const Default = {
   debug: false,
-  watch: false
+  watch: false,
+  sync: true  // necessary so that tasks can be run in a series, can be overriden for other purposes
 }
 
 const BaseClean = class extends BaseRecipe {
@@ -20,16 +21,29 @@ const BaseClean = class extends BaseRecipe {
   }
 
   run(watching = false) {
-    return del(this.config.dest)
-      .then((paths) => {
-        if(paths.length > 0) {
-          this.log(`Deleted files and folders:\n${paths.join('\n')}`)
-        }
-      })
-      .catch((error) => {
-        error.plugin = 'del'
-        this.notifyError(error, watching)
-      })
+    if (this.config.sync) {
+      let paths = del.sync(this.config.dest)
+      this.logDeleted(paths)
+    }
+    else {
+      return del(this.config.dest)
+        .then((paths) => {
+          this.logDeleted(paths)
+        })
+        .catch((error) => {
+          error.plugin = 'del'
+          this.notifyError(error, watching)
+        })
+    }
+  }
+
+  logDeleted(paths) {
+    if (paths.length > 0) {
+      this.log(`Deleted files and folders:`)
+      for(let path of paths){
+        this.log(`    ${path}`)
+      }
+    }
   }
 }
 

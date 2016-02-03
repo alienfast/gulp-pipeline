@@ -10,7 +10,6 @@ import RollupIife from './src/rollupIife'
 import TaskSeries from './src/taskSeries'
 
 
-
 // Let's eat our own dogfood and use our own recipes to generate our dist packages
 let preset = Presets.nodeSrc()
 
@@ -21,14 +20,16 @@ let preset = Presets.nodeSrc()
 let recipes = [
   new Clean(gulp, preset),
   new EsLint(gulp, preset),
-  new RollupEs(gulp, preset, {options: {dest: 'dist/gulp-pipeline.es.js'}}),
-  new RollupAmd(gulp, preset, {options: {dest: 'dist/gulp-pipeline.amd.js'}}),
-  new RollupCjs(gulp, preset, {options: {dest: 'dist/gulp-pipeline.cjs.js'}}),
-  new RollupUmd(gulp, preset, {options: {dest: 'dist/gulp-pipeline.umd.js', moduleName: 'gulpPipeline'}}),
-  new RollupIife(gulp, preset, {options: {dest: 'dist/gulp-pipeline.iife.js', moduleName: 'gulpPipeline'}})
+  //[
+    new RollupEs(gulp, preset, {options: {dest: 'dist/gulp-pipeline.es.js'}}),
+    new RollupAmd(gulp, preset, {options: {dest: 'dist/gulp-pipeline.amd.js'}}),
+    new RollupCjs(gulp, preset, {options: {dest: 'dist/gulp-pipeline.cjs.js'}}),
+    new RollupUmd(gulp, preset, {options: {dest: 'dist/gulp-pipeline.umd.js', moduleName: 'gulpPipeline'}}),
+    new RollupIife(gulp, preset, {options: {dest: 'dist/gulp-pipeline.iife.js', moduleName: 'gulpPipeline'}})
+  //]
 ]
 
 
 // Simple helper to create the default and watch tasks as a sequence of the recipes already defined
 new TaskSeries(gulp, 'default', recipes)
-new TaskSeries(gulp, 'watch', recipes, {watch: true})
+//new TaskSeries(gulp, 'watch', recipes, {watch: true})

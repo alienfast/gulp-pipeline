@@ -1,6 +1,6 @@
 {
   "name": "gulp-pipeline",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Meta gulp plugin recipes modularized as ES6 classes. Fully configurable. Fully extensible. Full pipeline in a few lines of code.",
   "main": "dist/gulp-pipeline.cjs.js",
   "jsnext:main": "dist/gulp-pipeline.es.js",
@@ -56,6 +56,7 @@
     "node-extend": "^0.2.0",
     "rollup": "^0.25.2",
     "rollup-plugin-babel": "^2.3.9",
+    "run-sequence": "^1.1.5",
     "stringify-object": "^2.3.1",
     "vinyl-buffer": "^1.0.0",
     "vinyl-source-stream": "^1.1.0",

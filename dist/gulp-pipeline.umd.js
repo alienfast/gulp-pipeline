@@ -1,8 +1,8 @@
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('gulp-autoprefixer'), require('extend'), require('gulp-if'), require('gulp-debug'), require('gulp-eslint'), require('browser-sync'), require('gulp-changed'), require('gulp-imagemin'), require('gulp-sass'), require('gulp-sourcemaps'), require('gulp-scss-lint'), require('gulp-scss-lint-stylish'), require('gulp-util'), require('stringify-object'), require('run-sequence'), require('rollup'), require('glob'), require('rollup-plugin-babel'), require('gulp-notify'), require('del')) :
-  typeof define === 'function' && define.amd ? define(['exports', 'gulp-autoprefixer', 'extend', 'gulp-if', 'gulp-debug', 'gulp-eslint', 'browser-sync', 'gulp-changed', 'gulp-imagemin', 'gulp-sass', 'gulp-sourcemaps', 'gulp-scss-lint', 'gulp-scss-lint-stylish', 'gulp-util', 'stringify-object', 'run-sequence', 'rollup', 'glob', 'rollup-plugin-babel', 'gulp-notify', 'del'], factory) :
-  (factory((global.gulpPipeline = {}),global.autoprefixer,global.extend,global.gulpif,global.debug,global.eslint,global.BrowserSync,global.changed,global.imagemin,global.sass,global.sourcemaps,global.scssLint,global.scssLintStylish,global.Util,global.stringify,global.runSequence,global.rollup,global.glob,global.babel,global.notify,global.del));
-}(this, function (exports,autoprefixer,extend,gulpif,debug,eslint,BrowserSync,changed,imagemin,sass,sourcemaps,scssLint,scssLintStylish,Util,stringify,runSequence,rollup,glob,babel,notify,del) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('gulp-autoprefixer'), require('extend'), require('gulp-if'), require('gulp-debug'), require('gulp-eslint'), require('browser-sync'), require('gulp-changed'), require('gulp-imagemin'), require('gulp-sass'), require('gulp-sourcemaps'), require('gulp-scss-lint'), require('gulp-scss-lint-stylish'), require('gulp-util'), require('stringify-object'), require('rollup'), require('glob'), require('rollup-plugin-babel'), require('gulp-notify'), require('del')) :
+  typeof define === 'function' && define.amd ? define(['exports', 'gulp-autoprefixer', 'extend', 'gulp-if', 'gulp-debug', 'gulp-eslint', 'browser-sync', 'gulp-changed', 'gulp-imagemin', 'gulp-sass', 'gulp-sourcemaps', 'gulp-scss-lint', 'gulp-scss-lint-stylish', 'gulp-util', 'stringify-object', 'rollup', 'glob', 'rollup-plugin-babel', 'gulp-notify', 'del'], factory) :
+  (factory((global.gulpPipeline = {}),global.autoprefixer,global.extend,global.gulpif,global.debug,global.eslint,global.BrowserSync,global.changed,global.imagemin,global.sass,global.sourcemaps,global.scssLint,global.scssLintStylish,global.Util,global.stringify,global.rollup,global.glob,global.babel,global.notify,global.del));
+}(this, function (exports,autoprefixer,extend,gulpif,debug,eslint,BrowserSync,changed,imagemin,sass,sourcemaps,scssLint,scssLintStylish,Util,stringify,rollup,glob,babel,notify,del) { 'use strict';
 
   autoprefixer = 'default' in autoprefixer ? autoprefixer['default'] : autoprefixer;
   extend = 'default' in extend ? extend['default'] : extend;
@@ -18,7 +18,6 @@
   scssLintStylish = 'default' in scssLintStylish ? scssLintStylish['default'] : scssLintStylish;
   Util = 'default' in Util ? Util['default'] : Util;
   stringify = 'default' in stringify ? stringify['default'] : stringify;
-  runSequence = 'default' in runSequence ? runSequence['default'] : runSequence;
   glob = 'default' in glob ? glob['default'] : glob;
   babel = 'default' in babel ? babel['default'] : babel;
   notify = 'default' in notify ? notify['default'] : notify;
@@ -123,15 +122,16 @@
         var watching = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
 
         var lineNumber = error.lineNumber ? 'Line ' + error.lineNumber + ' -- ' : '';
+        var taskName = error.task || this.taskName();
 
         notify({
-          title: 'Task [' + this.taskName() + '] Failed in [' + error.plugin + ']',
+          title: 'Task [' + taskName + '] Failed in [' + error.plugin + ']',
           message: lineNumber + 'See console.',
           sound: 'Sosumi' // See: https://github.com/mikaelbr/node-notifier#all-notification-options-with-their-defaults
         }).write(error);
 
         var tag = Util.colors.black.bgRed;
-        var report = '\n\n' + tag('    Task:') + ' [' + Util.colors.cyan(this.taskName()) + ']\n' + tag('  Plugin:') + ' [' + error.plugin + ']\n' + tag('   Error:') + '\n' + error.message;
+        var report = '\n\n' + tag('    Task:') + ' [' + Util.colors.cyan(taskName) + ']\n' + tag('  Plugin:') + ' [' + error.plugin + ']\n' + tag('   Error:') + '\n' + error.message;
 
         if (error.lineNumber) {
           report += tag('    Line:') + ' ' + error.lineNumber + '\n';
@@ -570,8 +570,7 @@
 
       _this.debug('Registering task: ' + Util.colors.green(taskName) + ' for ' + stringify(tasks));
       _this.gulp.task(taskName, function () {
-        //this.log(`Running task: ${Util.colors.green(taskName)}`)
-        runSequence.apply(undefined, tasks);
+        _this.runSequence.apply(_this, tasks);
       });
       return _this;
     }
@@ -613,6 +612,161 @@
           } finally {
             if (_didIteratorError) {
               throw _iteratorError;
+            }
+          }
+        }
+      }
+
+      // -----------------------------------
+      // originally run-sequence code https://github.com/OverZealous/run-sequence
+      // Copyright (c) 2014 [Phil DeJarnett](http://overzealous.com)
+      // - Will be unnecessary with gulp 4.0
+      // - Forced to include this/modify it as the #use(gulp) binding of the gulp instance didn't work with es class approach
+
+    }, {
+      key: 'runSequence',
+      value: function runSequence() {
+        var _this2 = this;
+
+        for (var _len = arguments.length, taskSets = Array(_len), _key = 0; _key < _len; _key++) {
+          taskSets[_key] = arguments[_key];
+        }
+
+        this.callBack = typeof taskSets[taskSets.length - 1] === 'function' ? taskSets.pop() : false;
+        this.debug('currentTaskSet = null');
+        this.currentTaskSet = null;
+        this.verifyTaskSets(taskSets);
+        this.taskSets = taskSets;
+
+        this.onEnd = function (e) {
+          return _this2.onTaskEnd(e);
+        };
+        this.onErr = function (e) {
+          return _this2.onError(e);
+        };
+
+        this.gulp.on('task_stop', this.onEnd);
+        this.gulp.on('task_err', this.onErr);
+
+        this.runNextSet();
+      }
+    }, {
+      key: 'finish',
+      value: function finish(e) {
+        this.debugDump('finish', e);
+        this.gulp.removeListener('task_stop', this.onEnd);
+        this.gulp.removeListener('task_err', this.onErr);
+
+        var error = null;
+        if (e && e.err) {
+          this.debugDump('finish e', e);
+          //error = new Util.PluginError('run-sequence', {
+          //  message: `An error occured in task [${e.task}].`
+          //})
+          error = {
+            task: e.task,
+            message: e.err,
+            plugin: e.plugin || ''
+          };
+        }
+
+        if (this.callback) {
+          this.callback(error);
+        } else if (error) {
+          //this.log(Util.colors.red(error.toString()))
+          this.notifyError(error);
+        }
+      }
+    }, {
+      key: 'onError',
+      value: function onError(err) {
+        this.debugDump('onError', err);
+        this.finish(err);
+      }
+    }, {
+      key: 'onTaskEnd',
+      value: function onTaskEnd(event) {
+        this.debugDump('onTaskEnd', event);
+        //this.debugDump(`this.currentTaskSet`, this.currentTaskSet)
+
+        var i = this.currentTaskSet.indexOf(event.task);
+        if (i > -1) {
+          this.currentTaskSet.splice(i, 1);
+        }
+        if (this.currentTaskSet.length === 0) {
+          this.runNextSet();
+        }
+      }
+    }, {
+      key: 'runNextSet',
+      value: function runNextSet() {
+        if (this.taskSets.length) {
+          var command = this.taskSets.shift();
+          if (!Array.isArray(command)) {
+            command = [command];
+          }
+          this.debug('currentTaskSet = ' + command);
+          this.currentTaskSet = command;
+          this.gulp.start(command);
+        } else {
+          this.finish();
+        }
+      }
+    }, {
+      key: 'verifyTaskSets',
+      value: function verifyTaskSets(taskSets, skipArrays) {
+        var foundTasks = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
+
+        this.debug('verifyTaskSets: ' + stringify(taskSets));
+
+        if (taskSets.length === 0) {
+          throw new Error('No tasks were provided to run-sequence');
+        }
+
+        var _iteratorNormalCompletion2 = true;
+        var _didIteratorError2 = false;
+        var _iteratorError2 = undefined;
+
+        try {
+          for (var _iterator2 = taskSets[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+            var t = _step2.value;
+
+            var isTask = typeof t === "string";
+            var isArray = !skipArrays && Array.isArray(t);
+
+            if (!isTask && !isArray) {
+              throw new Error('Task ' + t + ' is not a valid task string.');
+            }
+
+            if (isTask && !this.gulp.hasTask(t)) {
+              throw new Error('Task ' + t + ' is not configured as a task on gulp.');
+            }
+
+            if (skipArrays && isTask) {
+              if (foundTasks[t]) {
+                throw new Error('Task ' + t + ' is listed more than once. This is probably a typo.');
+              }
+              foundTasks[t] = true;
+            }
+
+            if (isArray) {
+              if (t.length === 0) {
+                throw new Error('An empty array was provided as a task set');
+              }
+              this.verifyTaskSets(t, true, foundTasks);
+            }
+          }
+        } catch (err) {
+          _didIteratorError2 = true;
+          _iteratorError2 = err;
+        } finally {
+          try {
+            if (!_iteratorNormalCompletion2 && _iterator2.return) {
+              _iterator2.return();
+            }
+          } finally {
+            if (_didIteratorError2) {
+              throw _iteratorError2;
             }
           }
         }

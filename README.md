@@ -1,7 +1,7 @@
 # gulp-pipeline
 Meta gulp plugin recipes modularized as ES2015 classes. Fully configurable. Fully extensible. Full pipeline in a few lines of code.
 
-ES2015, reusable, modular, extensible gulp recipes.  This **is not** just for rails, it's agnostic and works for anything (node, angular, etc).
+This **is not** just for rails, it's agnostic and works for anything (node, angular, etc).
 
 ## Usage
 Here's a `gulpfile.babel.js` that provides tasks to build and watch an ES2015/SCSS project.  Simple enough?

@@ -3,7 +3,7 @@ import extend from 'extend'
 import del from 'del'
 
 export const Default = {
-  debug: true,
+  debug: false,
   watch: false
 }
 
@@ -22,7 +22,9 @@ const BaseClean = class extends BaseRecipe {
   run(watching = false) {
     return del(this.config.dest)
       .then((paths) => {
-        this.log(`Deleted files and folders:\n${paths.join('\n')}`)
+        if(paths.length > 0) {
+          this.log(`Deleted files and folders:\n${paths.join('\n')}`)
+        }
       })
       .catch((error) => {
         error.plugin = 'del'

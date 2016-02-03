@@ -3,7 +3,7 @@ import extend from 'extend'
 import Util from 'gulp-util'
 
 const Default = {
-  debug: true,
+  debug: false,
   watch: false
 }
 
@@ -21,26 +21,19 @@ const TaskSequence = class extends Base {
   }
 
   registerTask(taskName, recipes){
-// generate the task sequence
+    // generate the task sequence
     let tasks = []
-    let z = 0
     for (let recipe of recipes) {
       if (this.config.watch) {
-        this.debug(`${z}: ${recipe.watchTaskName()}`)
         tasks.push(recipe.watchTaskName())
-        this.debug(`${z}: ${recipe.watchTaskName()}`)
       } else {
-        this.debug(`${z}: ${recipe.taskName()}`)
         tasks.push(recipe.taskName())
-        this.debug(`${z}: ${recipe.taskName()}`)
       }
-      z++
     }
 
     this.debug(`Registering task: ${Util.colors.green(taskName)}`)
-    this.debugDump('tasks', tasks)
     this.gulp.task(taskName, tasks)
-    this.log('done registering')  }
+  }
 }
 
 export default TaskSequence

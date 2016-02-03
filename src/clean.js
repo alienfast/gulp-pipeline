@@ -1,4 +1,4 @@
-import Base from './base'
+import BaseRecipe from './baseRecipe'
 import extend from 'extend'
 import CleanImages from './cleanImages'
 import CleanStylesheets from './cleanStylesheets'
@@ -6,13 +6,14 @@ import CleanJavascripts from './cleanJavascripts'
 import TaskSequence from './taskSequence'
 
 const Default = {
-  debug: true,
+  debug: false,
+  presetType: 'macro',
   task: {
     name: 'clean'
   }
 }
 
-const Clean = class extends Base {
+const Clean = class extends BaseRecipe {
 
   /**
    *
@@ -20,22 +21,17 @@ const Clean = class extends Base {
    * @param config - customized overrides
    */
   constructor(gulp, preset, config = {}) {
-    super(gulp, extend(true, {}, Default, config))
+    super(gulp, preset, extend(true, {}, Default, config))
 
-    let recipes = [
-      new CleanImages(gulp, preset),
-      new CleanStylesheets(gulp, preset),
-      new CleanJavascripts(gulp, preset)
-    ]
+    this.cleanImages = new CleanImages(gulp, preset)
+    this.cleanStylesheets = new CleanStylesheets(gulp, preset)
+    this.cleanJavascripts = new CleanJavascripts(gulp, preset)
+  }
 
-    //let z = 0
-    //for (let recipe of recipes) {
-    //  this.debug(`${z}: ${recipe.taskName()}`)
-    //  z++
-    //}
-
-    new TaskSequence(gulp, this.config.task.name, recipes)
-    //new TaskSequence(gulp, 'clean', recipes)
+  run() {
+    this.cleanImages.run()
+    this.cleanStylesheets.run()
+    this.cleanJavascripts.run()
   }
 }
 

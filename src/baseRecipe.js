@@ -26,9 +26,15 @@ const BaseRecipe = class extends Base {
       throw new Error(`'presetType' must be specified in the config (usually the Default config).  See preset.js for a list of types such as javascripts, stylesheets, etc.`)
     }
 
-    let presetTypeConfig = preset[config.presetType]
-    if (!presetTypeConfig) {
-      throw new Error(`Unable to resolve configuration for presetType: ${config.presetType} from preset: ${stringify(preset)}`)
+    let presetTypeConfig = null
+    if(config.presetType !== 'macro') {
+      presetTypeConfig = preset[config.presetType]
+      if (!presetTypeConfig) {
+        throw new Error(`Unable to resolve configuration for presetType: ${config.presetType} from preset: ${stringify(preset)}`)
+      }
+    }
+    else {
+      presetTypeConfig = {}
     }
 
     super(gulp, extend(true, {}, Default, presetTypeConfig, config))

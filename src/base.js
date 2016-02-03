@@ -39,9 +39,10 @@ const Base = class {
 
   notifyError(error, watching = false) {
     let lineNumber = (error.lineNumber) ? `Line ${error.lineNumber} -- ` : ''
+    let taskName = error.task || this.taskName()
 
     notify({
-      title: `Task [${this.taskName()}] Failed in [${error.plugin}]`,
+      title: `Task [${taskName}] Failed in [${error.plugin}]`,
       message: `${lineNumber}See console.`,
       sound: 'Sosumi' // See: https://github.com/mikaelbr/node-notifier#all-notification-options-with-their-defaults
     }).write(error)
@@ -49,7 +50,7 @@ const Base = class {
     let tag = Util.colors.black.bgRed
     let report = `
 
-${tag('    Task:')} [${Util.colors.cyan(this.taskName())}]
+${tag('    Task:')} [${Util.colors.cyan(taskName)}]
 ${tag('  Plugin:')} [${error.plugin}]
 ${tag('   Error:')}
 ${error.message}`

@@ -49,18 +49,20 @@ const EsLint = class extends BaseRecipe {
       .pipe(eslint(this.config.options))
       .pipe(eslint.format()) // outputs the lint results to the console. Alternatively use eslint.formatEach() (see Docs).
 
-      // this should throw the error, but we aren't notified
+      // this should emit the error, but we aren't notified
       .pipe(gulpif(!watching, eslint.failAfterError())) // To have the process exit with an error code (1) on lint error, return the stream and pipe to failAfterError last.
 
+
+      // 1. HACK solution that works with first error, but is very ugly
+
       // make sure we are notified of any error (this really should be happening in eslint.failAfterError(), but not sure where it is lost)
-      .pipe(eslint.result((results) => {
+      .pipe(eslint.result((results) => { // this is single file #result not #results, we don't get notified on #results
         let count = results.errorCount;
         if (count > 0) {
           throw new PluginError(
             'gulp-eslint',
             {
-              name: 'ESLintError',
-              message: 'Failed with ' + count + (count === 1 ? ' error' : ' errors')
+              message: 'Failed with' + (count === 1 ? ' error' : ' errors')
             }
           )
         }

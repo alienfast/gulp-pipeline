@@ -52,7 +52,7 @@ const BaseRecipe = class extends Base {
 
         this.gulp.watch(this.config.source.glob, this.config.source.options, (event) => {
           this.log(`File ${event.path} was ${event.type}, running ${this.taskName()}...`);
-          this.run(true)
+          return this.run(true)
         })
       })
     }
@@ -65,7 +65,7 @@ const BaseRecipe = class extends Base {
       this.debug(`Registering task: ${Util.colors.green(name)}`)
       this.gulp.task(name, () => {
         //this.log(`Running task: ${Util.colors.green(name)}`)
-        this.run()
+        return this.run()
       })
     }
   }

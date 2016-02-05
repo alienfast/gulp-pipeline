@@ -24,7 +24,7 @@ const TaskSeries = class extends Base {
 
     this.debug(`Registering task: ${Util.colors.green(taskName)} for ${stringify(tasks)}`)
     this.gulp.task(taskName, () => {
-      this.runSequence(...tasks)
+      return this.runSequence(...tasks)
     })
   }
 

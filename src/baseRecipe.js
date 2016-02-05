@@ -50,7 +50,7 @@ const BaseRecipe = class extends Base {
       this.gulp.task(name, () => {
         //this.gulp.watch(this.config.source.glob, this.config.source.options, [this.taskName()])
 
-        this.gulp.watch(this.config.source.glob, this.config.source.options, (event) => {
+        return this.gulp.watch(this.config.source.glob, this.config.source.options, (event) => {
           this.log(`File ${event.path} was ${event.type}, running ${this.taskName()}...`);
           return this.run(true)
         })

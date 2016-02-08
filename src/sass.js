@@ -27,8 +27,6 @@ export const Default = {
     }
   },
   options: {
-    indentedSyntax: true,
-    errLogToConsole: false,
     includePaths: ['node_modules']
   },
   // capture defaults from autoprefixer class

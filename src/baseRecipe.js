@@ -27,7 +27,7 @@ const BaseRecipe = class extends Base {
     }
 
     let presetTypeConfig = null
-    if(config.presetType !== 'macro') {
+    if (config.presetType !== 'macro') {
       presetTypeConfig = preset[config.presetType]
       if (!presetTypeConfig) {
         throw new Error(`Unable to resolve configuration for presetType: ${config.presetType} from preset: ${stringify(preset)}`)
@@ -53,7 +53,9 @@ const BaseRecipe = class extends Base {
 
         return this.gulp.watch(this.config.watch.glob, this.config.watch.options, (event) => {
           this.log(`File ${event.path} was ${event.type}, running ${this.taskName()}...`);
-          return this.run(true)
+          return Promise
+            .resolve(this.run(true))
+            .then(() => this.logFinish())
         })
       })
     }
@@ -82,6 +84,10 @@ const BaseRecipe = class extends Base {
     else {
       return `${this.taskName()}:watch`
     }
+  }
+
+  logFinish(message = 'finished.') {
+    this.log(`[${Util.colors.green(this.taskName())}] ${message}`)
   }
 }
 

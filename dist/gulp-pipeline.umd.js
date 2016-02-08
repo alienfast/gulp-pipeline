@@ -1,14 +1,15 @@
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('gulp-autoprefixer'), require('extend'), require('gulp-if'), require('gulp-debug'), require('gulp-eslint'), require('browser-sync'), require('gulp-changed'), require('gulp-imagemin'), require('gulp-sass'), require('gulp-sourcemaps'), require('gulp-scss-lint'), require('gulp-scss-lint-stylish'), require('gulp-util'), require('stringify-object'), require('rollup'), require('glob'), require('rollup-plugin-babel'), require('gulp-notify'), require('del')) :
-  typeof define === 'function' && define.amd ? define(['exports', 'gulp-autoprefixer', 'extend', 'gulp-if', 'gulp-debug', 'gulp-eslint', 'browser-sync', 'gulp-changed', 'gulp-imagemin', 'gulp-sass', 'gulp-sourcemaps', 'gulp-scss-lint', 'gulp-scss-lint-stylish', 'gulp-util', 'stringify-object', 'rollup', 'glob', 'rollup-plugin-babel', 'gulp-notify', 'del'], factory) :
-  (factory((global.gulpPipeline = {}),global.autoprefixer,global.extend,global.gulpif,global.debug,global.eslint,global.BrowserSync,global.changed,global.imagemin,global.sass,global.sourcemaps,global.scssLint,global.scssLintStylish,global.Util,global.stringify,global.rollup,global.glob,global.babel,global.notify,global.del));
-}(this, function (exports,autoprefixer,extend,gulpif,debug,eslint,BrowserSync,changed,imagemin,sass,sourcemaps,scssLint,scssLintStylish,Util,stringify,rollup,glob,babel,notify,del) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('gulp-autoprefixer'), require('extend'), require('gulp-if'), require('gulp-debug'), require('gulp-eslint'), require('gulp-util'), require('browser-sync'), require('gulp-changed'), require('gulp-imagemin'), require('gulp-sass'), require('gulp-sourcemaps'), require('gulp-scss-lint'), require('gulp-scss-lint-stylish'), require('stringify-object'), require('rollup'), require('glob'), require('rollup-plugin-babel'), require('gulp-notify'), require('del')) :
+  typeof define === 'function' && define.amd ? define(['exports', 'gulp-autoprefixer', 'extend', 'gulp-if', 'gulp-debug', 'gulp-eslint', 'gulp-util', 'browser-sync', 'gulp-changed', 'gulp-imagemin', 'gulp-sass', 'gulp-sourcemaps', 'gulp-scss-lint', 'gulp-scss-lint-stylish', 'stringify-object', 'rollup', 'glob', 'rollup-plugin-babel', 'gulp-notify', 'del'], factory) :
+  (factory((global.gulpPipeline = {}),global.autoprefixer,global.extend,global.gulpif,global.debug,global.eslint,global.Util,global.BrowserSync,global.changed,global.imagemin,global.sass,global.sourcemaps,global.scssLint,global.scssLintStylish,global.stringify,global.rollup,global.glob,global.babel,global.notify,global.del));
+}(this, function (exports,autoprefixer,extend,gulpif,debug,eslint,Util,BrowserSync,changed,imagemin,sass,sourcemaps,scssLint,scssLintStylish,stringify,rollup,glob,babel,notify,del) { 'use strict';
 
   autoprefixer = 'default' in autoprefixer ? autoprefixer['default'] : autoprefixer;
   extend = 'default' in extend ? extend['default'] : extend;
   gulpif = 'default' in gulpif ? gulpif['default'] : gulpif;
   debug = 'default' in debug ? debug['default'] : debug;
   eslint = 'default' in eslint ? eslint['default'] : eslint;
+  Util = 'default' in Util ? Util['default'] : Util;
   BrowserSync = 'default' in BrowserSync ? BrowserSync['default'] : BrowserSync;
   changed = 'default' in changed ? changed['default'] : changed;
   imagemin = 'default' in imagemin ? imagemin['default'] : imagemin;
@@ -16,7 +17,6 @@
   sourcemaps = 'default' in sourcemaps ? sourcemaps['default'] : sourcemaps;
   scssLint = 'default' in scssLint ? scssLint['default'] : scssLint;
   scssLintStylish = 'default' in scssLintStylish ? scssLintStylish['default'] : scssLintStylish;
-  Util = 'default' in Util ? Util['default'] : Util;
   stringify = 'default' in stringify ? stringify['default'] : stringify;
   glob = 'default' in glob ? glob['default'] : glob;
   babel = 'default' in babel ? babel['default'] : babel;
@@ -99,6 +99,7 @@
     // ----------------------------------------------
     // protected
 
+
     babelHelpers.createClass(Base, [{
       key: 'log',
       value: function log(msg) {
@@ -163,6 +164,7 @@
   var BaseRecipe = function (_Base) {
     babelHelpers.inherits(BaseRecipe, _Base);
 
+
     /**
      *
      * @param gulp - gulp instance
@@ -172,6 +174,7 @@
 
     function BaseRecipe(gulp, preset, config) {
       babelHelpers.classCallCheck(this, BaseRecipe);
+
 
       if (!preset) {
         throw new Error('Preset must be specified.  Please use one from the preset.js or specify a custom preset configuration.');
@@ -204,17 +207,22 @@
         var _this2 = this;
 
         if (this.config.watch) {
-          // generate watch task e.g. sass:watch
-          var name = this.watchTaskName();
-          this.debug('Registering task: ' + Util.colors.green(name));
-          this.gulp.task(name, function () {
-            //this.gulp.watch(this.config.source.glob, this.config.source.options, [this.taskName()])
+          (function () {
+            // generate watch task e.g. sass:watch
+            var name = _this2.watchTaskName();
+            _this2.debug('Registering task: ' + Util.colors.green(name));
+            _this2.gulp.task(name, function () {
+              //this.gulp.watch(this.config.source.glob, this.config.source.options, [this.taskName()])
+              _this2.log('[' + Util.colors.green(name) + '] watching ' + _this2.config.watch.glob + ' ' + stringify(_this2.config.watch.options) + '...');
 
-            _this2.gulp.watch(_this2.config.source.glob, _this2.config.source.options, function (event) {
-              _this2.log('File ' + event.path + ' was ' + event.type + ', running ' + _this2.taskName() + '...');
-              _this2.run(true);
+              return _this2.gulp.watch(_this2.config.watch.glob, _this2.config.watch.options, function (event) {
+                _this2.log('File ' + event.path + ' was ' + event.type + ', running ' + _this2.taskName() + '...');
+                return Promise.resolve(_this2.run(true)).then(function () {
+                  return _this2.logFinish();
+                });
+              });
             });
-          });
+          })();
         }
       }
     }, {
@@ -228,7 +236,7 @@
           this.debug('Registering task: ' + Util.colors.green(name));
           this.gulp.task(name, function () {
             //this.log(`Running task: ${Util.colors.green(name)}`)
-            _this3.run();
+            return _this3.run();
           });
         }
       }
@@ -245,6 +253,13 @@
         } else {
           return this.taskName() + ':watch';
         }
+      }
+    }, {
+      key: 'logFinish',
+      value: function logFinish() {
+        var message = arguments.length <= 0 || arguments[0] === undefined ? 'finished.' : arguments[0];
+
+        this.log('[' + Util.colors.green(this.taskName()) + '] ' + message);
       }
     }]);
     return BaseRecipe;
@@ -282,6 +297,7 @@
   var Autoprefixer = function (_BaseRecipe) {
     babelHelpers.inherits(Autoprefixer, _BaseRecipe);
 
+
     /**
      *
      * @param gulp - gulp instance
@@ -311,6 +327,8 @@
     return Autoprefixer;
   }(BaseRecipe);
 
+  var PluginError = Util.PluginError;
+
   var Default = {
     debug: false,
     presetType: 'javascripts',
@@ -335,6 +353,7 @@
   var EsLint = function (_BaseRecipe) {
     babelHelpers.inherits(EsLint, _BaseRecipe);
 
+
     /**
      *
      * @param gulp - gulp instance
@@ -351,11 +370,103 @@
     babelHelpers.createClass(EsLint, [{
       key: 'run',
       value: function run() {
+        var _this2 = this;
+
         var watching = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
 
         // eslint() attaches the lint output to the "eslint" property of the file object so it can be used by other modules.
         var bundle = this.gulp.src(this.config.source.glob, this.config.source.options).pipe(gulpif(this.config.debug, debug(this.debugOptions()))).pipe(eslint(this.config.options)).pipe(eslint.format()) // outputs the lint results to the console. Alternatively use eslint.formatEach() (see Docs).
-        .pipe(gulpif(!watching, eslint.failAfterError())); // To have the process exit with an error code (1) on lint error, return the stream and pipe to failAfterError last.
+
+        //1. HACK solution that works with first error, but is very ugly
+        // this should emit the error, but we aren't notified
+        .pipe(gulpif(!watching, eslint.failAfterError())) // To have the process exit with an error code (1) on lint error, return the stream and pipe to failAfterError last.
+
+        // make sure we are notified of any error (this really should be happening in eslint.failAfterError(), but not sure where it is lost)
+        .pipe(eslint.result(function (results) {
+          // this is single file #result not #results, we don't get notified on #results
+          var count = results.errorCount;
+          if (count > 0) {
+            throw new PluginError('gulp-eslint', {
+              message: 'Failed with' + (count === 1 ? ' error' : ' errors')
+            });
+          }
+        })).on('error', function (error) {
+          _this2.notifyError(error, watching);
+        });
+
+        // 2. Attempt now that returns are in place with the gulpif
+        // this should emit the error, but we aren't notified
+        //.pipe(gulpif(!watching, eslint.failAfterError())) // To have the process exit with an error code (1) on lint error, return the stream and pipe to failAfterError last.
+        //.on('error', (error) => {
+        //  this.notifyError(error, watching)
+        //})
+
+        //// 3. Attempt now that returns are in place WITHOUT gulpif
+        //// this should emit the error, but we aren't notified
+        //.pipe( eslint.failAfterError()) // To have the process exit with an error code (1) on lint error, return the stream and pipe to failAfterError last.
+        //.on('error', (error) => {
+        //  this.notifyError(error, watching)
+        //})
+
+        // 4. https://github.com/adametry/gulp-eslint/issues/135#issuecomment-180555978
+        //.pipe(eslint.results(function (results) {
+        //  var count = results.errorCount;
+        //  console.log('Total ESLint Error Count: ' + count);
+        //  if (count > 0) {
+        //    throw new Error('Failed with Errors');
+        //  }
+        //}))
+        //.on('error', function (error) {
+        //  console.log('Total ESLint Error Count: ' + error);
+        //})
+        //.on('finish', () => {
+        //  console.log('eslint.results finished');
+        //})
+        //.on('end', () => {
+        //  console.log('eslint.results ended');
+        //})
+
+        //// 5. notification is emitted
+        //.pipe(eslint.results(function (results) {
+        //  var count = results.errorCount;
+        //  console.log('*****Error Count: ' + count);
+        //  if (count > 0) {
+        //    throw new Error('******My custom error');
+        //  }
+        //}))
+        //.on('error', (error) => {
+        //  this.notifyError(error, watching)
+        //})
+
+        //// 6. notification is emitted
+        //.pipe(eslint.results(function (results) {
+        //  var count = results.errorCount;
+        //  console.log('*****Error Count: ' + count);
+        //  if (count > 0) {
+        //    throw new PluginError('******My custom error');
+        //  }
+        //}))
+        //.on('error', (error) => {
+        //  this.notifyError(error, watching)
+        //})
+
+        //// 7. notification is emitted, except when watching
+        //.pipe(eslint.results(function (results) {
+        //  let count = results.errorCount;
+        //  console.error('****************in results handler')
+        //  if (count > 0) {
+        //    throw new PluginError('gulp-eslint', { message: 'Failed with ' + count + (count === 1 ? ' error' : ' errors') })
+        //  }
+        //}))
+        //.on('error', (error) => {
+        //  console.error('****************in error handler')
+        //  this.notifyError(error, watching)
+        //})
+
+        //.pipe( eslint.failAfterError())
+        //.on('error', (error) => {
+        //  this.notifyError(error, watching)
+        //})
 
         // FIXME: even including any remnant of JSCS at this point broke everything through the unfound requirement of babel 5.x through babel-jscs.  I can't tell where this occurred, but omitting gulp-jscs for now gets me past this issue.  Revisit this when there are clear updates to use babel 6
         //.pipe(jscs())      // enforce style guide
@@ -391,6 +502,7 @@
 
   var Images = function (_BaseRecipe) {
     babelHelpers.inherits(Images, _BaseRecipe);
+
 
     /**
      *
@@ -444,8 +556,6 @@
       }
     },
     options: {
-      indentedSyntax: true,
-      errLogToConsole: false,
       includePaths: ['node_modules']
     },
     // capture defaults from autoprefixer class
@@ -456,6 +566,7 @@
 
   var Sass = function (_BaseRecipe) {
     babelHelpers.inherits(Sass, _BaseRecipe);
+
 
     /**
      *
@@ -515,6 +626,7 @@
   var ScssLint = function (_BaseRecipe) {
     babelHelpers.inherits(ScssLint, _BaseRecipe);
 
+
     /**
      *
      * @param gulp - gulp instance
@@ -551,6 +663,7 @@
   var TaskSeries = function (_Base) {
     babelHelpers.inherits(TaskSeries, _Base);
 
+
     /**
      *
      * @param gulp - gulp instance
@@ -561,6 +674,7 @@
       var config = arguments.length <= 3 || arguments[3] === undefined ? {} : arguments[3];
       babelHelpers.classCallCheck(this, TaskSeries);
 
+
       // generate the task sequence
 
       var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(TaskSeries).call(this, gulp, extend(true, {}, Default$4, config)));
@@ -570,7 +684,7 @@
 
       _this.debug('Registering task: ' + Util.colors.green(taskName) + ' for ' + stringify(tasks));
       _this.gulp.task(taskName, function () {
-        _this.runSequence.apply(_this, tasks);
+        return _this.runSequence.apply(_this, tasks);
       });
       return _this;
     }
@@ -717,6 +831,7 @@
       value: function verifyTaskSets(taskSets, skipArrays) {
         var foundTasks = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
 
+
         this.debug('verifyTaskSets: ' + stringify(taskSets));
 
         if (taskSets.length === 0) {
@@ -808,6 +923,7 @@
   var RollupEs = function (_BaseRecipe) {
     babelHelpers.inherits(RollupEs, _BaseRecipe);
 
+
     /**
      *
      * @param gulp - gulp instance
@@ -865,7 +981,9 @@
         this.debug('Executing rollup with options: ' + stringify(options));
 
         return rollup.rollup(options).then(function (bundle) {
-          return bundle.write(options);
+          var promise = bundle.write(options);
+          //this.logFinish()
+          return promise;
         }).catch(function (error) {
           error.plugin = 'rollup';
           _this2.notifyError(error, watching);
@@ -896,6 +1014,7 @@
    */
   var RollupCjs = function (_RollupEs) {
     babelHelpers.inherits(RollupCjs, _RollupEs);
+
 
     /**
      *
@@ -931,6 +1050,7 @@
   var RollupIife = function (_RollupCjs) {
     babelHelpers.inherits(RollupIife, _RollupCjs);
 
+
     /**
      *
      * @param gulp - gulp instance
@@ -964,6 +1084,7 @@
    */
   var RollupAmd = function (_RollupCjs) {
     babelHelpers.inherits(RollupAmd, _RollupCjs);
+
 
     /**
      *
@@ -999,6 +1120,7 @@
   var RollupUmd = function (_RollupCjs) {
     babelHelpers.inherits(RollupUmd, _RollupCjs);
 
+
     /**
      *
      * @param gulp - gulp instance
@@ -1023,6 +1145,7 @@
 
   var BaseClean = function (_BaseRecipe) {
     babelHelpers.inherits(BaseClean, _BaseRecipe);
+
 
     /**
      *
@@ -1101,6 +1224,7 @@
   var CleanImages = function (_BaseClean) {
     babelHelpers.inherits(CleanImages, _BaseClean);
 
+
     /**
      *
      * @param gulp - gulp instance
@@ -1127,6 +1251,7 @@
   var CleanStylesheets = function (_BaseClean) {
     babelHelpers.inherits(CleanStylesheets, _BaseClean);
 
+
     /**
      *
      * @param gulp - gulp instance
@@ -1152,6 +1277,7 @@
 
   var CleanJavascripts = function (_BaseClean) {
     babelHelpers.inherits(CleanJavascripts, _BaseClean);
+
 
     /**
      *
@@ -1180,6 +1306,7 @@
 
   var Clean = function (_BaseRecipe) {
     babelHelpers.inherits(Clean, _BaseRecipe);
+
 
     /**
      *

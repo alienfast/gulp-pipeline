@@ -3,6 +3,7 @@ import extend from 'extend';
 import gulpif from 'gulp-if';
 import debug from 'gulp-debug';
 import eslint from 'gulp-eslint';
+import Util from 'gulp-util';
 import BrowserSync from 'browser-sync';
 import changed from 'gulp-changed';
 import imagemin from 'gulp-imagemin';
@@ -10,7 +11,6 @@ import sass from 'gulp-sass';
 import sourcemaps from 'gulp-sourcemaps';
 import scssLint from 'gulp-scss-lint';
 import scssLintStylish from 'gulp-scss-lint-stylish';
-import Util from 'gulp-util';
 import stringify from 'stringify-object';
 import { rollup } from 'rollup';
 import glob from 'glob';
@@ -113,7 +113,7 @@ const BaseRecipe = class extends Base {
     }
 
     let presetTypeConfig = null
-    if(config.presetType !== 'macro') {
+    if (config.presetType !== 'macro') {
       presetTypeConfig = preset[config.presetType]
       if (!presetTypeConfig) {
         throw new Error(`Unable to resolve configuration for presetType: ${config.presetType} from preset: ${stringify(preset)}`)
@@ -135,10 +135,13 @@ const BaseRecipe = class extends Base {
       this.debug(`Registering task: ${Util.colors.green(name)}`)
       this.gulp.task(name, () => {
         //this.gulp.watch(this.config.source.glob, this.config.source.options, [this.taskName()])
+        this.log(`[${Util.colors.green(name)}] watching ${this.config.watch.glob} ${stringify(this.config.watch.options)}...`)
 
-        this.gulp.watch(this.config.source.glob, this.config.source.options, (event) => {
+        return this.gulp.watch(this.config.watch.glob, this.config.watch.options, (event) => {
           this.log(`File ${event.path} was ${event.type}, running ${this.taskName()}...`);
-          this.run(true)
+          return Promise
+            .resolve(this.run(true))
+            .then(() => this.logFinish())
         })
       })
     }
@@ -151,7 +154,7 @@ const BaseRecipe = class extends Base {
       this.debug(`Registering task: ${Util.colors.green(name)}`)
       this.gulp.task(name, () => {
         //this.log(`Running task: ${Util.colors.green(name)}`)
-        this.run()
+        return this.run()
       })
     }
   }
@@ -167,6 +170,10 @@ const BaseRecipe = class extends Base {
     else {
       return `${this.taskName()}:watch`
     }
+  }
+
+  logFinish(message = 'finished.') {
+    this.log(`[${Util.colors.green(this.taskName())}] ${message}`)
   }
 }
 
@@ -228,6 +235,8 @@ const Autoprefixer = class extends BaseRecipe {
   }
 }
 
+let PluginError = Util.PluginError
+
 const Default = {
   debug: false,
   presetType: 'javascripts',
@@ -267,7 +276,105 @@ const EsLint = class extends BaseRecipe {
       .pipe(gulpif(this.config.debug, debug(this.debugOptions())))
       .pipe(eslint(this.config.options))
       .pipe(eslint.format()) // outputs the lint results to the console. Alternatively use eslint.formatEach() (see Docs).
+
+
+      //1. HACK solution that works with first error, but is very ugly
+      // this should emit the error, but we aren't notified
       .pipe(gulpif(!watching, eslint.failAfterError())) // To have the process exit with an error code (1) on lint error, return the stream and pipe to failAfterError last.
+
+      // make sure we are notified of any error (this really should be happening in eslint.failAfterError(), but not sure where it is lost)
+      .pipe(eslint.result((results) => { // this is single file #result not #results, we don't get notified on #results
+        let count = results.errorCount;
+        if (count > 0) {
+          throw new PluginError(
+            'gulp-eslint',
+            {
+              message: 'Failed with' + (count === 1 ? ' error' : ' errors')
+            }
+          )
+        }
+      }))
+      .on('error', (error) => {
+        this.notifyError(error, watching)
+      })
+
+      // 2. Attempt now that returns are in place with the gulpif
+      // this should emit the error, but we aren't notified
+      //.pipe(gulpif(!watching, eslint.failAfterError())) // To have the process exit with an error code (1) on lint error, return the stream and pipe to failAfterError last.
+      //.on('error', (error) => {
+      //  this.notifyError(error, watching)
+      //})
+
+      //// 3. Attempt now that returns are in place WITHOUT gulpif
+      //// this should emit the error, but we aren't notified
+      //.pipe( eslint.failAfterError()) // To have the process exit with an error code (1) on lint error, return the stream and pipe to failAfterError last.
+      //.on('error', (error) => {
+      //  this.notifyError(error, watching)
+      //})
+
+      // 4. https://github.com/adametry/gulp-eslint/issues/135#issuecomment-180555978
+      //.pipe(eslint.results(function (results) {
+      //  var count = results.errorCount;
+      //  console.log('Total ESLint Error Count: ' + count);
+      //  if (count > 0) {
+      //    throw new Error('Failed with Errors');
+      //  }
+      //}))
+      //.on('error', function (error) {
+      //  console.log('Total ESLint Error Count: ' + error);
+      //})
+      //.on('finish', () => {
+      //  console.log('eslint.results finished');
+      //})
+      //.on('end', () => {
+      //  console.log('eslint.results ended');
+      //})
+
+      //// 5. notification is emitted
+      //.pipe(eslint.results(function (results) {
+      //  var count = results.errorCount;
+      //  console.log('*****Error Count: ' + count);
+      //  if (count > 0) {
+      //    throw new Error('******My custom error');
+      //  }
+      //}))
+      //.on('error', (error) => {
+      //  this.notifyError(error, watching)
+      //})
+
+
+      //// 6. notification is emitted
+      //.pipe(eslint.results(function (results) {
+      //  var count = results.errorCount;
+      //  console.log('*****Error Count: ' + count);
+      //  if (count > 0) {
+      //    throw new PluginError('******My custom error');
+      //  }
+      //}))
+      //.on('error', (error) => {
+      //  this.notifyError(error, watching)
+      //})
+
+      //// 7. notification is emitted, except when watching
+      //.pipe(eslint.results(function (results) {
+      //  let count = results.errorCount;
+      //  console.error('****************in results handler')
+      //  if (count > 0) {
+      //    throw new PluginError('gulp-eslint', { message: 'Failed with ' + count + (count === 1 ? ' error' : ' errors') })
+      //  }
+      //}))
+      //.on('error', (error) => {
+      //  console.error('****************in error handler')
+      //  this.notifyError(error, watching)
+      //})
+
+
+      //.pipe( eslint.failAfterError())
+      //.on('error', (error) => {
+      //  this.notifyError(error, watching)
+      //})
+
+
 
     // FIXME: even including any remnant of JSCS at this point broke everything through the unfound requirement of babel 5.x through babel-jscs.  I can't tell where this occurred, but omitting gulp-jscs for now gets me past this issue.  Revisit this when there are clear updates to use babel 6
     //.pipe(jscs())      // enforce style guide
@@ -344,8 +451,6 @@ const Default$2 = {
     }
   },
   options: {
-    indentedSyntax: true,
-    errLogToConsole: false,
     includePaths: ['node_modules']
   },
   // capture defaults from autoprefixer class
@@ -449,7 +554,7 @@ const TaskSeries = class extends Base {
 
     this.debug(`Registering task: ${Util.colors.green(taskName)} for ${stringify(tasks)}`)
     this.gulp.task(taskName, () => {
-      this.runSequence(...tasks)
+      return this.runSequence(...tasks)
     })
   }
 
@@ -673,7 +778,9 @@ const RollupEs = class extends BaseRecipe {
 
     return rollup$1(options)
       .then((bundle) => {
-        return bundle.write(options)
+        let promise = bundle.write(options)
+        //this.logFinish()
+        return promise
       })
       .catch((error) => {
         error.plugin = 'rollup'

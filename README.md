@@ -33,9 +33,8 @@ let recipes = [
 ]
 
 
-// Simple helper to create the default and watch tasks as a series of the recipes already defined
+// Simple helper to create the `default` and `default:watch` tasks as a series of the recipes already defined
 new TaskSeries(gulp, 'default', recipes)
-new TaskSeries(gulp, 'watch', recipes, {watch: true})
 ```
 
 Run it with `gulp`.
@@ -55,6 +54,9 @@ TaskSeries allows tasks to be run in a sequence or in a heterogeneous set of seq
     1. clean
     2. eslint && scsslint tasks in parallel
     3. images, sass, && rollup* tasks in parallel
+    
+Note that unless `watch: false`, any `TaskSeries` instantiation will generate a watch version as well.  For the above `TaskSeries`, both the `default` task as well as the `default:watch` task will be generated.    
+    
 
 ## Why?
 

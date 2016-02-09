@@ -9,7 +9,8 @@ const Default = {
   watch: false,
   presetType: 'macro',
   task: {
-    name: 'clean'
+    name: 'clean',
+    help: 'Cleans images, stylesheets, and javascripts.'
   }
 }
 

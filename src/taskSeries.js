@@ -17,7 +17,7 @@ const TaskSeries = class extends Base {
    */
   constructor(gulp, taskName, recipes, config = {}) {
     super(gulp, extend(true, {}, Default, config))
-
+    this.recipes = recipes
     this.registerTask(taskName, recipes)
 
     if (this.config.watch) {
@@ -25,31 +25,43 @@ const TaskSeries = class extends Base {
     }
   }
 
-  registerTask(taskName, recipes) {
-    this.debug(`Registering task: ${Util.colors.green(taskName)} for ${stringify(this.toTaskNames(recipes))}`)
-    this.gulp.task(taskName, () => {
-      return this.run(recipes)
+  createHelpText(){
+    let taskNames = this.flattenedRecipes().reduce((a, b) => {
+      return a.concat(b.taskName());
+    }, [])
+
+    // use the config to generate the dynamic help
+    return `uns series [${taskNames.join(', ')}]`
+  }
+
+  registerTask(taskName) {
+    this.debug(`Registering task: ${Util.colors.green(taskName)} for ${stringify(this.toTaskNames(this.recipes))}`)
+    this.gulp.task(taskName, `R${this.createHelpText()}`, () => {
+      return this.run(this.recipes)
     })
+  }
+
+  flattenedRecipes(){
+    return [].concat(...this.recipes)
+  }
+
+  watchableRecipes(){
+    // create an array of watchable recipes
+    let watchableRecipes = []
+    for(let recipe of this.flattenedRecipes()) {
+      if(recipe.config.watch){
+        watchableRecipes.push(recipe)
+      }
+    }
   }
 
   registerWatchTask(taskName, recipes) {
     // generate watch task
     this.debug(`Registering task: ${Util.colors.green(taskName)}`)
-    this.gulp.task(taskName, () => {
-
-      // flatten recipes
-      let flattenedRecipes = [].concat(...recipes)
-
-      // create an array of watchable recipes
-      let watchedRecipes = []
-      for(let recipe of flattenedRecipes) {
-        if(recipe.config.watch){
-          watchedRecipes.push(recipe)
-        }
-      }
+    this.gulp.task(taskName, Util.colors.grey(`|___ aggregate watches from and r${this.createHelpText()}`), () => {
 
       // watch the watchable recipes and make them #run the series
-      for(let recipe of watchedRecipes){
+      for(let recipe of this.watchableRecipes()){
         this.log(`[${Util.colors.green(taskName)}] watching ${recipe.taskName()} ${recipe.config.watch.glob}...`)
         this.gulp.watch(recipe.config.watch.glob, recipe.config.watch.options, (event) => {
           this.log(`[${Util.colors.green(taskName)}] ${event.path} was ${event.type}, running series...`);

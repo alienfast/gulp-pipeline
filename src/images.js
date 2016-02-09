@@ -41,6 +41,10 @@ const Images = class extends BaseRecipe {
     this.browserSync = BrowserSync.create()
   }
 
+  createHelpText(){
+    return `Minifies change images from ${this.config.source.options.cwd}/${this.config.source.glob}`
+  }
+
   run(watching = false) {
     return this.gulp.src(this.config.source.glob, this.config.source.options)
       .pipe(changed(this.config.dest)) // ignore unchanged files

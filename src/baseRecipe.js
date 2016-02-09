@@ -5,7 +5,10 @@ import stringify from 'stringify-object'
 
 export const Default = {
   watch: true,
-  debug: false
+  debug: false,
+  task: {
+    help: ''
+  }
 }
 
 const BaseRecipe = class extends Base {
@@ -38,16 +41,23 @@ const BaseRecipe = class extends Base {
     }
 
     super(gulp, extend(true, {}, Default, presetTypeConfig, config))
+    if(this.createHelpText !== undefined) {
+      this.config.task.help = this.createHelpText()
+    }
     this.registerTask()
     this.registerWatchTask()
   }
+
+  //createHelpText(){
+  //  // empty implementation that can dynamically create help text instead of the static config.task.help
+  //}
 
   registerWatchTask() {
     if (this.config.watch) {
       // generate watch task e.g. sass:watch
       let name = this.watchTaskName()
       this.debug(`Registering task: ${Util.colors.green(name)}`)
-      this.gulp.task(name, () => {
+      this.gulp.task(name, this.createWatchHelpText(), () => {
         this.log(`[${Util.colors.green(name)}] watching ${this.config.watch.glob} ${stringify(this.config.watch.options)}...`)
 
         return this.gulp.watch(this.config.watch.glob, this.config.watch.options, (event) => {
@@ -60,12 +70,17 @@ const BaseRecipe = class extends Base {
     }
   }
 
+  createWatchHelpText(){
+    return Util.colors.grey(`|___ watches ${this.config.watch.options.cwd}/${this.config.watch.glob}`)
+  }
+
+
   registerTask() {
     if (this.config.task) {
       // generate primary task e.g. sass
       let name = this.taskName()
       this.debug(`Registering task: ${Util.colors.green(name)}`)
-      this.gulp.task(name, () => {
+      this.gulp.task(name, this.config.task.help, () => {
         //this.log(`Running task: ${Util.colors.green(name)}`)
         return this.run()
       })

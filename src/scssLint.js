@@ -40,6 +40,10 @@ const ScssLint = class extends BaseRecipe {
     super(gulp, preset, extend(true, {}, Default, config))
   }
 
+  createHelpText(){
+    return `Lints ${this.config.source.options.cwd}/${this.config.source.glob}`
+  }
+
   run(watching = false) {
     return this.gulp.src(this.config.source.glob, this.config.source.options)
       .pipe(gulpif(this.config.debug, debug(this.debugOptions())))

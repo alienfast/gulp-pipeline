@@ -32,3 +32,35 @@ let recipes = [
 
 // Simple helper to create the `default` and `default:watch` tasks as a sequence of the recipes already defined
 new TaskSeries(gulp, 'default', recipes)
+
+
+
+
+// sample
+//import Images from './src/images'
+//import Sass from './src/sass'
+//import ScssLint from './src/scssLint'
+//
+//// Utilize one of the common configs
+//let preset = Presets.rails() // other pre-configured presets: nodeSrc, nodeLib - see presets.js and submit PRs with other common configs
+//
+//// Instantiate ordered array of recipes (for each instantiation the tasks will be created e.g. sass and sass:watch)
+////  Note: these are run by the run-sequence, allowing series and parallel execution
+//let recipes = [
+//  new Clean(gulp, preset),
+//  [
+//    new EsLint(gulp, preset),
+//    new ScssLint(gulp, preset)
+//  ],
+//  [
+//    new Images(gulp, preset),
+//    new Sass(gulp, preset),
+//    new RollupEs(gulp, preset, {options: {dest: 'dist/acme.es.js'}}),                        // es
+//    new RollupCjs(gulp, preset, {options: {dest: 'dist/acme.cjs.js'}}),                      // commonjs
+//    new RollupIife(gulp, preset, {options: {dest: 'dist/acme.iife.js', moduleName: 'acme'}}) // iife self executing bundle for the browser
+//  ]
+//]
+//
+//
+//// Simple helper to create the `default` and `default:watch` tasks as a series of the recipes already defined
+//new TaskSeries(gulp, 'default', recipes)

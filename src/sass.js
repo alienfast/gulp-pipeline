@@ -48,6 +48,10 @@ const Sass = class extends BaseRecipe {
     this.browserSync = BrowserSync.create()
   }
 
+  createHelpText(){
+    return `Compiles ${this.config.source.options.cwd}/${this.config.source.glob}`
+  }
+
   run(watching = false) {
     return this.gulp.src(this.config.source.glob, this.config.source.options)
 

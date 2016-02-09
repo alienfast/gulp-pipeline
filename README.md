@@ -13,18 +13,18 @@ import { Presets, Clean, EsLint, Images, ScssLint, Sass, RollupEs, RollupCjs, Ro
 import gulp from 'gulp'
 
 // Utilize one of the common configs
-let preset = Presets.nodeSrc() // other pre-configured presets: nodeLib, rails - see presets.js and submit PRs with other common configs
+let preset = Presets.rails() // other pre-configured presets: nodeSrc, nodeLib - see presets.js and submit PRs with other common configs
 
 // Instantiate ordered array of recipes (for each instantiation the tasks will be created e.g. sass and sass:watch)
-//  Note: these are run by the run-sequence, allowing series and parallel execution 
+//  Note: these are run by the run-sequence, allowing series and parallel execution
 let recipes = [
   new Clean(gulp, preset),
   [
     new EsLint(gulp, preset),
-    new ScssLint(gulp, preset),
+    new ScssLint(gulp, preset)
   ],
   [
-    new Images(gulp, preset),  
+    new Images(gulp, preset),
     new Sass(gulp, preset),
     new RollupEs(gulp, preset, {options: {dest: 'dist/acme.es.js'}}),                        // es
     new RollupCjs(gulp, preset, {options: {dest: 'dist/acme.cjs.js'}}),                      // commonjs
@@ -37,7 +37,8 @@ let recipes = [
 new TaskSeries(gulp, 'default', recipes)
 ```
 
-Run it with `gulp`.
+This configuration generates the following (call the `help` task):
+ 
 
 ## Recipes
 - Autoprefixer
@@ -56,6 +57,9 @@ TaskSeries allows tasks to be run in a sequence or in a heterogeneous set of seq
     3. images, sass, && rollup* tasks in parallel
     
 Note that unless `watch: false`, any `TaskSeries` instantiation will generate a watch version as well.  For the above `TaskSeries`, both the `default` task as well as the `default:watch` task will be generated.    
+  
+## Help
+Generates a `help` task and dynamic help descriptions, making it easier to know the effects and if your config and presets are set properly. 
     
 
 ## Why?

@@ -57,7 +57,7 @@ TaskSeries allows tasks to be run in a sequence or in a heterogeneous set of seq
     2. eslint && scsslint tasks in parallel
     3. images, sass, && rollup* tasks in parallel
     
-Note that unless `watch: false`, any `TaskSeries` instantiation will generate a watch version as well.  For the above `TaskSeries`, both the `default` task as well as the `default:watch` task will be generated.    
+Note that unless `watch: false`, any `TaskSeries` instantiation will generate a `watch` variation as well.  For the above `TaskSeries`, both the `default` task as well as the `default:watch` task will be generated.  The watch variation is special in that it will aggregate all watched sources from _any watchable_ task in the series and upon a change, it will execute the full series.    
   
 ## Help
 Generates a `help` task and dynamic help descriptions, making it easier to know the effects and if your config and presets are set properly. 

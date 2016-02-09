@@ -1,7 +1,7 @@
-define(['exports', 'gulp-autoprefixer', 'extend', 'gulp-if', 'gulp-debug', 'gulp-eslint', 'gulp-util', 'browser-sync', 'gulp-changed', 'gulp-imagemin', 'gulp-sass', 'gulp-sourcemaps', 'gulp-scss-lint', 'gulp-scss-lint-stylish', 'stringify-object', 'rollup', 'glob', 'rollup-plugin-babel', 'gulp-notify', 'gulp-help', 'console', 'del'], function (exports, autoprefixer, extend, gulpif, debug, eslint, Util, BrowserSync, changed, imagemin, sass, sourcemaps, scssLint, scssLintStylish, stringify, rollup, glob, babel, notify, gulpHelp, console, del) { 'use strict';
+define(['exports', 'extend', 'gulp-autoprefixer', 'gulp-if', 'gulp-debug', 'gulp-eslint', 'gulp-util', 'browser-sync', 'gulp-changed', 'gulp-imagemin', 'gulp-sass', 'gulp-sourcemaps', 'gulp-scss-lint', 'gulp-scss-lint-stylish', 'stringify-object', 'rollup', 'glob', 'rollup-plugin-babel', 'gulp-notify', 'gulp-help', 'console', 'del'], function (exports, extend, autoprefixer, gulpif, debug, eslint, Util, BrowserSync, changed, imagemin, sass, sourcemaps, scssLint, scssLintStylish, stringify, rollup, glob, babel, notify, gulpHelp, console, del) { 'use strict';
 
-  autoprefixer = 'default' in autoprefixer ? autoprefixer['default'] : autoprefixer;
   extend = 'default' in extend ? extend['default'] : extend;
+  autoprefixer = 'default' in autoprefixer ? autoprefixer['default'] : autoprefixer;
   gulpif = 'default' in gulpif ? gulpif['default'] : gulpif;
   debug = 'default' in debug ? debug['default'] : debug;
   eslint = 'default' in eslint ? eslint['default'] : eslint;
@@ -82,6 +82,92 @@ define(['exports', 'gulp-autoprefixer', 'extend', 'gulp-if', 'gulp-debug', 'gulp
   };
 
   babelHelpers;
+
+  // NOTE: `source` and `watch` are node-glob options hashes. e.g. gulp.src(source.glob, source.options)
+
+  var Rails = {
+    javascripts: {
+      source: { options: { cwd: './app/assets/javascripts' } },
+      watch: { options: { cwd: './app/assets/javascripts' } },
+      dest: './public/javascripts'
+    },
+    stylesheets: {
+      source: { options: { cwd: './app/assets/stylesheets' } },
+      watch: { options: { cwd: './app/assets/stylesheets' } },
+      dest: './public/stylesheets'
+    },
+    images: {
+      source: { options: { cwd: './app/assets/images' } },
+      watch: { options: { cwd: './app/assets/images' } },
+      dest: './public/images'
+    }
+  };
+
+  var NodeLib = {
+    javascripts: {
+      source: { options: { cwd: './lib' } },
+      watch: { options: { cwd: './lib' } },
+      dest: './dist'
+    },
+    stylesheets: {
+      source: { options: { cwd: './lib' } },
+      watch: { options: { cwd: './lib' } },
+      dest: './dist'
+    },
+    images: {
+      source: { options: { cwd: './lib' } },
+      watch: { options: { cwd: './lib' } },
+      dest: './dist'
+    }
+  };
+
+  var NodeSrc = {
+    javascripts: {
+      source: { options: { cwd: './src' } },
+      watch: { options: { cwd: './src' } },
+      dest: './dist'
+    },
+    stylesheets: {
+      source: { options: { cwd: './src' } },
+      watch: { options: { cwd: './src' } },
+      dest: './dist'
+    },
+    images: {
+      source: { options: { cwd: './lib' } },
+      watch: { options: { cwd: './lib' } },
+      dest: './dist'
+    }
+  };
+
+  var Presets = function () {
+    function Presets() {
+      babelHelpers.classCallCheck(this, Presets);
+    }
+
+    babelHelpers.createClass(Presets, null, [{
+      key: 'nodeLib',
+      value: function nodeLib() {
+        var overrides = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+
+        return extend(true, {}, NodeLib, overrides);
+      }
+    }, {
+      key: 'nodeSrc',
+      value: function nodeSrc() {
+        var overrides = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+
+        return extend(true, {}, NodeSrc, overrides);
+      }
+    }, {
+      key: 'rails',
+      value: function rails() {
+        var overrides = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+
+        return extend(true, {}, Rails, overrides);
+      }
+    }]);
+    return Presets;
+  }();
 
   var Default$15 = {
     watch: true,
@@ -1509,6 +1595,7 @@ define(['exports', 'gulp-autoprefixer', 'extend', 'gulp-if', 'gulp-debug', 'gulp
     return Clean;
   }(BaseRecipe);
 
+  exports.Presets = Presets;
   exports.Autoprefixer = Autoprefixer;
   exports.EsLint = EsLint;
   exports.Images = Images;

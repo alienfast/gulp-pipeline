@@ -38,7 +38,8 @@ new TaskSeries(gulp, 'default', recipes)
 ```
 
 This configuration generates the following (call the `help` task):
- 
+
+![Help](help-demo.png) 
 
 ## Recipes
 - Autoprefixer

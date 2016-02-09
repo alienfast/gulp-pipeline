@@ -48,7 +48,6 @@ const BaseRecipe = class extends Base {
       let name = this.watchTaskName()
       this.debug(`Registering task: ${Util.colors.green(name)}`)
       this.gulp.task(name, () => {
-        //this.gulp.watch(this.config.source.glob, this.config.source.options, [this.taskName()])
         this.log(`[${Util.colors.green(name)}] watching ${this.config.watch.glob} ${stringify(this.config.watch.options)}...`)
 
         return this.gulp.watch(this.config.watch.glob, this.config.watch.options, (event) => {

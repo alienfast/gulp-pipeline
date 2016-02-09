@@ -534,7 +534,7 @@ const ScssLint = class extends BaseRecipe {
 
 const Default$4 = {
   debug: false,
-  watch: false
+  watch: true
 }
 
 const TaskSeries = class extends Base {
@@ -547,11 +547,10 @@ const TaskSeries = class extends Base {
   constructor(gulp, taskName, recipes, config = {}) {
     super(gulp, extend(true, {}, Default$4, config))
 
+    this.registerTask(taskName, recipes)
+
     if (this.config.watch) {
-      this.registerWatchTask(taskName, recipes)
-    }
-    else {
-      this.registerTask(taskName, recipes)
+      this.registerWatchTask(`${taskName}:watch`, recipes)
     }
   }
 

@@ -30,6 +30,5 @@ let recipes = [
 ]
 
 
-// Simple helper to create the default and watch tasks as a sequence of the recipes already defined
+// Simple helper to create the `default` and `default:watch` tasks as a sequence of the recipes already defined
 new TaskSeries(gulp, 'default', recipes)
-new TaskSeries(gulp, 'watch', recipes, {watch: true})

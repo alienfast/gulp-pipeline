@@ -663,7 +663,7 @@
 
   var Default$4 = {
     debug: false,
-    watch: false
+    watch: true
   };
 
   var TaskSeries = function (_Base) {
@@ -682,10 +682,10 @@
 
       var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(TaskSeries).call(this, gulp, extend(true, {}, Default$4, config)));
 
+      _this.registerTask(taskName, recipes);
+
       if (_this.config.watch) {
-        _this.registerWatchTask(taskName, recipes);
-      } else {
-        _this.registerTask(taskName, recipes);
+        _this.registerWatchTask(taskName + ':watch', recipes);
       }
       return _this;
     }

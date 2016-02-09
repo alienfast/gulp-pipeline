@@ -16,6 +16,8 @@ import { rollup } from 'rollup';
 import glob from 'glob';
 import babel from 'rollup-plugin-babel';
 import notify from 'gulp-notify';
+import gulpHelp from 'gulp-help';
+import console from 'console';
 import del from 'del';
 
 const Default$15 = {
@@ -31,7 +33,7 @@ const Base = class {
    * @param config - customized overrides
    */
   constructor(gulp, config) {
-    this.gulp = gulp
+    this.gulp = gulpHelp(gulp, {afterPrintCallback: () => console.log(`For configuration help see https://github.com/alienfast/gulp-pipeline \n`)}) // eslint-disable-line no-console
     this.config = extend(true, {}, Default$15, config)
     this.debug(`[${this.constructor.name}] using resolved config: ${stringify(this.config)}`)
   }
@@ -91,7 +93,10 @@ ${error.message}`
 
 const Default$14 = {
   watch: true,
-  debug: false
+  debug: false,
+  task: {
+    help: ''
+  }
 }
 
 const BaseRecipe = class extends Base {
@@ -124,16 +129,23 @@ const BaseRecipe = class extends Base {
     }
 
     super(gulp, extend(true, {}, Default$14, presetTypeConfig, config))
+    if(this.createHelpText !== undefined) {
+      this.config.task.help = this.createHelpText()
+    }
     this.registerTask()
     this.registerWatchTask()
   }
+
+  //createHelpText(){
+  //  // empty implementation that can dynamically create help text instead of the static config.task.help
+  //}
 
   registerWatchTask() {
     if (this.config.watch) {
       // generate watch task e.g. sass:watch
       let name = this.watchTaskName()
       this.debug(`Registering task: ${Util.colors.green(name)}`)
-      this.gulp.task(name, () => {
+      this.gulp.task(name, this.createWatchHelpText(), () => {
         this.log(`[${Util.colors.green(name)}] watching ${this.config.watch.glob} ${stringify(this.config.watch.options)}...`)
 
         return this.gulp.watch(this.config.watch.glob, this.config.watch.options, (event) => {
@@ -146,12 +158,17 @@ const BaseRecipe = class extends Base {
     }
   }
 
+  createWatchHelpText(){
+    return Util.colors.grey(`|___ watches ${this.config.watch.options.cwd}/${this.config.watch.glob}`)
+  }
+
+
   registerTask() {
     if (this.config.task) {
       // generate primary task e.g. sass
       let name = this.taskName()
       this.debug(`Registering task: ${Util.colors.green(name)}`)
-      this.gulp.task(name, () => {
+      this.gulp.task(name, this.config.task.help, () => {
         //this.log(`Running task: ${Util.colors.green(name)}`)
         return this.run()
       })
@@ -267,6 +284,10 @@ const EsLint = class extends BaseRecipe {
    */
   constructor(gulp, preset, config = {}) {
     super(gulp, preset, extend(true, {}, Default, config))
+  }
+
+  createHelpText(){
+    return `Lints ${this.config.source.options.cwd}/${this.config.source.glob}`
   }
 
   run(watching = false) {
@@ -418,6 +439,10 @@ const Images = class extends BaseRecipe {
     this.browserSync = BrowserSync.create()
   }
 
+  createHelpText(){
+    return `Minifies change images from ${this.config.source.options.cwd}/${this.config.source.glob}`
+  }
+
   run(watching = false) {
     return this.gulp.src(this.config.source.glob, this.config.source.options)
       .pipe(changed(this.config.dest)) // ignore unchanged files
@@ -471,6 +496,10 @@ const Sass = class extends BaseRecipe {
     this.browserSync = BrowserSync.create()
   }
 
+  createHelpText(){
+    return `Compiles ${this.config.source.options.cwd}/${this.config.source.glob}`
+  }
+
   run(watching = false) {
     return this.gulp.src(this.config.source.glob, this.config.source.options)
 
@@ -522,6 +551,10 @@ const ScssLint = class extends BaseRecipe {
     super(gulp, preset, extend(true, {}, Default$3, config))
   }
 
+  createHelpText(){
+    return `Lints ${this.config.source.options.cwd}/${this.config.source.glob}`
+  }
+
   run(watching = false) {
     return this.gulp.src(this.config.source.glob, this.config.source.options)
       .pipe(gulpif(this.config.debug, debug(this.debugOptions())))
@@ -546,7 +579,7 @@ const TaskSeries = class extends Base {
    */
   constructor(gulp, taskName, recipes, config = {}) {
     super(gulp, extend(true, {}, Default$4, config))
-
+    this.recipes = recipes
     this.registerTask(taskName, recipes)
 
     if (this.config.watch) {
@@ -554,31 +587,51 @@ const TaskSeries = class extends Base {
     }
   }
 
-  registerTask(taskName, recipes) {
-    this.debug(`Registering task: ${Util.colors.green(taskName)} for ${stringify(this.toTaskNames(recipes))}`)
-    this.gulp.task(taskName, () => {
-      return this.run(recipes)
+  createHelpText(){
+    let taskNames = this.flattenedRecipes().reduce((a, b) => {
+      return a.concat(b.taskName());
+    }, [])
+
+    // use the config to generate the dynamic help
+    return `Runs series [${taskNames.join(', ')}]`
+  }
+  createWatchHelpText(){
+    let taskNames = this.watchableRecipes().reduce((a, b) => {
+      return a.concat(b.taskName());
+    }, [])
+
+    return Util.colors.grey(`|___ aggregates watches from [${taskNames.join(', ')}] and runs full series`)
+  }
+
+  registerTask(taskName) {
+    this.debug(`Registering task: ${Util.colors.green(taskName)} for ${stringify(this.toTaskNames(this.recipes))}`)
+    this.gulp.task(taskName, this.createHelpText(), () => {
+      return this.run(this.recipes)
     })
+  }
+
+  flattenedRecipes(){
+    return [].concat(...this.recipes)
+  }
+
+  watchableRecipes(){
+    // create an array of watchable recipes
+    let watchableRecipes = []
+    for(let recipe of this.flattenedRecipes()) {
+      if(recipe.config.watch){
+        watchableRecipes.push(recipe)
+      }
+    }
+    return watchableRecipes
   }
 
   registerWatchTask(taskName, recipes) {
     // generate watch task
     this.debug(`Registering task: ${Util.colors.green(taskName)}`)
-    this.gulp.task(taskName, () => {
-
-      // flatten recipes
-      let flattenedRecipes = [].concat(...recipes)
-
-      // create an array of watchable recipes
-      let watchedRecipes = []
-      for(let recipe of flattenedRecipes) {
-        if(recipe.config.watch){
-          watchedRecipes.push(recipe)
-        }
-      }
+    this.gulp.task(taskName, this.createWatchHelpText(), () => {
 
       // watch the watchable recipes and make them #run the series
-      for(let recipe of watchedRecipes){
+      for(let recipe of this.watchableRecipes()){
         this.log(`[${Util.colors.green(taskName)}] watching ${recipe.taskName()} ${recipe.config.watch.glob}...`)
         this.gulp.watch(recipe.config.watch.glob, recipe.config.watch.options, (event) => {
           this.log(`[${Util.colors.green(taskName)}] ${event.path} was ${event.type}, running series...`);
@@ -800,6 +853,10 @@ const RollupEs = class extends BaseRecipe {
     return entry[0]
   }
 
+  createHelpText(){
+    return `Rollup ${this.config.source.options.cwd}/${this.config.source.glob} in the ${this.config.options.format} format to ${this.config.options.dest}`
+  }
+
   run(watching = false) {
     let options = extend(true, {
         entry: this.resolveEntry(),
@@ -961,6 +1018,11 @@ const BaseClean = class extends BaseRecipe {
     super(gulp, preset, extend(true, {}, Default$16, config))
   }
 
+  createHelpText(){
+    // use the config to generate the dynamic help
+    return `Cleans ${this.config.dest}`
+  }
+
   run(watching = false) {
     if (this.config.sync) {
       let paths = del.sync(this.config.dest)
@@ -1053,7 +1115,8 @@ const Default$13 = {
   watch: false,
   presetType: 'macro',
   task: {
-    name: 'clean'
+    name: 'clean',
+    help: 'Cleans images, stylesheets, and javascripts.'
   }
 }
 

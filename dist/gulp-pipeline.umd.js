@@ -1,8 +1,8 @@
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('gulp-autoprefixer'), require('extend'), require('gulp-if'), require('gulp-debug'), require('gulp-eslint'), require('gulp-util'), require('browser-sync'), require('gulp-changed'), require('gulp-imagemin'), require('gulp-sass'), require('gulp-sourcemaps'), require('gulp-scss-lint'), require('gulp-scss-lint-stylish'), require('stringify-object'), require('rollup'), require('glob'), require('rollup-plugin-babel'), require('gulp-notify'), require('del')) :
-  typeof define === 'function' && define.amd ? define(['exports', 'gulp-autoprefixer', 'extend', 'gulp-if', 'gulp-debug', 'gulp-eslint', 'gulp-util', 'browser-sync', 'gulp-changed', 'gulp-imagemin', 'gulp-sass', 'gulp-sourcemaps', 'gulp-scss-lint', 'gulp-scss-lint-stylish', 'stringify-object', 'rollup', 'glob', 'rollup-plugin-babel', 'gulp-notify', 'del'], factory) :
-  (factory((global.gulpPipeline = {}),global.autoprefixer,global.extend,global.gulpif,global.debug,global.eslint,global.Util,global.BrowserSync,global.changed,global.imagemin,global.sass,global.sourcemaps,global.scssLint,global.scssLintStylish,global.stringify,global.rollup,global.glob,global.babel,global.notify,global.del));
-}(this, function (exports,autoprefixer,extend,gulpif,debug,eslint,Util,BrowserSync,changed,imagemin,sass,sourcemaps,scssLint,scssLintStylish,stringify,rollup,glob,babel,notify,del) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('gulp-autoprefixer'), require('extend'), require('gulp-if'), require('gulp-debug'), require('gulp-eslint'), require('gulp-util'), require('browser-sync'), require('gulp-changed'), require('gulp-imagemin'), require('gulp-sass'), require('gulp-sourcemaps'), require('gulp-scss-lint'), require('gulp-scss-lint-stylish'), require('stringify-object'), require('rollup'), require('glob'), require('rollup-plugin-babel'), require('gulp-notify'), require('gulp-help'), require('console'), require('del')) :
+  typeof define === 'function' && define.amd ? define(['exports', 'gulp-autoprefixer', 'extend', 'gulp-if', 'gulp-debug', 'gulp-eslint', 'gulp-util', 'browser-sync', 'gulp-changed', 'gulp-imagemin', 'gulp-sass', 'gulp-sourcemaps', 'gulp-scss-lint', 'gulp-scss-lint-stylish', 'stringify-object', 'rollup', 'glob', 'rollup-plugin-babel', 'gulp-notify', 'gulp-help', 'console', 'del'], factory) :
+  (factory((global.gulpPipeline = {}),global.autoprefixer,global.extend,global.gulpif,global.debug,global.eslint,global.Util,global.BrowserSync,global.changed,global.imagemin,global.sass,global.sourcemaps,global.scssLint,global.scssLintStylish,global.stringify,global.rollup,global.glob,global.babel,global.notify,global.gulpHelp,global.console,global.del));
+}(this, function (exports,autoprefixer,extend,gulpif,debug,eslint,Util,BrowserSync,changed,imagemin,sass,sourcemaps,scssLint,scssLintStylish,stringify,rollup,glob,babel,notify,gulpHelp,console,del) { 'use strict';
 
   autoprefixer = 'default' in autoprefixer ? autoprefixer['default'] : autoprefixer;
   extend = 'default' in extend ? extend['default'] : extend;
@@ -21,6 +21,8 @@
   glob = 'default' in glob ? glob['default'] : glob;
   babel = 'default' in babel ? babel['default'] : babel;
   notify = 'default' in notify ? notify['default'] : notify;
+  gulpHelp = 'default' in gulpHelp ? gulpHelp['default'] : gulpHelp;
+  console = 'default' in console ? console['default'] : console;
   del = 'default' in del ? del['default'] : del;
 
   var babelHelpers = {};
@@ -101,7 +103,9 @@
     function Base(gulp, config) {
       babelHelpers.classCallCheck(this, Base);
 
-      this.gulp = gulp;
+      this.gulp = gulpHelp(gulp, { afterPrintCallback: function afterPrintCallback() {
+          return console.log('For configuration help see https://github.com/alienfast/gulp-pipeline \n');
+        } }); // eslint-disable-line no-console
       this.config = extend(true, {}, Default$15, config);
       this.debug('[' + this.constructor.name + '] using resolved config: ' + stringify(this.config));
     }
@@ -168,7 +172,10 @@
 
   var Default$14 = {
     watch: true,
-    debug: false
+    debug: false,
+    task: {
+      help: ''
+    }
   };
 
   var BaseRecipe = function (_Base) {
@@ -206,10 +213,17 @@
 
       var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(BaseRecipe).call(this, gulp, extend(true, {}, Default$14, presetTypeConfig, config)));
 
+      if (_this.createHelpText !== undefined) {
+        _this.config.task.help = _this.createHelpText();
+      }
       _this.registerTask();
       _this.registerWatchTask();
       return _this;
     }
+
+    //createHelpText(){
+    //  // empty implementation that can dynamically create help text instead of the static config.task.help
+    //}
 
     babelHelpers.createClass(BaseRecipe, [{
       key: 'registerWatchTask',
@@ -221,7 +235,7 @@
             // generate watch task e.g. sass:watch
             var name = _this2.watchTaskName();
             _this2.debug('Registering task: ' + Util.colors.green(name));
-            _this2.gulp.task(name, function () {
+            _this2.gulp.task(name, _this2.createWatchHelpText(), function () {
               _this2.log('[' + Util.colors.green(name) + '] watching ' + _this2.config.watch.glob + ' ' + stringify(_this2.config.watch.options) + '...');
 
               return _this2.gulp.watch(_this2.config.watch.glob, _this2.config.watch.options, function (event) {
@@ -235,6 +249,11 @@
         }
       }
     }, {
+      key: 'createWatchHelpText',
+      value: function createWatchHelpText() {
+        return Util.colors.grey('|___ watches ' + this.config.watch.options.cwd + '/' + this.config.watch.glob);
+      }
+    }, {
       key: 'registerTask',
       value: function registerTask() {
         var _this3 = this;
@@ -243,7 +262,7 @@
           // generate primary task e.g. sass
           var name = this.taskName();
           this.debug('Registering task: ' + Util.colors.green(name));
-          this.gulp.task(name, function () {
+          this.gulp.task(name, this.config.task.help, function () {
             //this.log(`Running task: ${Util.colors.green(name)}`)
             return _this3.run();
           });
@@ -377,6 +396,11 @@
     }
 
     babelHelpers.createClass(EsLint, [{
+      key: 'createHelpText',
+      value: function createHelpText() {
+        return 'Lints ' + this.config.source.options.cwd + '/' + this.config.source.glob;
+      }
+    }, {
       key: 'run',
       value: function run() {
         var _this2 = this;
@@ -531,6 +555,11 @@
     }
 
     babelHelpers.createClass(Images, [{
+      key: 'createHelpText',
+      value: function createHelpText() {
+        return 'Minifies change images from ' + this.config.source.options.cwd + '/' + this.config.source.glob;
+      }
+    }, {
       key: 'run',
       value: function run() {
         var _this2 = this;
@@ -595,6 +624,11 @@
     }
 
     babelHelpers.createClass(Sass, [{
+      key: 'createHelpText',
+      value: function createHelpText() {
+        return 'Compiles ' + this.config.source.options.cwd + '/' + this.config.source.glob;
+      }
+    }, {
       key: 'run',
       value: function run() {
         var _this2 = this;
@@ -650,6 +684,11 @@
     }
 
     babelHelpers.createClass(ScssLint, [{
+      key: 'createHelpText',
+      value: function createHelpText() {
+        return 'Lints ' + this.config.source.options.cwd + '/' + this.config.source.glob;
+      }
+    }, {
       key: 'run',
       value: function run() {
         var _this2 = this;
@@ -685,6 +724,7 @@
 
       var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(TaskSeries).call(this, gulp, extend(true, {}, Default$4, config)));
 
+      _this.recipes = recipes;
       _this.registerTask(taskName, recipes);
 
       if (_this.config.watch) {
@@ -694,14 +734,74 @@
     }
 
     babelHelpers.createClass(TaskSeries, [{
+      key: 'createHelpText',
+      value: function createHelpText() {
+        var taskNames = this.flattenedRecipes().reduce(function (a, b) {
+          return a.concat(b.taskName());
+        }, []);
+
+        // use the config to generate the dynamic help
+        return 'Runs series [' + taskNames.join(', ') + ']';
+      }
+    }, {
+      key: 'createWatchHelpText',
+      value: function createWatchHelpText() {
+        var taskNames = this.watchableRecipes().reduce(function (a, b) {
+          return a.concat(b.taskName());
+        }, []);
+
+        return Util.colors.grey('|___ aggregates watches from [' + taskNames.join(', ') + '] and runs full series');
+      }
+    }, {
       key: 'registerTask',
-      value: function registerTask(taskName, recipes) {
+      value: function registerTask(taskName) {
         var _this2 = this;
 
-        this.debug('Registering task: ' + Util.colors.green(taskName) + ' for ' + stringify(this.toTaskNames(recipes)));
-        this.gulp.task(taskName, function () {
-          return _this2.run(recipes);
+        this.debug('Registering task: ' + Util.colors.green(taskName) + ' for ' + stringify(this.toTaskNames(this.recipes)));
+        this.gulp.task(taskName, this.createHelpText(), function () {
+          return _this2.run(_this2.recipes);
         });
+      }
+    }, {
+      key: 'flattenedRecipes',
+      value: function flattenedRecipes() {
+        var _ref;
+
+        return (_ref = []).concat.apply(_ref, babelHelpers.toConsumableArray(this.recipes));
+      }
+    }, {
+      key: 'watchableRecipes',
+      value: function watchableRecipes() {
+        // create an array of watchable recipes
+        var watchableRecipes = [];
+        var _iteratorNormalCompletion = true;
+        var _didIteratorError = false;
+        var _iteratorError = undefined;
+
+        try {
+          for (var _iterator = this.flattenedRecipes()[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+            var recipe = _step.value;
+
+            if (recipe.config.watch) {
+              watchableRecipes.push(recipe);
+            }
+          }
+        } catch (err) {
+          _didIteratorError = true;
+          _iteratorError = err;
+        } finally {
+          try {
+            if (!_iteratorNormalCompletion && _iterator.return) {
+              _iterator.return();
+            }
+          } finally {
+            if (_didIteratorError) {
+              throw _iteratorError;
+            }
+          }
+        }
+
+        return watchableRecipes;
       }
     }, {
       key: 'registerWatchTask',
@@ -710,49 +810,15 @@
 
         // generate watch task
         this.debug('Registering task: ' + Util.colors.green(taskName));
-        this.gulp.task(taskName, function () {
-          var _ref;
+        this.gulp.task(taskName, this.createWatchHelpText(), function () {
 
-          // flatten recipes
-          var flattenedRecipes = (_ref = []).concat.apply(_ref, babelHelpers.toConsumableArray(recipes));
-
-          // create an array of watchable recipes
-          var watchedRecipes = [];
-          var _iteratorNormalCompletion = true;
-          var _didIteratorError = false;
-          var _iteratorError = undefined;
-
-          try {
-            for (var _iterator = flattenedRecipes[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-              var recipe = _step.value;
-
-              if (recipe.config.watch) {
-                watchedRecipes.push(recipe);
-              }
-            }
-
-            // watch the watchable recipes and make them #run the series
-          } catch (err) {
-            _didIteratorError = true;
-            _iteratorError = err;
-          } finally {
-            try {
-              if (!_iteratorNormalCompletion && _iterator.return) {
-                _iterator.return();
-              }
-            } finally {
-              if (_didIteratorError) {
-                throw _iteratorError;
-              }
-            }
-          }
-
+          // watch the watchable recipes and make them #run the series
           var _iteratorNormalCompletion2 = true;
           var _didIteratorError2 = false;
           var _iteratorError2 = undefined;
 
           try {
-            for (var _iterator2 = watchedRecipes[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+            for (var _iterator2 = _this3.watchableRecipes()[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
               var recipe = _step2.value;
 
               _this3.log('[' + Util.colors.green(taskName) + '] watching ' + recipe.taskName() + ' ' + recipe.config.watch.glob + '...');
@@ -1060,6 +1126,11 @@
         return entry[0];
       }
     }, {
+      key: 'createHelpText',
+      value: function createHelpText() {
+        return 'Rollup ' + this.config.source.options.cwd + '/' + this.config.source.glob + ' in the ' + this.config.options.format + ' format to ' + this.config.options.dest;
+      }
+    }, {
       key: 'run',
       value: function run() {
         var _this2 = this;
@@ -1259,6 +1330,12 @@
     }
 
     babelHelpers.createClass(BaseClean, [{
+      key: 'createHelpText',
+      value: function createHelpText() {
+        // use the config to generate the dynamic help
+        return 'Cleans ' + this.config.dest;
+      }
+    }, {
       key: 'run',
       value: function run() {
         var _this2 = this;
@@ -1398,7 +1475,8 @@
     watch: false,
     presetType: 'macro',
     task: {
-      name: 'clean'
+      name: 'clean',
+      help: 'Cleans images, stylesheets, and javascripts.'
     }
   };
 

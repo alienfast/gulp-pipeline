@@ -1,3 +1,5 @@
+export { default as Presets } from './presets'
+
 export { default as Autoprefixer } from './autoprefixer'
 export { default as EsLint } from './eslint'
 export { default as Images } from './images'

@@ -31,12 +31,19 @@ const TaskSeries = class extends Base {
     }, [])
 
     // use the config to generate the dynamic help
-    return `uns series [${taskNames.join(', ')}]`
+    return `Runs series [${taskNames.join(', ')}]`
+  }
+  createWatchHelpText(){
+    let taskNames = this.watchableRecipes().reduce((a, b) => {
+      return a.concat(b.taskName());
+    }, [])
+
+    return Util.colors.grey(`|___ aggregates watches from [${taskNames.join(', ')}] and runs full series`)
   }
 
   registerTask(taskName) {
     this.debug(`Registering task: ${Util.colors.green(taskName)} for ${stringify(this.toTaskNames(this.recipes))}`)
-    this.gulp.task(taskName, `R${this.createHelpText()}`, () => {
+    this.gulp.task(taskName, this.createHelpText(), () => {
       return this.run(this.recipes)
     })
   }
@@ -53,12 +60,13 @@ const TaskSeries = class extends Base {
         watchableRecipes.push(recipe)
       }
     }
+    return watchableRecipes
   }
 
   registerWatchTask(taskName, recipes) {
     // generate watch task
     this.debug(`Registering task: ${Util.colors.green(taskName)}`)
-    this.gulp.task(taskName, Util.colors.grey(`|___ aggregate watches from and r${this.createHelpText()}`), () => {
+    this.gulp.task(taskName, this.createWatchHelpText(), () => {
 
       // watch the watchable recipes and make them #run the series
       for(let recipe of this.watchableRecipes()){

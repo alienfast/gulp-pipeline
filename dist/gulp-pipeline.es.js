@@ -134,7 +134,6 @@ const BaseRecipe = class extends Base {
       let name = this.watchTaskName()
       this.debug(`Registering task: ${Util.colors.green(name)}`)
       this.gulp.task(name, () => {
-        //this.gulp.watch(this.config.source.glob, this.config.source.options, [this.taskName()])
         this.log(`[${Util.colors.green(name)}] watching ${this.config.watch.glob} ${stringify(this.config.watch.options)}...`)
 
         return this.gulp.watch(this.config.watch.glob, this.config.watch.options, (event) => {
@@ -323,10 +322,10 @@ const EsLint = class extends BaseRecipe {
       //.on('error', function (error) {
       //  console.log('Total ESLint Error Count: ' + error);
       //})
-      //.on('finish', () => {
+      //.on('finish', function () {
       //  console.log('eslint.results finished');
       //})
-      //.on('end', () => {
+      //.on('end', function () {
       //  console.log('eslint.results ended');
       //})
 
@@ -548,17 +547,57 @@ const TaskSeries = class extends Base {
   constructor(gulp, taskName, recipes, config = {}) {
     super(gulp, extend(true, {}, Default$4, config))
 
-    // generate the task sequence
-    let tasks = []
-    this.toTaskNames(recipes, tasks)
+    if (this.config.watch) {
+      this.registerWatchTask(taskName, recipes)
+    }
+    else {
+      this.registerTask(taskName, recipes)
+    }
+  }
 
-    this.debug(`Registering task: ${Util.colors.green(taskName)} for ${stringify(tasks)}`)
+  registerTask(taskName, recipes) {
+    this.debug(`Registering task: ${Util.colors.green(taskName)} for ${stringify(this.toTaskNames(recipes))}`)
     this.gulp.task(taskName, () => {
-      return this.runSequence(...tasks)
+      return this.run(recipes)
     })
   }
 
-  toTaskNames(recipes, tasks) {
+  registerWatchTask(taskName, recipes) {
+    // generate watch task
+    this.debug(`Registering task: ${Util.colors.green(taskName)}`)
+    this.gulp.task(taskName, () => {
+
+      // flatten recipes
+      let flattenedRecipes = [].concat(...recipes)
+
+      // create an array of watchable recipes
+      let watchedRecipes = []
+      for(let recipe of flattenedRecipes) {
+        if(recipe.config.watch){
+          watchedRecipes.push(recipe)
+        }
+      }
+
+      // watch the watchable recipes and make them #run the series
+      for(let recipe of watchedRecipes){
+        this.log(`[${Util.colors.green(taskName)}] watching ${recipe.taskName()} ${recipe.config.watch.glob}...`)
+        this.gulp.watch(recipe.config.watch.glob, recipe.config.watch.options, (event) => {
+          this.log(`[${Util.colors.green(taskName)}] ${event.path} was ${event.type}, running series...`);
+          return Promise
+            .resolve(this.run(recipes))
+            .then(() => this.log(`[${Util.colors.green(taskName)}] finished`))
+        })
+      }
+    })
+  }
+
+  run(recipes){
+    // generate the task sequence
+    let tasks = this.toTaskNames(recipes)
+    return this.runSequence(...tasks)
+  }
+
+  toTaskNames(recipes, tasks = []) {
     for (let recipe of recipes) {
       if (Array.isArray(recipe)) {
         let series = []
@@ -569,13 +608,15 @@ const TaskSeries = class extends Base {
         if (this.config.watch) {
           // if the series is a 'watch', only add 'watch' enabled recipes
           if (recipe.config.watch) {
-            tasks.push(recipe.watchTaskName())
+            tasks.push(recipe.taskName())
           }
         } else {
           tasks.push(recipe.taskName())
         }
       }
     }
+
+    return tasks
   }
 
   // -----------------------------------
@@ -778,9 +819,7 @@ const RollupEs = class extends BaseRecipe {
 
     return rollup$1(options)
       .then((bundle) => {
-        let promise = bundle.write(options)
-        //this.logFinish()
-        return promise
+        return bundle.write(options)
       })
       .catch((error) => {
         error.plugin = 'rollup'

@@ -72,6 +72,16 @@ babelHelpers.possibleConstructorReturn = function (self, call) {
   return call && (typeof call === "object" || typeof call === "function") ? call : self;
 };
 
+babelHelpers.toConsumableArray = function (arr) {
+  if (Array.isArray(arr)) {
+    for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
+
+    return arr2;
+  } else {
+    return Array.from(arr);
+  }
+};
+
 babelHelpers;
 
 var Default$15 = {
@@ -211,7 +221,6 @@ var BaseRecipe = function (_Base) {
           var name = _this2.watchTaskName();
           _this2.debug('Registering task: ' + Util.colors.green(name));
           _this2.gulp.task(name, function () {
-            //this.gulp.watch(this.config.source.glob, this.config.source.options, [this.taskName()])
             _this2.log('[' + Util.colors.green(name) + '] watching ' + _this2.config.watch.glob + ' ' + stringify(_this2.config.watch.options) + '...');
 
             return _this2.gulp.watch(_this2.config.watch.glob, _this2.config.watch.options, function (event) {
@@ -418,10 +427,10 @@ var EsLint = function (_BaseRecipe) {
       //.on('error', function (error) {
       //  console.log('Total ESLint Error Count: ' + error);
       //})
-      //.on('finish', () => {
+      //.on('finish', function () {
       //  console.log('eslint.results finished');
       //})
-      //.on('end', () => {
+      //.on('end', function () {
       //  console.log('eslint.results ended');
       //})
 
@@ -673,31 +682,120 @@ var TaskSeries = function (_Base) {
     var config = arguments.length <= 3 || arguments[3] === undefined ? {} : arguments[3];
     babelHelpers.classCallCheck(this, TaskSeries);
 
-
-    // generate the task sequence
-
     var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(TaskSeries).call(this, gulp, extend(true, {}, Default$4, config)));
 
-    var tasks = [];
-    _this.toTaskNames(recipes, tasks);
-
-    _this.debug('Registering task: ' + Util.colors.green(taskName) + ' for ' + stringify(tasks));
-    _this.gulp.task(taskName, function () {
-      return _this.runSequence.apply(_this, tasks);
-    });
+    if (_this.config.watch) {
+      _this.registerWatchTask(taskName, recipes);
+    } else {
+      _this.registerTask(taskName, recipes);
+    }
     return _this;
   }
 
   babelHelpers.createClass(TaskSeries, [{
+    key: 'registerTask',
+    value: function registerTask(taskName, recipes) {
+      var _this2 = this;
+
+      this.debug('Registering task: ' + Util.colors.green(taskName) + ' for ' + stringify(this.toTaskNames(recipes)));
+      this.gulp.task(taskName, function () {
+        return _this2.run(recipes);
+      });
+    }
+  }, {
+    key: 'registerWatchTask',
+    value: function registerWatchTask(taskName, recipes) {
+      var _this3 = this;
+
+      // generate watch task
+      this.debug('Registering task: ' + Util.colors.green(taskName));
+      this.gulp.task(taskName, function () {
+        var _ref;
+
+        // flatten recipes
+        var flattenedRecipes = (_ref = []).concat.apply(_ref, babelHelpers.toConsumableArray(recipes));
+
+        // create an array of watchable recipes
+        var watchedRecipes = [];
+        var _iteratorNormalCompletion = true;
+        var _didIteratorError = false;
+        var _iteratorError = undefined;
+
+        try {
+          for (var _iterator = flattenedRecipes[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+            var recipe = _step.value;
+
+            if (recipe.config.watch) {
+              watchedRecipes.push(recipe);
+            }
+          }
+
+          // watch the watchable recipes and make them #run the series
+        } catch (err) {
+          _didIteratorError = true;
+          _iteratorError = err;
+        } finally {
+          try {
+            if (!_iteratorNormalCompletion && _iterator.return) {
+              _iterator.return();
+            }
+          } finally {
+            if (_didIteratorError) {
+              throw _iteratorError;
+            }
+          }
+        }
+
+        var _iteratorNormalCompletion2 = true;
+        var _didIteratorError2 = false;
+        var _iteratorError2 = undefined;
+
+        try {
+          for (var _iterator2 = watchedRecipes[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+            var recipe = _step2.value;
+
+            _this3.log('[' + Util.colors.green(taskName) + '] watching ' + recipe.taskName() + ' ' + recipe.config.watch.glob + '...');
+            _this3.gulp.watch(recipe.config.watch.glob, recipe.config.watch.options, function (event) {
+              _this3.log('[' + Util.colors.green(taskName) + '] ' + event.path + ' was ' + event.type + ', running series...');
+              return Promise.resolve(_this3.run(recipes)).then(function () {
+                return _this3.log('[' + Util.colors.green(taskName) + '] finished');
+              });
+            });
+          }
+        } catch (err) {
+          _didIteratorError2 = true;
+          _iteratorError2 = err;
+        } finally {
+          try {
+            if (!_iteratorNormalCompletion2 && _iterator2.return) {
+              _iterator2.return();
+            }
+          } finally {
+            if (_didIteratorError2) {
+              throw _iteratorError2;
+            }
+          }
+        }
+      });
+    }
+  }, {
+    key: 'run',
+    value: function run(recipes) {
+      // generate the task sequence
+      var tasks = this.toTaskNames(recipes);
+      return this.runSequence.apply(this, babelHelpers.toConsumableArray(tasks));
+    }
+  }, {
     key: 'toTaskNames',
-    value: function toTaskNames(recipes, tasks) {
-      var _iteratorNormalCompletion = true;
-      var _didIteratorError = false;
-      var _iteratorError = undefined;
+    value: function toTaskNames(recipes) {
+      var tasks = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1];
+      var _iteratorNormalCompletion3 = true;
+      var _didIteratorError3 = false;
+      var _iteratorError3 = undefined;
 
       try {
-        for (var _iterator = recipes[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-          var recipe = _step.value;
+        for (var _iterator3 = recipes[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+          var recipe = _step3.value;
 
           if (Array.isArray(recipe)) {
             var series = [];
@@ -707,7 +805,7 @@ var TaskSeries = function (_Base) {
             if (this.config.watch) {
               // if the series is a 'watch', only add 'watch' enabled recipes
               if (recipe.config.watch) {
-                tasks.push(recipe.watchTaskName());
+                tasks.push(recipe.taskName());
               }
             } else {
               tasks.push(recipe.taskName());
@@ -715,19 +813,21 @@ var TaskSeries = function (_Base) {
           }
         }
       } catch (err) {
-        _didIteratorError = true;
-        _iteratorError = err;
+        _didIteratorError3 = true;
+        _iteratorError3 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion && _iterator.return) {
-            _iterator.return();
+          if (!_iteratorNormalCompletion3 && _iterator3.return) {
+            _iterator3.return();
           }
         } finally {
-          if (_didIteratorError) {
-            throw _iteratorError;
+          if (_didIteratorError3) {
+            throw _iteratorError3;
           }
         }
       }
+
+      return tasks;
     }
 
     // -----------------------------------
@@ -739,7 +839,7 @@ var TaskSeries = function (_Base) {
   }, {
     key: 'runSequence',
     value: function runSequence() {
-      var _this2 = this;
+      var _this4 = this;
 
       for (var _len = arguments.length, taskSets = Array(_len), _key = 0; _key < _len; _key++) {
         taskSets[_key] = arguments[_key];
@@ -752,10 +852,10 @@ var TaskSeries = function (_Base) {
       this.taskSets = taskSets;
 
       this.onEnd = function (e) {
-        return _this2.onTaskEnd(e);
+        return _this4.onTaskEnd(e);
       };
       this.onErr = function (e) {
-        return _this2.onError(e);
+        return _this4.onError(e);
       };
 
       this.gulp.on('task_stop', this.onEnd);
@@ -837,13 +937,13 @@ var TaskSeries = function (_Base) {
         throw new Error('No tasks were provided to run-sequence');
       }
 
-      var _iteratorNormalCompletion2 = true;
-      var _didIteratorError2 = false;
-      var _iteratorError2 = undefined;
+      var _iteratorNormalCompletion4 = true;
+      var _didIteratorError4 = false;
+      var _iteratorError4 = undefined;
 
       try {
-        for (var _iterator2 = taskSets[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-          var t = _step2.value;
+        for (var _iterator4 = taskSets[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+          var t = _step4.value;
 
           var isTask = typeof t === "string";
           var isArray = !skipArrays && Array.isArray(t);
@@ -871,16 +971,16 @@ var TaskSeries = function (_Base) {
           }
         }
       } catch (err) {
-        _didIteratorError2 = true;
-        _iteratorError2 = err;
+        _didIteratorError4 = true;
+        _iteratorError4 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion2 && _iterator2.return) {
-            _iterator2.return();
+          if (!_iteratorNormalCompletion4 && _iterator4.return) {
+            _iterator4.return();
           }
         } finally {
-          if (_didIteratorError2) {
-            throw _iteratorError2;
+          if (_didIteratorError4) {
+            throw _iteratorError4;
           }
         }
       }
@@ -980,9 +1080,7 @@ var RollupEs = function (_BaseRecipe) {
       this.debug('Executing rollup with options: ' + stringify(options));
 
       return rollup.rollup(options).then(function (bundle) {
-        var promise = bundle.write(options);
-        //this.logFinish()
-        return promise;
+        return bundle.write(options);
       }).catch(function (error) {
         error.plugin = 'rollup';
         _this2.notifyError(error, watching);

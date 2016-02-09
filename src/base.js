@@ -3,6 +3,7 @@ import Util from 'gulp-util'
 import notify from 'gulp-notify'
 import stringify from 'stringify-object'
 import gulpHelp from 'gulp-help'
+import console from 'console'
 
 export const Default = {
   watch: true,
@@ -17,7 +18,7 @@ const Base = class {
    * @param config - customized overrides
    */
   constructor(gulp, config) {
-    this.gulp = gulpHelp(gulp, {afterPrintCallback: () => console.log(`For configuration help see https://github.com/alienfast/gulp-pipeline \n`)})
+    this.gulp = gulpHelp(gulp, {afterPrintCallback: () => console.log(`For configuration help see https://github.com/alienfast/gulp-pipeline \n`)}) // eslint-disable-line no-console
     this.config = extend(true, {}, Default, config)
     this.debug(`[${this.constructor.name}] using resolved config: ${stringify(this.config)}`)
   }

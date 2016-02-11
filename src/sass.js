@@ -7,9 +7,10 @@ import extend from 'extend'
 import sass from 'gulp-sass'
 import sourcemaps from 'gulp-sourcemaps'
 import gulpif from 'gulp-if'
+import findup from 'findup-sync'
 
 export const Default = {
-  debug: false,
+  debug: true,
   presetType: 'stylesheets',
   task: {
     name: 'sass'
@@ -27,7 +28,9 @@ export const Default = {
     }
   },
   options: {
-    includePaths: ['node_modules']
+    // WARNING: `includePaths` this should be a fully qualified path if overriding
+    //  @see https://github.com/sass/node-sass/issues/1377
+    includePaths: [findup('node_modules')] // this will find any node_modules above the current working directory
   },
   // capture defaults from autoprefixer class
   autoprefixer: {
@@ -48,13 +51,21 @@ const Sass = class extends BaseRecipe {
     this.browserSync = BrowserSync.create()
   }
 
-  createHelpText(){
+  createHelpText() {
     return `Compiles ${this.config.source.options.cwd}/${this.config.source.glob}`
   }
 
   run(watching = false) {
-    return this.gulp.src(this.config.source.glob, this.config.source.options)
+    // add debug for importing
+    if(this.config.debug && this.config.options.importer === undefined) {
+      this.debugDump('options', this.config.options)
+      this.config.options.importer = (url, prev, done) => {
+        this.debug(`importing ${url} from ${prev}`)
+        done({file: url})
+      }
+    }
 
+    return this.gulp.src(this.config.source.glob, this.config.source.options)
       .pipe(gulpif(this.config.debug, debug(this.debugOptions())))
       .pipe(sourcemaps.init())
       .pipe(sass(this.config.options))

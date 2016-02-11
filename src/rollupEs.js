@@ -18,12 +18,7 @@ export const Default = {
       //cwd: ** resolved from preset **
     }
   },
-  source: {
-    glob: 'index.js',
-    options: {
-      //cwd: ** resolved from preset **
-    }
-  },
+  //source: { }, ** resolved from preset **
 
   //dest: './public/assets',
   options: {

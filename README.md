@@ -9,11 +9,11 @@ Here's a `gulpfile.babel.js` that provides tasks to build and watch an ES2015/SC
 ```javascript
 // Assuming project named: acme
 
-import { Presets, Clean, EsLint, Images, ScssLint, Sass, RollupEs, RollupCjs, RollupIife, TaskSeries } from 'gulp-pipeline'
+import { Preset, Clean, EsLint, Images, ScssLint, Sass, RollupEs, RollupCjs, RollupIife, TaskSeries } from 'gulp-pipeline'
 import gulp from 'gulp'
 
 // Utilize one of the common configs
-let preset = Presets.rails() // other pre-configured presets: nodeSrc, nodeLib - see preset.js and submit PRs with other common configs
+let preset = Preset.rails() // other pre-configured presets: nodeSrc, nodeLib - see preset.js and submit PRs with other common configs
 
 // Instantiate ordered array of recipes (for each instantiation the tasks will be created e.g. sass and sass:watch)
 //  Note: these are run by the run-sequence, allowing series and parallel execution
@@ -87,7 +87,7 @@ Each recipe is an ES2015 class having configurable options that registers a task
 ### Common config
 Each recipe depends on a common configuration for the `source` and `watch` that can be fed directly to `gulp.src`, this is the `node-glob` format with options.  Even when interfacing with other libraries that don't use `gulp.src` directly (such as rollup), these recipes use a common config for ease of use and to enable generic preset definitions.
 
-### Presets definitions
+### Preset definitions
 Common preset definitions are maintained in [preset.js](src/preset.js).  These are simply common configurations for different structures found in common stacks such as node, rails, etc.  Recipes will fallback on these for configurations such as the `node-glob` `cwd`.  One example would be the `cwd` for all javascript.
 
 ### Merged configurations

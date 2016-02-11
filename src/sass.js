@@ -10,7 +10,7 @@ import gulpif from 'gulp-if'
 import findup from 'findup-sync'
 
 export const Default = {
-  debug: true,
+  debug: false,
   presetType: 'stylesheets',
   task: {
     name: 'sass'

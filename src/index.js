@@ -1,4 +1,4 @@
-export { default as Presets } from './presets'
+export { default as Presets } from './preset'
 
 export { default as Autoprefixer } from './autoprefixer'
 export { default as EsLint } from './eslint'

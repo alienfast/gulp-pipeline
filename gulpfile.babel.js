@@ -1,5 +1,5 @@
 import gulp from 'gulp'
-import Presets from './src/presets'
+import Presets from './src/preset'
 import Clean from './src/clean'
 import EsLint from './src/eslint'
 import RollupEs from './src/rollupEs'
@@ -42,7 +42,7 @@ new TaskSeries(gulp, 'default', recipes)
 //import ScssLint from './src/scssLint'
 //
 //// Utilize one of the common configs
-//let preset = Presets.rails() // other pre-configured presets: nodeSrc, nodeLib - see presets.js and submit PRs with other common configs
+//let preset = Presets.rails() // other pre-configured presets: nodeSrc, nodeLib - see preset.js and submit PRs with other common configs
 //
 //// Instantiate ordered array of recipes (for each instantiation the tasks will be created e.g. sass and sass:watch)
 ////  Note: these are run by the run-sequence, allowing series and parallel execution

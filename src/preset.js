@@ -65,7 +65,7 @@ const NodeSrc = {
   }
 }
 
-const Presets = class {
+const Preset = class {
   static nodeLib(overrides = {}) {
     return extend(true, {}, NodeLib, overrides)
   }
@@ -78,4 +78,4 @@ const Presets = class {
     return extend(true, {}, Rails, overrides)
   }
 }
-export default Presets
+export default Preset

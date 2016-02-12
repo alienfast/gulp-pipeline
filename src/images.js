@@ -9,7 +9,7 @@ import merge from 'merge-stream'
 import path from 'path'
 
 export const Default = {
-  debug: false,
+  debug: true,
   presetType: 'images',
   task: {
     name: 'images'
@@ -49,7 +49,7 @@ const Images = class extends BaseRecipe {
 
   run(watching = false) {
 
-    var tasks = this.config.source.baseDirectories.map((baseDirectory) => {
+    var tasks = this.config.baseDirectories.map((baseDirectory) => {
       // join the base dir with the relative cwd
       return this.runOne(path.join(baseDirectory, this.config.source.options.cwd), watching)
     })
@@ -61,6 +61,7 @@ const Images = class extends BaseRecipe {
     // setup a run with a single cwd a.k.a base directory FIXME: perhaps this could be in the base recipe? or not?
     let options = extend({}, this.config.source.options)
     options.cwd = cwd
+    this.debug(`src: ${cwd}/${this.config.source.glob}`)
 
     return this.gulp.src(this.config.source.glob, options)
       .pipe(changed(this.config.dest)) // ignore unchanged files

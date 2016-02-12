@@ -40,7 +40,7 @@ const BaseRecipe = class extends Base {
       presetTypeConfig = {}
     }
 
-    super(gulp, extend(true, {}, Default, presetTypeConfig, config))
+    super(gulp, extend(true, {}, Default, {baseDirectories: preset.baseDirectories}, presetTypeConfig, config))
     if(this.createHelpText !== undefined) {
       this.config.task.help = this.createHelpText()
     }

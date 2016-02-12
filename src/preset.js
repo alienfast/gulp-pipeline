@@ -1,8 +1,10 @@
 import extend from 'extend'
+import Rails from './rails'
+
 
 // NOTE: `source` and `watch` are node-glob options hashes. e.g. gulp.src(source.glob, source.options)
-
-const Rails = {
+const PresetRails = {
+  baseDirectories: ['./'],
   javascripts: {
     source: {
       glob: 'application.js',
@@ -17,16 +19,13 @@ const Rails = {
     dest: 'public/stylesheets'
   },
   images: {
-    source: {
-      baseDirectories: ['./'],
-      options: {cwd: 'app/assets/images'}
-    },
+    source: {options: {cwd: 'app/assets/images'}},
     watch: {options: {cwd: 'app/assets/images'}},
     dest: 'public/images'
   }
 }
-
-const NodeLib = {
+const PresetNodeLib = {
+  baseDirectories: ['./'],
   javascripts: {
     source: {
       glob: 'index.js',
@@ -41,16 +40,14 @@ const NodeLib = {
     dest: 'dist'
   },
   images: {
-    source: {
-      baseDirectories: ['./'],
-      options: {cwd: 'lib'}
-    },
+    source: {options: {cwd: 'lib'}},
     watch: {options: {cwd: 'lib'}},
     dest: 'dist'
   }
 }
 
-const NodeSrc = {
+const PresetNodeSrc = {
+  baseDirectories: ['./'],
   javascripts: {
     source: {
       glob: 'index.js',
@@ -65,10 +62,7 @@ const NodeSrc = {
     dest: 'dist'
   },
   images: {
-    source: {
-      baseDirectories: ['./'],
-      options: {cwd: 'lib'}
-    },
+    source: {options: {cwd: 'lib'}},
     watch: {options: {cwd: 'lib'}},
     dest: 'dist'
   }
@@ -76,15 +70,16 @@ const NodeSrc = {
 
 const Preset = class {
   static nodeLib(overrides = {}) {
-    return extend(true, {}, NodeLib, overrides)
+    return extend(true, {}, PresetNodeLib, overrides)
   }
 
   static nodeSrc(overrides = {}) {
-    return extend(true, {}, NodeSrc, overrides)
+    return extend(true, {}, PresetNodeSrc, overrides)
   }
 
   static rails(overrides = {}) {
-    return extend(true, {}, Rails, overrides)
+
+    return extend(true, {}, PresetRails, Rails.baseDirectories(), overrides)
   }
 }
 export default Preset

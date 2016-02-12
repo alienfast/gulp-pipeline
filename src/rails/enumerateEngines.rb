@@ -10,4 +10,4 @@ engines.each do |engine|
   end
 end
 
-puts results
+puts results.to_json

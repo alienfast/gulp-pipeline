@@ -5,7 +5,8 @@ import extend from 'extend'
 import gulpif from 'gulp-if'
 import changed    from 'gulp-changed'
 import imagemin   from 'gulp-imagemin'
-
+import merge from 'merge-stream'
+import path from 'path'
 
 export const Default = {
   debug: false,
@@ -20,6 +21,7 @@ export const Default = {
     }
   },
   source: {
+    // baseDirectories: [] ** resolved from preset **
     glob: '**',
     options: {
       //cwd: ** resolved from preset **
@@ -41,12 +43,26 @@ const Images = class extends BaseRecipe {
     this.browserSync = BrowserSync.create()
   }
 
-  createHelpText(){
+  createHelpText() {
     return `Minifies change images from ${this.config.source.options.cwd}/${this.config.source.glob}`
   }
 
   run(watching = false) {
-    return this.gulp.src(this.config.source.glob, this.config.source.options)
+
+    var tasks = this.config.source.baseDirectories.map((baseDirectory) => {
+      // join the base dir with the relative cwd
+      return this.runOne(path.join(baseDirectory, this.config.source.options.cwd), watching)
+    })
+    return merge(tasks);
+  }
+
+  runOne(cwd, watching) {
+
+    // setup a run with a single cwd a.k.a base directory FIXME: perhaps this could be in the base recipe? or not?
+    let options = extend({}, this.config.source.options)
+    options.cwd = cwd
+
+    return this.gulp.src(this.config.source.glob, options)
       .pipe(changed(this.config.dest)) // ignore unchanged files
       .pipe(gulpif(this.config.debug, debug(this.debugOptions())))
       .pipe(imagemin(this.config.options))

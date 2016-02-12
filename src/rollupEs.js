@@ -19,11 +19,11 @@ export const Default = {
     }
   },
   //source: { }, ** resolved from preset **
+  //dest: '', ** resolved from preset **
 
-  //dest: './public/assets',
   options: {
-    //entry: 'src/index.js', // is created from the source glob/cwd
-    //dest: '', // required
+    //entry: 'src/index.js', // ** resolved from the source glob/cwd **
+    //dest: '', // ** resolved from preset **
     sourceMap: true,
     format: 'es6'
     //plugins: [],

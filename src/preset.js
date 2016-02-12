@@ -6,20 +6,23 @@ const Rails = {
   javascripts: {
     source: {
       glob: 'application.js',
-      options: {cwd: './app/assets/javascripts'}
+      options: {cwd: 'app/assets/javascripts'}
     },
-    watch: {options: {cwd: './app/assets/javascripts'}},
-    dest: './public/javascripts'
+    watch: {options: {cwd: 'app/assets/javascripts'}},
+    dest: 'public/javascripts'
   },
   stylesheets: {
-    source: {options: {cwd: './app/assets/stylesheets'}},
-    watch: {options: {cwd: './app/assets/stylesheets'}},
-    dest: './public/stylesheets'
+    source: {options: {cwd: 'app/assets/stylesheets'}},
+    watch: {options: {cwd: 'app/assets/stylesheets'}},
+    dest: 'public/stylesheets'
   },
   images: {
-    source: {options: {cwd: './app/assets/images'}},
-    watch: {options: {cwd: './app/assets/images'}},
-    dest: './public/images'
+    source: {
+      baseDirectories: ['./'],
+      options: {cwd: 'app/assets/images'}
+    },
+    watch: {options: {cwd: 'app/assets/images'}},
+    dest: 'public/images'
   }
 }
 
@@ -27,20 +30,23 @@ const NodeLib = {
   javascripts: {
     source: {
       glob: 'index.js',
-      options: {cwd: './lib'}
+      options: {cwd: 'lib'}
     },
-    watch: {options: {cwd: './lib'}},
-    dest: './dist'
+    watch: {options: {cwd: 'lib'}},
+    dest: 'dist'
   },
   stylesheets: {
-    source: {options: {cwd: './lib'}},
-    watch: {options: {cwd: './lib'}},
-    dest: './dist'
+    source: {options: {cwd: 'lib'}},
+    watch: {options: {cwd: 'lib'}},
+    dest: 'dist'
   },
   images: {
-    source: {options: {cwd: './lib'}},
-    watch: {options: {cwd: './lib'}},
-    dest: './dist'
+    source: {
+      baseDirectories: ['./'],
+      options: {cwd: 'lib'}
+    },
+    watch: {options: {cwd: 'lib'}},
+    dest: 'dist'
   }
 }
 
@@ -48,20 +54,23 @@ const NodeSrc = {
   javascripts: {
     source: {
       glob: 'index.js',
-      options: {cwd: './src'}
+      options: {cwd: 'src'}
     },
-    watch: {options: {cwd: './src'}},
-    dest: './dist'
+    watch: {options: {cwd: 'src'}},
+    dest: 'dist'
   },
   stylesheets: {
-    source: {options: {cwd: './src'}},
-    watch: {options: {cwd: './src'}},
-    dest: './dist'
+    source: {options: {cwd: 'src'}},
+    watch: {options: {cwd: 'src'}},
+    dest: 'dist'
   },
   images: {
-    source: {options: {cwd: './lib'}},
-    watch: {options: {cwd: './lib'}},
-    dest: './dist'
+    source: {
+      baseDirectories: ['./'],
+      options: {cwd: 'lib'}
+    },
+    watch: {options: {cwd: 'lib'}},
+    dest: 'dist'
   }
 }
 

@@ -1,4 +1,5 @@
 export { default as Preset } from './preset'
+export { default as Rails } from './rails'
 
 export { default as Autoprefixer } from './autoprefixer'
 export { default as EsLint } from './eslint'

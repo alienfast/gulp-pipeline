@@ -1,20 +1,26 @@
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('extend'), require('gulp-autoprefixer'), require('gulp-if'), require('gulp-debug'), require('gulp-eslint'), require('gulp-util'), require('browser-sync'), require('gulp-changed'), require('gulp-imagemin'), require('gulp-sass'), require('gulp-sourcemaps'), require('gulp-scss-lint'), require('gulp-scss-lint-stylish'), require('stringify-object'), require('rollup'), require('glob'), require('rollup-plugin-babel'), require('gulp-notify'), require('gulp-help'), require('console'), require('del')) :
-  typeof define === 'function' && define.amd ? define(['exports', 'extend', 'gulp-autoprefixer', 'gulp-if', 'gulp-debug', 'gulp-eslint', 'gulp-util', 'browser-sync', 'gulp-changed', 'gulp-imagemin', 'gulp-sass', 'gulp-sourcemaps', 'gulp-scss-lint', 'gulp-scss-lint-stylish', 'stringify-object', 'rollup', 'glob', 'rollup-plugin-babel', 'gulp-notify', 'gulp-help', 'console', 'del'], factory) :
-  (factory((global.gulpPipeline = {}),global.extend,global.autoprefixer,global.gulpif,global.debug,global.eslint,global.Util,global.BrowserSync,global.changed,global.imagemin,global.sass,global.sourcemaps,global.scssLint,global.scssLintStylish,global.stringify,global.rollup,global.glob,global.babel,global.notify,global.gulpHelp,global.console,global.del));
-}(this, function (exports,extend,autoprefixer,gulpif,debug,eslint,Util,BrowserSync,changed,imagemin,sass,sourcemaps,scssLint,scssLintStylish,stringify,rollup,glob,babel,notify,gulpHelp,console,del) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('extend'), require('path'), require('cross-spawn'), require('fs'), require('jsonfile'), require('gulp-util'), require('gulp-autoprefixer'), require('gulp-if'), require('gulp-debug'), require('gulp-eslint'), require('browser-sync'), require('gulp-changed'), require('gulp-imagemin'), require('merge-stream'), require('gulp-sass'), require('gulp-sourcemaps'), require('findup-sync'), require('gulp-scss-lint'), require('gulp-scss-lint-stylish'), require('stringify-object'), require('rollup'), require('glob'), require('rollup-plugin-babel'), require('gulp-notify'), require('gulp-help'), require('console'), require('del')) :
+  typeof define === 'function' && define.amd ? define(['exports', 'extend', 'path', 'cross-spawn', 'fs', 'jsonfile', 'gulp-util', 'gulp-autoprefixer', 'gulp-if', 'gulp-debug', 'gulp-eslint', 'browser-sync', 'gulp-changed', 'gulp-imagemin', 'merge-stream', 'gulp-sass', 'gulp-sourcemaps', 'findup-sync', 'gulp-scss-lint', 'gulp-scss-lint-stylish', 'stringify-object', 'rollup', 'glob', 'rollup-plugin-babel', 'gulp-notify', 'gulp-help', 'console', 'del'], factory) :
+  (factory((global.gulpPipeline = {}),global.extend,global.path,global.spawn,global.fs,global.jsonfile,global.Util,global.autoprefixer,global.gulpif,global.debug,global.eslint,global.BrowserSync,global.changed,global.imagemin,global.merge,global.sass,global.sourcemaps,global.findup,global.scssLint,global.scssLintStylish,global.stringify,global.rollup,global.glob,global.babel,global.notify,global.gulpHelp,global.console,global.del));
+}(this, function (exports,extend,path,spawn,fs,jsonfile,Util,autoprefixer,gulpif,debug,eslint,BrowserSync,changed,imagemin,merge,sass,sourcemaps,findup,scssLint,scssLintStylish,stringify,rollup,glob,babel,notify,gulpHelp,console,del) { 'use strict';
 
   extend = 'default' in extend ? extend['default'] : extend;
+  path = 'default' in path ? path['default'] : path;
+  spawn = 'default' in spawn ? spawn['default'] : spawn;
+  fs = 'default' in fs ? fs['default'] : fs;
+  jsonfile = 'default' in jsonfile ? jsonfile['default'] : jsonfile;
+  Util = 'default' in Util ? Util['default'] : Util;
   autoprefixer = 'default' in autoprefixer ? autoprefixer['default'] : autoprefixer;
   gulpif = 'default' in gulpif ? gulpif['default'] : gulpif;
   debug = 'default' in debug ? debug['default'] : debug;
   eslint = 'default' in eslint ? eslint['default'] : eslint;
-  Util = 'default' in Util ? Util['default'] : Util;
   BrowserSync = 'default' in BrowserSync ? BrowserSync['default'] : BrowserSync;
   changed = 'default' in changed ? changed['default'] : changed;
   imagemin = 'default' in imagemin ? imagemin['default'] : imagemin;
+  merge = 'default' in merge ? merge['default'] : merge;
   sass = 'default' in sass ? sass['default'] : sass;
   sourcemaps = 'default' in sourcemaps ? sourcemaps['default'] : sourcemaps;
+  findup = 'default' in findup ? findup['default'] : findup;
   scssLint = 'default' in scssLint ? scssLint['default'] : scssLint;
   scssLintStylish = 'default' in scssLintStylish ? scssLintStylish['default'] : scssLintStylish;
   stringify = 'default' in stringify ? stringify['default'] : stringify;
@@ -87,90 +93,202 @@
 
   babelHelpers;
 
+  var BaseDirectoriesCache = '.gulp-pipeline-rails.json';
+  var GemfileLock = 'Gemfile.lock';
+
+  var Rails = function () {
+    function Rails() {
+      babelHelpers.classCallCheck(this, Rails);
+    }
+
+    babelHelpers.createClass(Rails, null, [{
+      key: 'enumerateEngines',
+      value: function enumerateEngines() {
+        var results = spawn.sync(this.filePath('railsRunner.sh'), [this.filePath('enumerateEngines.rb')], { sdtio: 'inherit' });
+        return JSON.parse(results.output[1]);
+      }
+    }, {
+      key: 'filePath',
+      value: function filePath(name) {
+        return path.join(__dirname, 'rails/' + name); // eslint-disable-line no-undef
+      }
+
+      /**
+       * Return the baseDirectories to search for assets such as images.  In rails, this means
+       *  enumerating rails engines and collecting their root paths.  This is a lengthy process
+       *  because you have to startup a rails environment to enumerate the engines, so we cache
+       *  the baseDirectories in a file and compare it to the Gemfile.lock's modified time.  If
+       *  the Gemfile.lock changes, we throw out the cache, enumerate the engines again and write
+       *  a new cache file.
+       *
+       * @returns {{baseDirectories: string[]}}
+       */
+
+    }, {
+      key: 'baseDirectories',
+      value: function baseDirectories() {
+        if (!this.changed(GemfileLock, BaseDirectoriesCache)) {
+          return jsonfile.readFileSync(BaseDirectoriesCache);
+        } else {
+          Util.log('Generating baseDirectories cache...');
+          try {
+            fs.unlinkSync(BaseDirectoriesCache);
+          } catch (error) {
+            //ignore
+          }
+
+          var engines = Rails.enumerateEngines();
+          //console.log(stringify(engines))
+
+          var baseDirectories = ['./'];
+          var _iteratorNormalCompletion = true;
+          var _didIteratorError = false;
+          var _iteratorError = undefined;
+
+          try {
+            for (var _iterator = Object.keys(engines)[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+              var key = _step.value;
+
+              baseDirectories.push(engines[key]);
+            }
+            //console.log(stringify(baseDirectories))
+          } catch (err) {
+            _didIteratorError = true;
+            _iteratorError = err;
+          } finally {
+            try {
+              if (!_iteratorNormalCompletion && _iterator.return) {
+                _iterator.return();
+              }
+            } finally {
+              if (_didIteratorError) {
+                throw _iteratorError;
+              }
+            }
+          }
+
+          var result = { baseDirectories: baseDirectories };
+          jsonfile.writeFileSync(BaseDirectoriesCache, result, { spaces: 2 });
+          return result;
+        }
+      }
+    }, {
+      key: 'changed',
+      value: function changed(sourceFileName, targetFileName) {
+        var sourceStat = null;
+        var targetStat = null;
+        try {
+          sourceStat = fs.statSync(sourceFileName);
+          targetStat = fs.statSync(targetFileName);
+        } catch (error) {
+          return true;
+        }
+
+        if (sourceStat.mtime > targetStat.mtime) {
+          return true;
+        } else {
+          return false;
+        }
+      }
+    }]);
+    return Rails;
+  }();
+
   // NOTE: `source` and `watch` are node-glob options hashes. e.g. gulp.src(source.glob, source.options)
-
-  var Rails = {
+  var PresetRails = {
+    baseDirectories: ['./'],
     javascripts: {
-      source: { options: { cwd: './app/assets/javascripts' } },
-      watch: { options: { cwd: './app/assets/javascripts' } },
-      dest: './public/javascripts'
+      source: {
+        glob: 'application.js',
+        options: { cwd: 'app/assets/javascripts' }
+      },
+      watch: { options: { cwd: 'app/assets/javascripts' } },
+      dest: 'public/javascripts'
     },
     stylesheets: {
-      source: { options: { cwd: './app/assets/stylesheets' } },
-      watch: { options: { cwd: './app/assets/stylesheets' } },
-      dest: './public/stylesheets'
+      source: { options: { cwd: 'app/assets/stylesheets' } },
+      watch: { options: { cwd: 'app/assets/stylesheets' } },
+      dest: 'public/stylesheets'
     },
     images: {
-      source: { options: { cwd: './app/assets/images' } },
-      watch: { options: { cwd: './app/assets/images' } },
-      dest: './public/images'
+      source: { options: { cwd: 'app/assets/images' } },
+      watch: { options: { cwd: 'app/assets/images' } },
+      dest: 'public/images'
+    }
+  };
+  var PresetNodeLib = {
+    baseDirectories: ['./'],
+    javascripts: {
+      source: {
+        glob: 'index.js',
+        options: { cwd: 'lib' }
+      },
+      watch: { options: { cwd: 'lib' } },
+      dest: 'dist'
+    },
+    stylesheets: {
+      source: { options: { cwd: 'lib' } },
+      watch: { options: { cwd: 'lib' } },
+      dest: 'dist'
+    },
+    images: {
+      source: { options: { cwd: 'lib' } },
+      watch: { options: { cwd: 'lib' } },
+      dest: 'dist'
     }
   };
 
-  var NodeLib = {
+  var PresetNodeSrc = {
+    baseDirectories: ['./'],
     javascripts: {
-      source: { options: { cwd: './lib' } },
-      watch: { options: { cwd: './lib' } },
-      dest: './dist'
+      source: {
+        glob: 'index.js',
+        options: { cwd: 'src' }
+      },
+      watch: { options: { cwd: 'src' } },
+      dest: 'dist'
     },
     stylesheets: {
-      source: { options: { cwd: './lib' } },
-      watch: { options: { cwd: './lib' } },
-      dest: './dist'
+      source: { options: { cwd: 'src' } },
+      watch: { options: { cwd: 'src' } },
+      dest: 'dist'
     },
     images: {
-      source: { options: { cwd: './lib' } },
-      watch: { options: { cwd: './lib' } },
-      dest: './dist'
+      source: { options: { cwd: 'lib' } },
+      watch: { options: { cwd: 'lib' } },
+      dest: 'dist'
     }
   };
 
-  var NodeSrc = {
-    javascripts: {
-      source: { options: { cwd: './src' } },
-      watch: { options: { cwd: './src' } },
-      dest: './dist'
-    },
-    stylesheets: {
-      source: { options: { cwd: './src' } },
-      watch: { options: { cwd: './src' } },
-      dest: './dist'
-    },
-    images: {
-      source: { options: { cwd: './lib' } },
-      watch: { options: { cwd: './lib' } },
-      dest: './dist'
-    }
-  };
-
-  var Presets = function () {
-    function Presets() {
-      babelHelpers.classCallCheck(this, Presets);
+  var Preset = function () {
+    function Preset() {
+      babelHelpers.classCallCheck(this, Preset);
     }
 
-    babelHelpers.createClass(Presets, null, [{
+    babelHelpers.createClass(Preset, null, [{
       key: 'nodeLib',
       value: function nodeLib() {
         var overrides = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
 
-        return extend(true, {}, NodeLib, overrides);
+        return extend(true, {}, PresetNodeLib, overrides);
       }
     }, {
       key: 'nodeSrc',
       value: function nodeSrc() {
         var overrides = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
 
-        return extend(true, {}, NodeSrc, overrides);
+        return extend(true, {}, PresetNodeSrc, overrides);
       }
     }, {
       key: 'rails',
       value: function rails() {
         var overrides = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
 
-        return extend(true, {}, Rails, overrides);
+
+        return extend(true, {}, PresetRails, Rails.baseDirectories(), overrides);
       }
     }]);
-    return Presets;
+    return Preset;
   }();
 
   var Default$15 = {
@@ -271,7 +389,7 @@
     /**
      *
      * @param gulp - gulp instance
-     * @param preset - base preset configuration - either one from presets.js or a custom hash
+     * @param preset - base preset configuration - either one from preset.js or a custom hash
      * @param config - customized overrides for this recipe
      */
 
@@ -297,7 +415,7 @@
         presetTypeConfig = {};
       }
 
-      var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(BaseRecipe).call(this, gulp, extend(true, {}, Default$14, presetTypeConfig, config)));
+      var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(BaseRecipe).call(this, gulp, extend(true, {}, Default$14, { baseDirectories: preset.baseDirectories }, presetTypeConfig, config)));
 
       if (_this.createHelpText !== undefined) {
         _this.config.task.help = _this.createHelpText();
@@ -415,7 +533,7 @@
     /**
      *
      * @param gulp - gulp instance
-     * @param preset - base preset configuration - either one from presets.js or a custom hash
+     * @param preset - base preset configuration - either one from preset.js or a custom hash
      * @param config - customized overrides for this recipe
      */
 
@@ -471,7 +589,7 @@
     /**
      *
      * @param gulp - gulp instance
-     * @param preset - base preset configuration - either one from presets.js or a custom hash
+     * @param preset - base preset configuration - either one from preset.js or a custom hash
      * @param config - customized overrides for this recipe
      */
 
@@ -599,7 +717,7 @@
   }(BaseRecipe);
 
   var Default$1 = {
-    debug: false,
+    debug: true,
     presetType: 'images',
     task: {
       name: 'images'
@@ -611,6 +729,7 @@
       }
     },
     source: {
+      // baseDirectories: [] ** resolved from preset **
       glob: '**',
       options: {
         //cwd: ** resolved from preset **
@@ -626,7 +745,7 @@
     /**
      *
      * @param gulp - gulp instance
-     * @param preset - base preset configuration - either one from presets.js or a custom hash
+     * @param preset - base preset configuration - either one from preset.js or a custom hash
      * @param config - customized overrides for this recipe
      */
 
@@ -652,9 +771,26 @@
 
         var watching = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
 
-        return this.gulp.src(this.config.source.glob, this.config.source.options).pipe(changed(this.config.dest)) // ignore unchanged files
+
+        var tasks = this.config.baseDirectories.map(function (baseDirectory) {
+          // join the base dir with the relative cwd
+          return _this2.runOne(path.join(baseDirectory, _this2.config.source.options.cwd), watching);
+        });
+        return merge(tasks);
+      }
+    }, {
+      key: 'runOne',
+      value: function runOne(cwd, watching) {
+        var _this3 = this;
+
+        // setup a run with a single cwd a.k.a base directory FIXME: perhaps this could be in the base recipe? or not?
+        var options = extend({}, this.config.source.options);
+        options.cwd = cwd;
+        this.debug('src: ' + cwd + '/' + this.config.source.glob);
+
+        return this.gulp.src(this.config.source.glob, options).pipe(changed(this.config.dest)) // ignore unchanged files
         .pipe(gulpif(this.config.debug, debug(this.debugOptions()))).pipe(imagemin(this.config.options)).on('error', function (error) {
-          _this2.notifyError(error, watching);
+          _this3.notifyError(error, watching);
         }).pipe(this.gulp.dest(this.config.dest)).pipe(this.browserSync.stream());
       }
     }]);
@@ -680,7 +816,9 @@
       }
     },
     options: {
-      includePaths: ['node_modules']
+      // WARNING: `includePaths` this should be a fully qualified path if overriding
+      //  @see https://github.com/sass/node-sass/issues/1377
+      includePaths: [findup('node_modules')] // this will find any node_modules above the current working directory
     },
     // capture defaults from autoprefixer class
     autoprefixer: {
@@ -695,7 +833,7 @@
     /**
      *
      * @param gulp - gulp instance
-     * @param preset - base preset configuration - either one from presets.js or a custom hash
+     * @param preset - base preset configuration - either one from preset.js or a custom hash
      * @param config - customized overrides for this recipe
      */
 
@@ -720,6 +858,15 @@
         var _this2 = this;
 
         var watching = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
+
+        // add debug for importing
+        if (this.config.debug && this.config.options.importer === undefined) {
+          this.debugDump('options', this.config.options);
+          this.config.options.importer = function (url, prev, done) {
+            _this2.debug('importing ' + url + ' from ' + prev);
+            done({ file: url });
+          };
+        }
 
         return this.gulp.src(this.config.source.glob, this.config.source.options).pipe(gulpif(this.config.debug, debug(this.debugOptions()))).pipe(sourcemaps.init()).pipe(sass(this.config.options)).on('error', function (error) {
           _this2.notifyError(error, watching);
@@ -759,7 +906,7 @@
     /**
      *
      * @param gulp - gulp instance
-     * @param preset - base preset configuration - either one from presets.js or a custom hash
+     * @param preset - base preset configuration - either one from preset.js or a custom hash
      * @param config - customized overrides for this recipe
      */
 
@@ -1155,17 +1302,12 @@
         //cwd: ** resolved from preset **
       }
     },
-    source: {
-      glob: 'index.js',
-      options: {
-        //cwd: ** resolved from preset **
-      }
-    },
+    //source: { }, ** resolved from preset **
+    //dest: '', ** resolved from preset **
 
-    //dest: './public/assets',
     options: {
-      //entry: 'src/index.js', // is created from the source glob/cwd
-      //dest: '', // required
+      //entry: 'src/index.js', // ** resolved from the source glob/cwd **
+      //dest: '', // ** resolved from preset **
       sourceMap: true,
       format: 'es6'
       //plugins: [],
@@ -1179,7 +1321,7 @@
     /**
      *
      * @param gulp - gulp instance
-     * @param preset - base preset configuration - either one from presets.js or a custom hash
+     * @param preset - base preset configuration - either one from preset.js or a custom hash
      * @param config - customized overrides for this recipe
      */
 
@@ -1274,7 +1416,7 @@
     /**
      *
      * @param gulp - gulp instance
-     * @param preset - base preset configuration - either one from presets.js or a custom hash
+     * @param preset - base preset configuration - either one from preset.js or a custom hash
      * @param config - customized overrides for this recipe
      */
 
@@ -1309,7 +1451,7 @@
     /**
      *
      * @param gulp - gulp instance
-     * @param preset - base preset configuration - either one from presets.js or a custom hash
+     * @param preset - base preset configuration - either one from preset.js or a custom hash
      * @param config - customized overrides for this recipe
      */
 
@@ -1344,7 +1486,7 @@
     /**
      *
      * @param gulp - gulp instance
-     * @param preset - base preset configuration - either one from presets.js or a custom hash
+     * @param preset - base preset configuration - either one from preset.js or a custom hash
      * @param config - customized overrides for this recipe
      */
 
@@ -1379,7 +1521,7 @@
     /**
      *
      * @param gulp - gulp instance
-     * @param preset - base preset configuration - either one from presets.js or a custom hash
+     * @param preset - base preset configuration - either one from preset.js or a custom hash
      * @param config - customized overrides for this recipe
      */
 
@@ -1405,7 +1547,7 @@
     /**
      *
      * @param gulp - gulp instance
-     * @param preset - base preset configuration - either one from presets.js or a custom hash
+     * @param preset - base preset configuration - either one from preset.js or a custom hash
      * @param config - customized overrides for this recipe
      */
 
@@ -1489,7 +1631,7 @@
     /**
      *
      * @param gulp - gulp instance
-     * @param preset - base preset configuration - either one from presets.js or a custom hash
+     * @param preset - base preset configuration - either one from preset.js or a custom hash
      * @param config - customized overrides for this recipe
      */
 
@@ -1516,7 +1658,7 @@
     /**
      *
      * @param gulp - gulp instance
-     * @param preset - base preset configuration - either one from presets.js or a custom hash
+     * @param preset - base preset configuration - either one from preset.js or a custom hash
      * @param config - customized overrides for this recipe
      */
 
@@ -1543,7 +1685,7 @@
     /**
      *
      * @param gulp - gulp instance
-     * @param preset - base preset configuration - either one from presets.js or a custom hash
+     * @param preset - base preset configuration - either one from preset.js or a custom hash
      * @param config - customized overrides for this recipe
      */
 
@@ -1599,7 +1741,8 @@
     return Clean;
   }(BaseRecipe);
 
-  exports.Presets = Presets;
+  exports.Preset = Preset;
+  exports.Rails = Rails;
   exports.Autoprefixer = Autoprefixer;
   exports.EsLint = EsLint;
   exports.Images = Images;

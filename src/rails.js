@@ -4,8 +4,6 @@ import fs from 'fs'
 import jsonfile from 'jsonfile'
 import Util from 'gulp-util'
 
-//import stringify from 'stringify-object'
-
 const BaseDirectoriesCache = `.gulp-pipeline-rails.json`
 const GemfileLock = `Gemfile.lock`
 
@@ -19,6 +17,16 @@ const Rails = class {
     return path.join(__dirname, `rails/${name}`) // eslint-disable-line no-undef
   }
 
+  /**
+   * Return the baseDirectories to search for assets such as images.  In rails, this means
+   *  enumerating rails engines and collecting their root paths.  This is a lengthy process
+   *  because you have to startup a rails environment to enumerate the engines, so we cache
+   *  the baseDirectories in a file and compare it to the Gemfile.lock's modified time.  If
+   *  the Gemfile.lock changes, we throw out the cache, enumerate the engines again and write
+   *  a new cache file.
+   *
+   * @returns {{baseDirectories: string[]}}
+   */
   static baseDirectories() {
     if (!this.changed(GemfileLock, BaseDirectoriesCache)) {
       return jsonfile.readFileSync(BaseDirectoriesCache)

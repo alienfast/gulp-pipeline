@@ -54,6 +54,7 @@
     "gulp-scss-lint-stylish": "^1.0.0",
     "gulp-sourcemaps": "^1.6.0",
     "gulp-util": "^3.0.7",
+    "jsonfile": "^2.2.3",
     "merge-stream": "^1.0.0",
     "node-extend": "^0.2.0",
     "rollup": "^0.25.3",

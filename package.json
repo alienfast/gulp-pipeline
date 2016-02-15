@@ -43,6 +43,7 @@
     "findup-sync": "^0.3.0",
     "gulp-autoprefixer": "^3.1.0",
     "gulp-changed": "^1.3.0",
+    "gulp-cssnano": "^2.1.1",
     "gulp-debug": "^2.1.2",
     "gulp-eslint": "^1.1.1",
     "gulp-help": "^1.6.1",

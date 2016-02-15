@@ -21,3 +21,4 @@ export { default as CleanDigest } from './cleanDigest'
 export { default as Clean } from './clean'
 
 export { default as Rev } from './rev'
+export { default as MinifyCss } from './minifyCss'

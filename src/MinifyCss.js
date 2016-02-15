@@ -3,23 +3,22 @@ import BrowserSync from 'browser-sync'
 import debug from 'gulp-debug'
 import extend from 'extend'
 import gulpif from 'gulp-if'
-import rev   from 'gulp-rev'
-import path from 'path'
+import cssnano from 'gulp-cssnano'
 
 export const Default = {
   debug: true,
   presetType: 'digest',
   task: {
-    name: 'rev'
+    name: 'minifyCss'
   },
   watch: {
-    glob: ['**', '!digest', '!digest/**', '!*.map'],
+    glob: ['digest/**.css'],
     options: {
       //cwd: ** resolved from preset **
     }
   },
   source: {
-    glob: ['**', '!digest', '!digest/**', '!*.map'],
+    glob: ['digest/**.css'],
     options: {
       //cwd: ** resolved from preset **
     }
@@ -27,7 +26,10 @@ export const Default = {
   options: {}
 }
 
-const Rev = class extends BaseRecipe {
+/**
+ * Recipe to be run after Rev or any other that places final assets in the digest destination directory
+ */
+const MinifyCss = class extends BaseRecipe {
 
   /**
    *
@@ -41,7 +43,7 @@ const Rev = class extends BaseRecipe {
   }
 
   createHelpText() {
-    return `Adds revision digest to assets from ${this.config.source.options.cwd}/${this.config.source.glob}`
+    return `Minifies digest css from ${this.config.source.options.cwd}/${this.config.source.glob}`
   }
 
   run(watching = false) {
@@ -50,11 +52,8 @@ const Rev = class extends BaseRecipe {
 
 
     return this.gulp.src(this.config.source.glob, this.config.source.options)
-      //.pipe(changed(this.config.dest)) // ignore unchanged files
       .pipe(gulpif(this.config.debug, debug(this.debugOptions())))
-      .pipe(rev(this.config.options))
-      .pipe(this.gulp.dest(this.config.dest))
-      .pipe(rev.manifest())
+      .pipe(cssnano(this.config.options))
       .pipe(this.gulp.dest(this.config.dest))
       .on('error', (error) => {
         this.notifyError(error, watching)
@@ -64,4 +63,4 @@ const Rev = class extends BaseRecipe {
   }
 }
 
-export default Rev
+export default MinifyCss

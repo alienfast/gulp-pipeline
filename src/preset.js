@@ -25,7 +25,7 @@ const PresetRails = {
   },
   digest: {
     source: {options: {cwd: 'public'}},
-    //watch: {options: {cwd: 'public'}},
+    watch: {options: {cwd: 'public'}},
     dest: 'public/digest'
   }
 }
@@ -51,7 +51,7 @@ const PresetNodeLib = {
   },
   digest: {
     source: {options: {cwd: 'dist'}},
-    //watch: {options: {cwd: 'dist'}},
+    watch: {options: {cwd: 'dist'}},
     dest: 'dist/digest'
   }
 }
@@ -78,7 +78,7 @@ const PresetNodeSrc = {
   },
   digest: {
     source: {options: {cwd: 'dist'}},
-    //watch: {options: {cwd: 'dist'}},
+    watch: {options: {cwd: 'dist'}},
     dest: 'dist/digest'
   }
 }

@@ -3,6 +3,7 @@ import extend from 'extend'
 import CleanImages from './cleanImages'
 import CleanStylesheets from './cleanStylesheets'
 import CleanJavascripts from './cleanJavascripts'
+import CleanDigest from './cleanDigest'
 
 const Default = {
   debug: false,
@@ -27,12 +28,14 @@ const Clean = class extends BaseRecipe {
     this.cleanImages = new CleanImages(gulp, preset)
     this.cleanStylesheets = new CleanStylesheets(gulp, preset)
     this.cleanJavascripts = new CleanJavascripts(gulp, preset)
+    this.cleanDigest = new CleanDigest(gulp, preset)
   }
 
   run() {
     this.cleanImages.run()
     this.cleanStylesheets.run()
     this.cleanJavascripts.run()
+    this.cleanDigest.run()
   }
 }
 

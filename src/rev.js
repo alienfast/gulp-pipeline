@@ -8,9 +8,9 @@ import rev   from 'gulp-rev'
 
 export const Default = {
   debug: true,
-  presetType: 'revisions',
+  presetType: 'digest',
   task: {
-    name: 'revisions'
+    name: 'rev'
   },
   watch: false,
   //{
@@ -20,7 +20,7 @@ export const Default = {
   //  }
   //},
   source: {
-    glob: '**',
+    glob: ['**', '!'],
     options: {
       //cwd: ** resolved from preset **
     }
@@ -28,7 +28,7 @@ export const Default = {
   options: {}
 }
 
-const Revisions = class extends BaseRecipe {
+const Rev = class extends BaseRecipe {
 
   /**
    *
@@ -61,4 +61,4 @@ const Revisions = class extends BaseRecipe {
   }
 }
 
-export default Revisions
+export default Rev

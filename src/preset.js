@@ -23,10 +23,10 @@ const PresetRails = {
     watch: {options: {cwd: 'app/assets/images'}},
     dest: 'public'
   },
-  revisions: {
+  digest: {
     source: {options: {cwd: 'public'}},
     //watch: {options: {cwd: 'public'}},
-    dest: 'public'
+    dest: 'public/digest'
   }
 }
 const PresetNodeLib = {
@@ -49,10 +49,10 @@ const PresetNodeLib = {
     watch: {options: {cwd: 'lib'}},
     dest: 'dist'
   },
-  revisions: {
-    source: {options: {cwd: 'dest'}},
-    //watch: {options: {cwd: 'dest'}},
-    dest: 'dest'
+  digest: {
+    source: {options: {cwd: 'dist'}},
+    //watch: {options: {cwd: 'dist'}},
+    dest: 'dist/digest'
   }
 }
 
@@ -76,10 +76,10 @@ const PresetNodeSrc = {
     watch: {options: {cwd: 'lib'}},
     dest: 'dist'
   },
-  revisions: {
-    source: {options: {cwd: 'dest'}},
-    //watch: {options: {cwd: 'dest'}},
-    dest: 'dest'
+  digest: {
+    source: {options: {cwd: 'dist'}},
+    //watch: {options: {cwd: 'dist'}},
+    dest: 'dist/digest'
   }
 }
 

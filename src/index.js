@@ -17,6 +17,7 @@ export { default as RollupUmd } from './rollupUmd'
 export { default as CleanImages } from './cleanImages'
 export { default as CleanStylesheets } from './cleanStylesheets'
 export { default as CleanJavascripts } from './cleanJavascripts'
+export { default as CleanDigest } from './cleanDigest'
 export { default as Clean } from './clean'
 
-export { default as Revisions } from './revisions'
+export { default as Rev } from './rev'

@@ -49,6 +49,7 @@
     "gulp-if": "^2.0.0",
     "gulp-imagemin": "^2.4.0",
     "gulp-notify": "^2.2.0",
+    "gulp-rev": "^7.0.0",
     "gulp-sass": "^2.2.0",
     "gulp-scss-lint": "^0.3.9",
     "gulp-scss-lint-stylish": "^1.0.0",

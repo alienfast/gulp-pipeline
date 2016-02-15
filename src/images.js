@@ -9,7 +9,7 @@ import merge from 'merge-stream'
 import path from 'path'
 
 export const Default = {
-  debug: true,
+  debug: false,
   presetType: 'images',
   task: {
     name: 'images'

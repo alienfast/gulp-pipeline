@@ -1,15 +1,17 @@
 # gulp-pipeline
 Meta gulp plugin recipes modularized as ES2015 classes. Fully configurable. Fully extensible. Full pipeline in a few lines of code.
 
-This **is not** just for rails, it's agnostic and works for anything (node, angular, etc).
+This **is not** just for rails, it's agnostic and works for anything (node, angular, etc). 
+
+With that said, did we mention that gulp-pipeline + [gulp-pipeline-rails](https://github.com/alienfast/gulp-pipeline-rails) enables you to remove sprockets and easily serve gulp assets with rails?
 
 ## Usage
-Here's a `gulpfile.babel.js` that provides tasks to build and watch an ES2015/SCSS project.  Simple enough?
+Here's a `gulpfile.babel.js` that provides tasks to build and watch an ES2015/SCSS project.  It happens to use the Rails preset, but you can see that's a simple hash.  Simple enough?
  
 ```javascript
 // Assuming project named: acme
 
-import { Preset, Clean, EsLint, Images, ScssLint, Sass, RollupEs, RollupCjs, RollupIife, TaskSeries } from 'gulp-pipeline'
+import { Preset, Clean, CleanDigest, EsLint, Images, MinifyCss, Rev, ScssLint, Sass, RollupEs, RollupCjs, RollupIife, TaskSeries } from 'gulp-pipeline'
 import gulp from 'gulp'
 
 // Utilize one of the common configs
@@ -35,6 +37,14 @@ let recipes = [
 
 // Simple helper to create the `default` and `default:watch` tasks as a series of the recipes already defined
 new TaskSeries(gulp, 'default', recipes)
+
+// Create the production digest assets
+let digest = [
+  new CleanDigest(gulp, preset),
+  new Rev(gulp, preset),
+  new MinifyCss(gulp, preset)
+]
+new TaskSeries(gulp, 'digest', digest)
 ```
 
 This configuration generates the following (call the `help` task):

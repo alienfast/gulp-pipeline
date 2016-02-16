@@ -5,9 +5,14 @@ import extend from 'extend'
 import glob from 'glob'
 import stringify from 'stringify-object'
 import nodeResolve from 'rollup-plugin-node-resolve'
+import commonjs from 'rollup-plugin-commonjs'
+
+import findup from 'findup-sync'
+const node_modules = findup('node_modules')
+
 
 export const Default = {
-  debug: false,
+  debug: true,
   presetType: 'javascripts',
   task: {
     name: 'rollup:es'
@@ -33,7 +38,6 @@ export const Default = {
 
 // This nodeResolve configuration is not used unless it is within the plugins: [nodeResolve(this.config.nodeResolve.options)] - pass this.config.nodeResolve.enabled == true in config to enable default options
 export const NodeResolve = {
-
   nodeResolve: {
     enabled: false,
 
@@ -63,6 +67,19 @@ export const NodeResolve = {
   }
 }
 
+export const CommonJs = {
+  commonjs: {
+    enabled: false,
+    options: {
+      include: `${node_modules}/**`,
+      //exclude: [ `${node_modules}/foo/**', `${node_modules}/bar/**` ],
+
+      // search for files other than .js files (must already be transpiled by a previous plugin!)
+      extensions: [ '.js' ] // defaults to [ '.js' ]
+    }
+  }
+}
+
 const RollupEs = class extends BaseRecipe {
 
   /**
@@ -77,16 +94,28 @@ const RollupEs = class extends BaseRecipe {
       throw new Error(`options.dest filename must be specified.`)
     }
 
-    super(gulp, preset, extend(true, {}, Default, NodeResolve, config))
+    super(gulp, preset, extend(true, {}, Default, NodeResolve, CommonJs, config))
 
     // Utilize the presets to get the dest cwd/base directory, then add the remaining passed-in file path/name
     this.config.options.dest = `${this.config.dest}/${this.config.options.dest}`
 
-    // Add nodeResolve
-    if(this.config.nodeResolve.enabled) {
-      this.config.options.plugins.push(nodeResolve(this.config.nodeResolve.options))
+    // order: nodeResolve, commonjs, babel
+    if(this.config.commonjs.enabled) {
+      // add at the beginning
+      this.config.options.plugins.unshift(commonjs(this.config.commonjs.options))
     }
 
+    // Add nodeResolve
+    if(this.config.nodeResolve.enabled) {
+      // add at the beginning
+      this.config.options.plugins.unshift(nodeResolve(this.config.nodeResolve.options))
+    }
+
+
+    this.debug(`plugins count: ${this.config.options.plugins}`)
+    //for (let p of this.config.options.plugins) {
+    //  this.debug(`plugin: ${p.prototype}`)
+    //}
     //this.browserSync = BrowserSync.create()
   }
 
@@ -124,7 +153,11 @@ const RollupEs = class extends BaseRecipe {
       },
       this.config.options)
 
-    this.debug(`Executing rollup with options: ${stringify(options)}`)
+    if(this.config.debug) {
+      let prunedOptions = extend(true, {}, options)
+      prunedOptions.plugins = `[ (count: ${this.config.options.plugins.length}) ]`
+      this.debug(`Executing rollup with options: ${stringify(prunedOptions)}`)
+    }
 
     return rollup(options)
       .then((bundle) => {

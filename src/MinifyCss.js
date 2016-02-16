@@ -6,7 +6,7 @@ import gulpif from 'gulp-if'
 import cssnano from 'gulp-cssnano'
 
 export const Default = {
-  debug: true,
+  debug: false,
   presetType: 'digest',
   task: {
     name: 'minifyCss'

@@ -4,10 +4,9 @@ import debug from 'gulp-debug'
 import extend from 'extend'
 import gulpif from 'gulp-if'
 import rev   from 'gulp-rev'
-import path from 'path'
 
 export const Default = {
-  debug: true,
+  debug: false,
   presetType: 'digest',
   task: {
     name: 'rev'

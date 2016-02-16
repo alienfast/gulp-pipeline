@@ -3,7 +3,7 @@ import spawn from 'cross-spawn'
 import fs from 'fs'
 import jsonfile from 'jsonfile'
 import Util from 'gulp-util'
-import stringify from 'stringify-object'
+//import stringify from 'stringify-object'
 
 
 const BaseDirectoriesCache = `.gulp-pipeline-rails.json`

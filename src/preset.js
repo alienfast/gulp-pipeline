@@ -11,17 +11,17 @@ const PresetRails = {
       options: {cwd: 'app/assets/javascripts'}
     },
     watch: {options: {cwd: 'app/assets/javascripts'}},
-    dest: 'public'
+    dest: 'public/javascripts'
   },
   stylesheets: {
     source: {options: {cwd: 'app/assets/stylesheets'}},
     watch: {options: {cwd: 'app/assets/stylesheets'}},
-    dest: 'public'
+    dest: 'public/stylesheets'
   },
   images: {
     source: {options: {cwd: 'app/assets/images'}},
     watch: {options: {cwd: 'app/assets/images'}},
-    dest: 'public'
+    dest: 'public/images'
   },
   digest: {
     source: {options: {cwd: 'public'}},

@@ -3,6 +3,8 @@ import spawn from 'cross-spawn'
 import fs from 'fs'
 import jsonfile from 'jsonfile'
 import Util from 'gulp-util'
+import stringify from 'stringify-object'
+
 
 const BaseDirectoriesCache = `.gulp-pipeline-rails.json`
 const GemfileLock = `Gemfile.lock`
@@ -10,7 +12,12 @@ const GemfileLock = `Gemfile.lock`
 const Rails = class {
   static enumerateEngines() {
     let results = spawn.sync(this.filePath('railsRunner.sh'), [this.filePath('enumerateEngines.rb')], {sdtio: 'inherit'})
-    return JSON.parse(results.output[1])
+
+    //Util.log(stringify(results))
+    if(results.stderr != ''){
+      throw new Error(`Ruby script error: \n${results.stderr}`)
+    }
+    return JSON.parse(results.stdout)
   }
 
   static filePath(name) {
@@ -39,6 +46,7 @@ const Rails = class {
         //ignore
       }
 
+      Util.log(`Enumerating rails engines...`)
       let engines = Rails.enumerateEngines()
       //console.log(stringify(engines))
 
@@ -46,7 +54,8 @@ const Rails = class {
       for (let key of Object.keys(engines)) {
         baseDirectories.push(engines[key])
       }
-      //console.log(stringify(baseDirectories))
+
+      Util.log(`Writing baseDirectories cache...`)
       let result = {baseDirectories: baseDirectories}
       jsonfile.writeFileSync(BaseDirectoriesCache, result, {spaces: 2})
       return result

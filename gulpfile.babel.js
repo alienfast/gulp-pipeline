@@ -6,7 +6,7 @@ import RollupEs from './src/rollupEs'
 import RollupAmd from './src/rollupAmd'
 import RollupCjs from './src/rollupCjs'
 import RollupUmd from './src/rollupUmd'
-import RollupIife from './src/rollupIife'
+//import RollupIife from './src/rollupIife'
 import TaskSeries from './src/taskSeries'
 
 
@@ -24,8 +24,8 @@ let recipes = [
     new RollupEs(gulp, preset, {options: {dest: 'gulp-pipeline.es.js'}}),
     new RollupAmd(gulp, preset, {options: {dest: 'gulp-pipeline.amd.js'}}),
     new RollupCjs(gulp, preset, {options: {dest: 'gulp-pipeline.cjs.js'}}),
-    new RollupUmd(gulp, preset, {options: {dest: 'gulp-pipeline.umd.js', moduleName: 'gulpPipeline'}}),
-    new RollupIife(gulp, preset, {options: {dest: 'gulp-pipeline.iife.js', moduleName: 'gulpPipeline'}})
+    new RollupUmd(gulp, preset, {options: {dest: 'gulp-pipeline.umd.js', moduleName: 'gulpPipeline'}})//,
+    //new RollupIife(gulp, preset, {options: {dest: 'gulp-pipeline.iife.js', moduleName: 'gulpPipeline'}})
   ]
 ]
 
@@ -40,6 +40,10 @@ new TaskSeries(gulp, 'default', recipes)
 //import Images from './src/images'
 //import Sass from './src/sass'
 //import ScssLint from './src/scssLint'
+//import CleanDigest from './src/cleanDigest'
+//import Rev from './src/rev'
+//import MinifyCss from './src/minifyCss'
+//
 //
 //// Utilize one of the common configs
 //let preset = Preset.rails() // other pre-configured presets: nodeSrc, nodeLib - see preset.js and submit PRs with other common configs
@@ -64,3 +68,11 @@ new TaskSeries(gulp, 'default', recipes)
 //
 //// Simple helper to create the `default` and `default:watch` tasks as a series of the recipes already defined
 //new TaskSeries(gulp, 'default', recipes)
+//
+//// Create the production digest assets
+//let digest = [
+//  new CleanDigest(gulp, preset),
+//  new Rev(gulp, preset),
+//  new MinifyCss(gulp, preset)
+//]
+//new TaskSeries(gulp, 'digest', digest)

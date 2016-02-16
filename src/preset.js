@@ -11,22 +11,22 @@ const PresetRails = {
       options: {cwd: 'app/assets/javascripts'}
     },
     watch: {options: {cwd: 'app/assets/javascripts'}},
-    dest: 'public/javascripts'
+    dest: 'public/assets/debug'
   },
   stylesheets: {
     source: {options: {cwd: 'app/assets/stylesheets'}},
     watch: {options: {cwd: 'app/assets/stylesheets'}},
-    dest: 'public/stylesheets'
+    dest: 'public/assets/debug'
   },
   images: {
     source: {options: {cwd: 'app/assets/images'}},
     watch: {options: {cwd: 'app/assets/images'}},
-    dest: 'public/images'
+    dest: 'public/assets/debug'
   },
   digest: {
-    source: {options: {cwd: 'public'}},
-    watch: {options: {cwd: 'public'}},
-    dest: 'public/digest'
+    source: {options: {cwd: 'public/assets/debug'}},
+    watch: {options: {cwd: 'public/assets/debug'}},
+    dest: 'public/assets/digest'
   }
 }
 const PresetNodeLib = {

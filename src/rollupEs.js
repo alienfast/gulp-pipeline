@@ -39,7 +39,15 @@ const RollupEs = class extends BaseRecipe {
    * @param config - customized overrides for this recipe
    */
   constructor(gulp, preset, config = {}) {
+
+    if (!config.options.dest) {
+      throw new Error(`options.dest filename must be specified.`)
+    }
+
     super(gulp, preset, extend(true, {}, Default, config))
+
+    // Utilize the presets to get the dest cwd/base directory, then add the remaining passed-in file path/name
+    this.config.options.dest = `${this.config.dest}/${this.config.options.dest}`
     //this.browserSync = BrowserSync.create()
   }
 
@@ -76,10 +84,6 @@ const RollupEs = class extends BaseRecipe {
         }
       },
       this.config.options)
-
-    if (!options.dest) {
-      throw new Error(`dest must be specified.`)
-    }
 
     this.debug(`Executing rollup with options: ${stringify(options)}`)
 

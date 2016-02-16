@@ -26,9 +26,9 @@ let recipes = [
   [
     new Images(gulp, preset),
     new Sass(gulp, preset),
-    new RollupEs(gulp, preset, {options: {dest: 'dist/acme.es.js'}}),                        // es
-    new RollupCjs(gulp, preset, {options: {dest: 'dist/acme.cjs.js'}}),                      // commonjs
-    new RollupIife(gulp, preset, {options: {dest: 'dist/acme.iife.js', moduleName: 'acme'}}) // iife self executing bundle for the browser
+    new RollupEs(gulp, preset, {options: {dest: 'acme.es.js'}}),                        // es
+    new RollupCjs(gulp, preset, {options: {dest: 'acme.cjs.js'}}),                      // commonjs
+    new RollupIife(gulp, preset, {options: {dest: 'acme.iife.js', moduleName: 'acme'}}) // iife self executing bundle for the browser
   ]
 ]
 

@@ -58,9 +58,8 @@ const Sass = class extends BaseRecipe {
   }
 
   run(watching = false) {
-    // add debug for importing
+    // add debug for importing problems (can be very helpful)
     if(this.config.debug && this.config.options.importer === undefined) {
-      this.debugDump('options', this.config.options)
       this.config.options.importer = (url, prev, done) => {
         this.debug(`importing ${url} from ${prev}`)
         done({file: url})

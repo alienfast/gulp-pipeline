@@ -14,7 +14,6 @@ export const Default = {
       presets: ['es2015-rollup']
     })]
   },
-
   nodeResolve: {
     enabled: true // bundle a full package with dependencies?
   },

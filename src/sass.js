@@ -7,7 +7,9 @@ import extend from 'extend'
 import sass from 'gulp-sass'
 import sourcemaps from 'gulp-sourcemaps'
 import gulpif from 'gulp-if'
+
 import findup from 'findup-sync'
+const node_modules = findup('node_modules')
 
 export const Default = {
   debug: false,
@@ -30,7 +32,7 @@ export const Default = {
   options: {
     // WARNING: `includePaths` this should be a fully qualified path if overriding
     //  @see https://github.com/sass/node-sass/issues/1377
-    includePaths: [findup('node_modules')] // this will find any node_modules above the current working directory
+    includePaths: [node_modules] // this will find any node_modules above the current working directory
   },
   // capture defaults from autoprefixer class
   autoprefixer: {

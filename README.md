@@ -14,7 +14,7 @@ Here's a `gulpfile.babel.js` that provides tasks to build and watch an ES2015/SC
 import { Preset, Clean, CleanDigest, EsLint, Images, MinifyCss, Rev, ScssLint, Sass, RollupEs, RollupCjs, RollupIife, TaskSeries } from 'gulp-pipeline'
 import gulp from 'gulp'
 
-// Utilize one of the common configs
+// Utilize one of the common directory structure configs
 let preset = Preset.rails() // other pre-configured presets: nodeSrc, nodeLib - see preset.js and submit PRs with other common configs
 
 // Instantiate ordered array of recipes (for each instantiation the tasks will be created e.g. sass and sass:watch)
@@ -47,7 +47,7 @@ let digest = [
 new TaskSeries(gulp, 'digest', digest)
 ```
 
-This configuration generates the following (call the `help` task):
+This configuration generates the following (call the `help` task) that is specific to the `Preset` used:
 
 ![Help](help-demo.png) 
 

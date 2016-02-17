@@ -99,23 +99,21 @@ const RollupEs = class extends BaseRecipe {
     // Utilize the presets to get the dest cwd/base directory, then add the remaining passed-in file path/name
     this.config.options.dest = `${this.config.dest}/${this.config.options.dest}`
 
-    // order: nodeResolve, commonjs, babel
+    //----------------------------------------------
+    // plugins order: nodeResolve, commonjs, babel
+
+    // Add commonjs before babel
     if(this.config.commonjs.enabled) {
       // add at the beginning
       this.config.options.plugins.unshift(commonjs(this.config.commonjs.options))
     }
 
-    // Add nodeResolve
+    // Add nodeResolve before (commonjs &&|| babel)
     if(this.config.nodeResolve.enabled) {
       // add at the beginning
       this.config.options.plugins.unshift(nodeResolve(this.config.nodeResolve.options))
     }
 
-
-    this.debug(`plugins count: ${this.config.options.plugins}`)
-    //for (let p of this.config.options.plugins) {
-    //  this.debug(`plugin: ${p.prototype}`)
-    //}
     //this.browserSync = BrowserSync.create()
   }
 

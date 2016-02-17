@@ -49,7 +49,9 @@ const TaskSeries = class extends Base {
   }
 
   flattenedRecipes(){
-    return [].concat(...this.recipes)
+    let recipes = [].concat(...this.recipes)
+    //this.log(`flattenedRecipes: ${stringify(recipes)}`)
+    return recipes
   }
 
   watchableRecipes(){

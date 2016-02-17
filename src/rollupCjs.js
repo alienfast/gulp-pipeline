@@ -14,12 +14,12 @@ export const Default = {
       presets: ['es2015-rollup']
     })]
   },
-  // by nature, iife is the full package so bundle up those dependencies.
+
   nodeResolve: {
-    enabled: true
+    enabled: true // bundle a full package with dependencies?
   },
-  commonjs: { // convert commonjs modules for rollup
-    enabled: true
+  commonjs: {
+    enabled: true // convert dependencies to commonjs modules for rollup
   }
 }
 

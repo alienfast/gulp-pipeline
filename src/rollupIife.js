@@ -9,9 +9,8 @@ export const Default = {
     //dest: '', // required
     format: 'iife'
   },
-  // by nature, iife is the full package so bundle up those dependencies.
   nodeResolve: {
-    enabled: true
+    enabled: true // by nature, iife is the full package so bundle up those dependencies.
   }
 }
 

@@ -1,26 +1,46 @@
 import path from 'path'
+import extend from 'extend'
+import glob from 'glob'
 import spawn from 'cross-spawn'
 import fs from 'fs'
 import jsonfile from 'jsonfile'
 import Util from 'gulp-util'
-//import stringify from 'stringify-object'
-
+import stringify from 'stringify-object'
 
 const BaseDirectoriesCache = `.gulp-pipeline-rails.json`
 const GemfileLock = `Gemfile.lock`
 
 const Rails = class {
   static enumerateEngines() {
-    let results = spawn.sync(this.filePath('railsRunner.sh'), [this.filePath('enumerateEngines.rb')], {sdtio: 'inherit'})
 
-    //Util.log(stringify(results))
-    if(results.stderr != ''){
+    let results = spawn.sync(this.localPath('railsRunner.sh'), [this.localPath('enumerateEngines.rb')], {
+      sdtio: 'inherit',
+      cwd: this.railsAppCwd()
+    })
+
+    Util.log(stringify(results))
+    if (results.stderr != '') {
       throw new Error(`Ruby script error: \n${results.stderr}`)
     }
     return JSON.parse(results.stdout)
   }
 
-  static filePath(name) {
+  /**
+   * We need a rails app to run our rails script runner.  Since this project could be a rails engine, find a rails app somewhere in or under the cwd.
+   */
+  static railsAppCwd() {
+    let entries = glob.sync('**/bin/rails', {realpath: true})
+    if (!entries || entries.length <= 0) {
+      throw new Error(`Unable to find Rails application directory based on existence of 'bin/rails'`)
+    }
+
+    if (entries.length > 1) {
+      throw new Error(`railsAppCwd() should only find one rails application but found ${entries}`)
+    }
+    return path.join(entries[0], '../..')
+  }
+
+  static localPath(name) {
     return path.join(__dirname, `rails/${name}`) // eslint-disable-line no-undef
   }
 

@@ -12,9 +12,6 @@ export const Default = {
   // by nature, iife is the full package so bundle up those dependencies.
   nodeResolve: {
     enabled: true
-  },
-  commonjs: { // convert commonjs modules for rollup
-    enabled: true
   }
 }
 

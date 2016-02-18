@@ -31,7 +31,7 @@ const Base = class {
 
   debug(msg) {
     if (this.config.debug) {
-      this.log(`[${Util.colors.cyan('debug')}] ${msg}`)
+      this.log(`[${Util.colors.cyan('debug')}][${Util.colors.cyan(this.constructor.name)}] ${msg}`)
     }
   }
 

@@ -117,6 +117,14 @@ var Rails = function () {
 
       //Util.log(stringify(results))
       if (results.stderr != '' || results.error != '') {
+
+        var msg = '';
+        if (results.stderr) {
+          msg += results.stderr;
+        }
+        if (results.error) {
+          msg += results.error;
+        }
         // message will be either error or stderr, so just grap both of them
         throw new Error('Ruby script error: \n' + results.stderr + results.error);
       }

@@ -9,8 +9,8 @@ var spawn = _interopDefault(require('cross-spawn'));
 var fs = _interopDefault(require('fs'));
 var jsonfile = _interopDefault(require('jsonfile'));
 var Util = _interopDefault(require('gulp-util'));
-var stringify = _interopDefault(require('stringify-object'));
 var notify = _interopDefault(require('gulp-notify'));
+var stringify = _interopDefault(require('stringify-object'));
 var gulpHelp = _interopDefault(require('gulp-help'));
 var console = _interopDefault(require('console'));
 var autoprefixer = _interopDefault(require('gulp-autoprefixer'));
@@ -96,6 +96,8 @@ babelHelpers.toConsumableArray = function (arr) {
 
 babelHelpers;
 
+//import stringify from 'stringify-object'
+
 var BaseDirectoriesCache = '.gulp-pipeline-rails.json';
 var GemfileLock = 'Gemfile.lock';
 
@@ -113,9 +115,10 @@ var Rails = function () {
         cwd: this.railsAppCwd()
       });
 
-      Util.log(stringify(results));
-      if (results.stderr != '') {
-        throw new Error('Ruby script error: \n' + results.stderr);
+      //Util.log(stringify(results))
+      if (results.stderr != '' || results.error != '') {
+        // message will be either error or stderr, so just grap both of them
+        throw new Error('Ruby script error: \n' + results.stderr + results.error);
       }
       return JSON.parse(results.stdout);
     }

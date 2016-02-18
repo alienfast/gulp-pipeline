@@ -1,4 +1,4 @@
-define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'gulp-util', 'stringify-object', 'gulp-notify', 'gulp-help', 'console', 'gulp-autoprefixer', 'gulp-if', 'gulp-debug', 'gulp-eslint', 'browser-sync', 'gulp-changed', 'gulp-imagemin', 'merge-stream', 'gulp-sass', 'gulp-sourcemaps', 'findup-sync', 'gulp-scss-lint', 'gulp-scss-lint-stylish', 'rollup', 'rollup-plugin-node-resolve', 'rollup-plugin-commonjs', 'rollup-plugin-babel', 'del', 'gulp-rev', 'gulp-cssnano'], function (exports, extend, path, glob, spawn, fs, jsonfile, Util, stringify, notify, gulpHelp, console, autoprefixer, gulpif, debug, eslint, BrowserSync, changed, imagemin, merge, sass, sourcemaps, findup, scssLint, scssLintStylish, rollup, nodeResolve, commonjs, babel, del, rev, cssnano) { 'use strict';
+define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'gulp-util', 'gulp-notify', 'stringify-object', 'gulp-help', 'console', 'gulp-autoprefixer', 'gulp-if', 'gulp-debug', 'gulp-eslint', 'browser-sync', 'gulp-changed', 'gulp-imagemin', 'merge-stream', 'gulp-sass', 'gulp-sourcemaps', 'findup-sync', 'gulp-scss-lint', 'gulp-scss-lint-stylish', 'rollup', 'rollup-plugin-node-resolve', 'rollup-plugin-commonjs', 'rollup-plugin-babel', 'del', 'gulp-rev', 'gulp-cssnano'], function (exports, extend, path, glob, spawn, fs, jsonfile, Util, notify, stringify, gulpHelp, console, autoprefixer, gulpif, debug, eslint, BrowserSync, changed, imagemin, merge, sass, sourcemaps, findup, scssLint, scssLintStylish, rollup, nodeResolve, commonjs, babel, del, rev, cssnano) { 'use strict';
 
   extend = 'default' in extend ? extend['default'] : extend;
   path = 'default' in path ? path['default'] : path;
@@ -7,8 +7,8 @@ define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'g
   fs = 'default' in fs ? fs['default'] : fs;
   jsonfile = 'default' in jsonfile ? jsonfile['default'] : jsonfile;
   Util = 'default' in Util ? Util['default'] : Util;
-  stringify = 'default' in stringify ? stringify['default'] : stringify;
   notify = 'default' in notify ? notify['default'] : notify;
+  stringify = 'default' in stringify ? stringify['default'] : stringify;
   gulpHelp = 'default' in gulpHelp ? gulpHelp['default'] : gulpHelp;
   console = 'default' in console ? console['default'] : console;
   autoprefixer = 'default' in autoprefixer ? autoprefixer['default'] : autoprefixer;
@@ -93,6 +93,8 @@ define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'g
 
   babelHelpers;
 
+  //import stringify from 'stringify-object'
+
   var BaseDirectoriesCache = '.gulp-pipeline-rails.json';
   var GemfileLock = 'Gemfile.lock';
 
@@ -110,9 +112,10 @@ define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'g
           cwd: this.railsAppCwd()
         });
 
-        Util.log(stringify(results));
-        if (results.stderr != '') {
-          throw new Error('Ruby script error: \n' + results.stderr);
+        //Util.log(stringify(results))
+        if (results.stderr != '' || results.error != '') {
+          // message will be either error or stderr, so just grap both of them
+          throw new Error('Ruby script error: \n' + results.stderr + results.error);
         }
         return JSON.parse(results.stdout);
       }

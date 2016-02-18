@@ -5,8 +5,8 @@ import spawn from 'cross-spawn';
 import fs from 'fs';
 import jsonfile from 'jsonfile';
 import Util from 'gulp-util';
-import stringify from 'stringify-object';
 import notify from 'gulp-notify';
+import stringify from 'stringify-object';
 import gulpHelp from 'gulp-help';
 import console from 'console';
 import autoprefixer from 'gulp-autoprefixer';
@@ -30,6 +30,8 @@ import del from 'del';
 import rev from 'gulp-rev';
 import cssnano from 'gulp-cssnano';
 
+//import stringify from 'stringify-object'
+
 const BaseDirectoriesCache = `.gulp-pipeline-rails.json`
 const GemfileLock = `Gemfile.lock`
 
@@ -41,9 +43,10 @@ const Rails = class {
       cwd: this.railsAppCwd()
     })
 
-    Util.log(stringify(results))
-    if (results.stderr != '') {
-      throw new Error(`Ruby script error: \n${results.stderr}`)
+    //Util.log(stringify(results))
+    if (results.stderr != '' || results.error != '') {
+      // message will be either error or stderr, so just grap both of them
+      throw new Error(`Ruby script error: \n${results.stderr}${results.error}`)
     }
     return JSON.parse(results.stdout)
   }

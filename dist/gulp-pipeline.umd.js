@@ -1,8 +1,8 @@
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('extend'), require('path'), require('glob'), require('cross-spawn'), require('fs'), require('jsonfile'), require('gulp-util'), require('stringify-object'), require('gulp-notify'), require('gulp-help'), require('console'), require('gulp-autoprefixer'), require('gulp-if'), require('gulp-debug'), require('gulp-eslint'), require('browser-sync'), require('gulp-changed'), require('gulp-imagemin'), require('merge-stream'), require('gulp-sass'), require('gulp-sourcemaps'), require('findup-sync'), require('gulp-scss-lint'), require('gulp-scss-lint-stylish'), require('rollup'), require('rollup-plugin-node-resolve'), require('rollup-plugin-commonjs'), require('rollup-plugin-babel'), require('del'), require('gulp-rev'), require('gulp-cssnano')) :
-  typeof define === 'function' && define.amd ? define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'gulp-util', 'stringify-object', 'gulp-notify', 'gulp-help', 'console', 'gulp-autoprefixer', 'gulp-if', 'gulp-debug', 'gulp-eslint', 'browser-sync', 'gulp-changed', 'gulp-imagemin', 'merge-stream', 'gulp-sass', 'gulp-sourcemaps', 'findup-sync', 'gulp-scss-lint', 'gulp-scss-lint-stylish', 'rollup', 'rollup-plugin-node-resolve', 'rollup-plugin-commonjs', 'rollup-plugin-babel', 'del', 'gulp-rev', 'gulp-cssnano'], factory) :
-  (factory((global.gulpPipeline = global.gulpPipeline || {}),global.extend,global.path,global.glob,global.spawn,global.fs,global.jsonfile,global.Util,global.stringify,global.notify,global.gulpHelp,global.console,global.autoprefixer,global.gulpif,global.debug,global.eslint,global.BrowserSync,global.changed,global.imagemin,global.merge,global.sass,global.sourcemaps,global.findup,global.scssLint,global.scssLintStylish,global.rollup,global.nodeResolve,global.commonjs,global.babel,global.del,global.rev,global.cssnano));
-}(this, function (exports,extend,path,glob,spawn,fs,jsonfile,Util,stringify,notify,gulpHelp,console,autoprefixer,gulpif,debug,eslint,BrowserSync,changed,imagemin,merge,sass,sourcemaps,findup,scssLint,scssLintStylish,rollup,nodeResolve,commonjs,babel,del,rev,cssnano) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('extend'), require('path'), require('glob'), require('cross-spawn'), require('fs'), require('jsonfile'), require('gulp-util'), require('gulp-notify'), require('stringify-object'), require('gulp-help'), require('console'), require('gulp-autoprefixer'), require('gulp-if'), require('gulp-debug'), require('gulp-eslint'), require('browser-sync'), require('gulp-changed'), require('gulp-imagemin'), require('merge-stream'), require('gulp-sass'), require('gulp-sourcemaps'), require('findup-sync'), require('gulp-scss-lint'), require('gulp-scss-lint-stylish'), require('rollup'), require('rollup-plugin-node-resolve'), require('rollup-plugin-commonjs'), require('rollup-plugin-babel'), require('del'), require('gulp-rev'), require('gulp-cssnano')) :
+  typeof define === 'function' && define.amd ? define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'gulp-util', 'gulp-notify', 'stringify-object', 'gulp-help', 'console', 'gulp-autoprefixer', 'gulp-if', 'gulp-debug', 'gulp-eslint', 'browser-sync', 'gulp-changed', 'gulp-imagemin', 'merge-stream', 'gulp-sass', 'gulp-sourcemaps', 'findup-sync', 'gulp-scss-lint', 'gulp-scss-lint-stylish', 'rollup', 'rollup-plugin-node-resolve', 'rollup-plugin-commonjs', 'rollup-plugin-babel', 'del', 'gulp-rev', 'gulp-cssnano'], factory) :
+  (factory((global.gulpPipeline = global.gulpPipeline || {}),global.extend,global.path,global.glob,global.spawn,global.fs,global.jsonfile,global.Util,global.notify,global.stringify,global.gulpHelp,global.console,global.autoprefixer,global.gulpif,global.debug,global.eslint,global.BrowserSync,global.changed,global.imagemin,global.merge,global.sass,global.sourcemaps,global.findup,global.scssLint,global.scssLintStylish,global.rollup,global.nodeResolve,global.commonjs,global.babel,global.del,global.rev,global.cssnano));
+}(this, function (exports,extend,path,glob,spawn,fs,jsonfile,Util,notify,stringify,gulpHelp,console,autoprefixer,gulpif,debug,eslint,BrowserSync,changed,imagemin,merge,sass,sourcemaps,findup,scssLint,scssLintStylish,rollup,nodeResolve,commonjs,babel,del,rev,cssnano) { 'use strict';
 
   extend = 'default' in extend ? extend['default'] : extend;
   path = 'default' in path ? path['default'] : path;
@@ -11,8 +11,8 @@
   fs = 'default' in fs ? fs['default'] : fs;
   jsonfile = 'default' in jsonfile ? jsonfile['default'] : jsonfile;
   Util = 'default' in Util ? Util['default'] : Util;
-  stringify = 'default' in stringify ? stringify['default'] : stringify;
   notify = 'default' in notify ? notify['default'] : notify;
+  stringify = 'default' in stringify ? stringify['default'] : stringify;
   gulpHelp = 'default' in gulpHelp ? gulpHelp['default'] : gulpHelp;
   console = 'default' in console ? console['default'] : console;
   autoprefixer = 'default' in autoprefixer ? autoprefixer['default'] : autoprefixer;
@@ -97,6 +97,8 @@
 
   babelHelpers;
 
+  //import stringify from 'stringify-object'
+
   var BaseDirectoriesCache = '.gulp-pipeline-rails.json';
   var GemfileLock = 'Gemfile.lock';
 
@@ -114,9 +116,10 @@
           cwd: this.railsAppCwd()
         });
 
-        Util.log(stringify(results));
-        if (results.stderr != '') {
-          throw new Error('Ruby script error: \n' + results.stderr);
+        //Util.log(stringify(results))
+        if (results.stderr != '' || results.error != '') {
+          // message will be either error or stderr, so just grap both of them
+          throw new Error('Ruby script error: \n' + results.stderr + results.error);
         }
         return JSON.parse(results.stdout);
       }

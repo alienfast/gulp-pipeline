@@ -150,13 +150,17 @@ define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'g
       value: function localPath(name) {
         var filename = 'rails/' + name;
 
+        // if using source dir
+        var filepath = filepath = path.join(__dirname, filename); // eslint-disable-line no-undef
         try {
-          // if using source dir
-          return path.join(__dirname, filename); // eslint-disable-line no-undef
+          fs.statSync(filepath);
         } catch (error) {
           // if using dist dir
-          return path.join(__dirname, '../src', filename); // eslint-disable-line no-undef
+          filepath = path.join(__dirname, '../src', filename); // eslint-disable-line no-undef
+          fs.statSync(filepath);
         }
+
+        return filepath;
       }
 
       /**

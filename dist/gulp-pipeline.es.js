@@ -77,14 +77,18 @@ const Rails = class {
   static localPath(name) {
     let filename = `rails/${name}`
 
+    // if using source dir
+    let filepath = filepath = path.join(__dirname, filename) // eslint-disable-line no-undef
     try {
-      // if using source dir
-      return path.join(__dirname, filename) // eslint-disable-line no-undef
+      fs.statSync(filepath)
     }
     catch (error) {
       // if using dist dir
-      return path.join(__dirname, '../src', filename) // eslint-disable-line no-undef
+      filepath = path.join(__dirname, '../src', filename) // eslint-disable-line no-undef
+      fs.statSync(filepath)
     }
+
+    return filepath
   }
 
   /**

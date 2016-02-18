@@ -5,7 +5,7 @@ import spawn from 'cross-spawn'
 import fs from 'fs'
 import jsonfile from 'jsonfile'
 import Util from 'gulp-util'
-//import stringify from 'stringify-object'
+import stringify from 'stringify-object'
 
 const BaseDirectoriesCache = `.gulp-pipeline-rails.json`
 const GemfileLock = `Gemfile.lock`
@@ -20,6 +20,7 @@ const Rails = class {
 
     //Util.log(stringify(results))
     if (results.stderr != '' || results.error != '') {
+      Util.log(stringify(results))
 
       let msg = ''
       if (results.stderr) {

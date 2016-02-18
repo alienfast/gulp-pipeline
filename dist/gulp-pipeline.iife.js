@@ -1,4 +1,4 @@
-(function (exports,extend,path,glob,spawn,fs,jsonfile,Util,notify,stringify,gulpHelp,console,autoprefixer,gulpif,debug,eslint,BrowserSync,changed,imagemin,merge,sass,sourcemaps,findup,scssLint,scssLintStylish,rollup,nodeResolve,commonjs,babel,del,rev,cssnano) {
+(function (exports,extend,path,glob,spawn,fs,jsonfile,Util,stringify,notify,gulpHelp,console,autoprefixer,gulpif,debug,eslint,BrowserSync,changed,imagemin,merge,sass,sourcemaps,findup,scssLint,scssLintStylish,rollup,nodeResolve,commonjs,babel,del,rev,cssnano) {
   'use strict';
 
   extend = 'default' in extend ? extend['default'] : extend;
@@ -8,8 +8,8 @@
   fs = 'default' in fs ? fs['default'] : fs;
   jsonfile = 'default' in jsonfile ? jsonfile['default'] : jsonfile;
   Util = 'default' in Util ? Util['default'] : Util;
-  notify = 'default' in notify ? notify['default'] : notify;
   stringify = 'default' in stringify ? stringify['default'] : stringify;
+  notify = 'default' in notify ? notify['default'] : notify;
   gulpHelp = 'default' in gulpHelp ? gulpHelp['default'] : gulpHelp;
   console = 'default' in console ? console['default'] : console;
   autoprefixer = 'default' in autoprefixer ? autoprefixer['default'] : autoprefixer;
@@ -94,8 +94,6 @@
 
   babelHelpers;
 
-  //import stringify from 'stringify-object'
-
   var BaseDirectoriesCache = '.gulp-pipeline-rails.json';
   var GemfileLock = 'Gemfile.lock';
 
@@ -115,6 +113,7 @@
 
         //Util.log(stringify(results))
         if (results.stderr != '' || results.error != '') {
+          Util.log(stringify(results));
 
           var msg = '';
           if (results.stderr) {
@@ -2086,5 +2085,5 @@
   exports.Rev = Rev;
   exports.MinifyCss = MinifyCss;
 
-}((this.gulpPipeline = this.gulpPipeline || {}),extend,path,glob,spawn,fs,jsonfile,Util,notify,stringify,gulpHelp,console,autoprefixer,gulpif,debug,eslint,BrowserSync,changed,imagemin,merge,sass,sourcemaps,findup,scssLint,scssLintStylish,rollup,nodeResolve,commonjs,babel,del,rev,cssnano));
+}((this.gulpPipeline = this.gulpPipeline || {}),extend,path,glob,spawn,fs,jsonfile,Util,stringify,notify,gulpHelp,console,autoprefixer,gulpif,debug,eslint,BrowserSync,changed,imagemin,merge,sass,sourcemaps,findup,scssLint,scssLintStylish,rollup,nodeResolve,commonjs,babel,del,rev,cssnano));
 //# sourceMappingURL=gulp-pipeline.iife.js.map

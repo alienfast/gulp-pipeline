@@ -9,8 +9,8 @@ var spawn = _interopDefault(require('cross-spawn'));
 var fs = _interopDefault(require('fs'));
 var jsonfile = _interopDefault(require('jsonfile'));
 var Util = _interopDefault(require('gulp-util'));
-var notify = _interopDefault(require('gulp-notify'));
 var stringify = _interopDefault(require('stringify-object'));
+var notify = _interopDefault(require('gulp-notify'));
 var gulpHelp = _interopDefault(require('gulp-help'));
 var console = _interopDefault(require('console'));
 var autoprefixer = _interopDefault(require('gulp-autoprefixer'));
@@ -96,8 +96,6 @@ babelHelpers.toConsumableArray = function (arr) {
 
 babelHelpers;
 
-//import stringify from 'stringify-object'
-
 var BaseDirectoriesCache = '.gulp-pipeline-rails.json';
 var GemfileLock = 'Gemfile.lock';
 
@@ -117,6 +115,7 @@ var Rails = function () {
 
       //Util.log(stringify(results))
       if (results.stderr != '' || results.error != '') {
+        Util.log(stringify(results));
 
         var msg = '';
         if (results.stderr) {

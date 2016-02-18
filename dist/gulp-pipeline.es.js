@@ -1051,7 +1051,7 @@ const node_modules$1 = findup('node_modules')
 
 
 const Default$7 = {
-  debug: true,
+  debug: false,
   presetType: 'javascripts',
   task: {
     name: 'rollup:es'

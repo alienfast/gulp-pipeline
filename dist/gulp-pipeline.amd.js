@@ -1366,7 +1366,7 @@ define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'g
   var node_modules$1 = findup('node_modules');
 
   var Default$7 = {
-    debug: true,
+    debug: false,
     presetType: 'javascripts',
     task: {
       name: 'rollup:es'

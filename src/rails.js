@@ -1,5 +1,5 @@
 import path from 'path'
-import extend from 'extend'
+//import extend from 'extend'
 import glob from 'glob'
 import spawn from 'cross-spawn'
 import fs from 'fs'

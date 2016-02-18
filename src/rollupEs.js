@@ -104,12 +104,14 @@ const RollupEs = class extends BaseRecipe {
 
     // Add commonjs before babel
     if(this.config.commonjs.enabled) {
+      this.debug('Adding commonjs plugin')
       // add at the beginning
       this.config.options.plugins.unshift(commonjs(this.config.commonjs.options))
     }
 
     // Add nodeResolve before (commonjs &&|| babel)
     if(this.config.nodeResolve.enabled) {
+      this.debug('Adding nodeResolve plugin')
       // add at the beginning
       this.config.options.plugins.unshift(nodeResolve(this.config.nodeResolve.options))
     }

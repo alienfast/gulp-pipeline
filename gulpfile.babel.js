@@ -6,13 +6,17 @@ import RollupEs from './src/rollupEs'
 import RollupAmd from './src/rollupAmd'
 import RollupCjs from './src/rollupCjs'
 import RollupUmd from './src/rollupUmd'
-//import RollupIife from './src/rollupIife'
+import RollupIife from './src/rollupIife'
 import TaskSeries from './src/taskSeries'
+import extend from 'extend'
+
 
 
 // Let's eat our own dogfood and use our own recipes to generate our dist packages
 let preset = Preset.nodeSrc()
 
+// don't bundle our dependencies
+let jsOverrides = {debug: false, nodeResolve: {enabled: false}, commonjs: {enabled: false}}
 
 // NOTE: it's overkill to generate all of these, but what the hell, it's a fair example.
 
@@ -21,19 +25,17 @@ let recipes = [
   new Clean(gulp, preset),
   new EsLint(gulp, preset),
   [
-    new RollupEs(gulp, preset, {options: {dest: 'gulp-pipeline.es.js'}}),
-    new RollupAmd(gulp, preset, {options: {dest: 'gulp-pipeline.amd.js'}}),
-    new RollupCjs(gulp, preset, {options: {dest: 'gulp-pipeline.cjs.js'}}),
-    new RollupUmd(gulp, preset, {options: {dest: 'gulp-pipeline.umd.js', moduleName: 'gulpPipeline'}})//,
-    //new RollupIife(gulp, preset, {options: {dest: 'gulp-pipeline.iife.js', moduleName: 'gulpPipeline'}})
+    new RollupEs(gulp, preset, extend(true, {options: {dest: 'gulp-pipeline.es.js'}}, jsOverrides)),
+    new RollupAmd(gulp, preset, extend(true, {options: {dest: 'gulp-pipeline.amd.js'}}, jsOverrides)),
+    new RollupCjs(gulp, preset, extend(true, {options: {dest: 'gulp-pipeline.cjs.js'}}, jsOverrides)),
+    new RollupUmd(gulp, preset, extend(true, {options: {dest: 'gulp-pipeline.umd.js', moduleName: 'gulpPipeline'}}, jsOverrides)),
+    new RollupIife(gulp, preset, extend(true, {options: {dest: 'gulp-pipeline.iife.js', moduleName: 'gulpPipeline'}}, jsOverrides)),
   ]
 ]
 
 
 // Simple helper to create the `default` and `default:watch` tasks as a sequence of the recipes already defined
 new TaskSeries(gulp, 'default', recipes)
-
-
 
 
 // sample

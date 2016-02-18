@@ -148,7 +148,15 @@ define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'g
     }, {
       key: 'localPath',
       value: function localPath(name) {
-        return path.join(__dirname, 'rails/' + name); // eslint-disable-line no-undef
+        var filename = 'rails/' + name;
+
+        try {
+          // if using source dir
+          return path.join(__dirname, filename); // eslint-disable-line no-undef
+        } catch (error) {
+          // if using dist dir
+          return path.join(__dirname, '../src', filename); // eslint-disable-line no-undef
+        }
       }
 
       /**

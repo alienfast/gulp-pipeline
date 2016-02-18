@@ -115,7 +115,7 @@
         });
 
         //Util.log(stringify(results))
-        if (results.stderr != '' || results.error != '') {
+        if (results.stderr != '' || results.error != null) {
           Util.log(stringify(results));
 
           var msg = '';

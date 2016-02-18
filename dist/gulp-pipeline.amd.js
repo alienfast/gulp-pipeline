@@ -111,7 +111,7 @@ define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'g
         });
 
         //Util.log(stringify(results))
-        if (results.stderr != '' || results.error != '') {
+        if (results.stderr != '' || results.error != null) {
           Util.log(stringify(results));
 
           var msg = '';

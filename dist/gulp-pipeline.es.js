@@ -1,9 +1,14 @@
 import extend from 'extend';
 import path from 'path';
+import glob from 'glob';
 import spawn from 'cross-spawn';
 import fs from 'fs';
 import jsonfile from 'jsonfile';
 import Util from 'gulp-util';
+import stringify from 'stringify-object';
+import notify from 'gulp-notify';
+import gulpHelp from 'gulp-help';
+import console from 'console';
 import autoprefixer from 'gulp-autoprefixer';
 import gulpif from 'gulp-if';
 import debug from 'gulp-debug';
@@ -17,25 +22,48 @@ import sourcemaps from 'gulp-sourcemaps';
 import findup from 'findup-sync';
 import scssLint from 'gulp-scss-lint';
 import scssLintStylish from 'gulp-scss-lint-stylish';
-import stringify from 'stringify-object';
 import { rollup } from 'rollup';
-import glob from 'glob';
+import nodeResolve from 'rollup-plugin-node-resolve';
+import commonjs from 'rollup-plugin-commonjs';
 import babel from 'rollup-plugin-babel';
-import notify from 'gulp-notify';
-import gulpHelp from 'gulp-help';
-import console from 'console';
 import del from 'del';
+import rev from 'gulp-rev';
+import cssnano from 'gulp-cssnano';
 
 const BaseDirectoriesCache = `.gulp-pipeline-rails.json`
 const GemfileLock = `Gemfile.lock`
 
 const Rails = class {
   static enumerateEngines() {
-    let results = spawn.sync(this.filePath('railsRunner.sh'), [this.filePath('enumerateEngines.rb')], {sdtio: 'inherit'})
-    return JSON.parse(results.output[1])
+
+    let results = spawn.sync(this.localPath('railsRunner.sh'), [this.localPath('enumerateEngines.rb')], {
+      sdtio: 'inherit',
+      cwd: this.railsAppCwd()
+    })
+
+    Util.log(stringify(results))
+    if (results.stderr != '') {
+      throw new Error(`Ruby script error: \n${results.stderr}`)
+    }
+    return JSON.parse(results.stdout)
   }
 
-  static filePath(name) {
+  /**
+   * We need a rails app to run our rails script runner.  Since this project could be a rails engine, find a rails app somewhere in or under the cwd.
+   */
+  static railsAppCwd() {
+    let entries = glob.sync('**/bin/rails', {realpath: true})
+    if (!entries || entries.length <= 0) {
+      throw new Error(`Unable to find Rails application directory based on existence of 'bin/rails'`)
+    }
+
+    if (entries.length > 1) {
+      throw new Error(`railsAppCwd() should only find one rails application but found ${entries}`)
+    }
+    return path.join(entries[0], '../..')
+  }
+
+  static localPath(name) {
     return path.join(__dirname, `rails/${name}`) // eslint-disable-line no-undef
   }
 
@@ -61,6 +89,7 @@ const Rails = class {
         //ignore
       }
 
+      Util.log(`Enumerating rails engines...`)
       let engines = Rails.enumerateEngines()
       //console.log(stringify(engines))
 
@@ -68,7 +97,8 @@ const Rails = class {
       for (let key of Object.keys(engines)) {
         baseDirectories.push(engines[key])
       }
-      //console.log(stringify(baseDirectories))
+
+      Util.log(`Writing baseDirectories cache...`)
       let result = {baseDirectories: baseDirectories}
       jsonfile.writeFileSync(BaseDirectoriesCache, result, {spaces: 2})
       return result
@@ -104,17 +134,22 @@ const PresetRails = {
       options: {cwd: 'app/assets/javascripts'}
     },
     watch: {options: {cwd: 'app/assets/javascripts'}},
-    dest: 'public/javascripts'
+    dest: 'public/assets/debug'
   },
   stylesheets: {
     source: {options: {cwd: 'app/assets/stylesheets'}},
     watch: {options: {cwd: 'app/assets/stylesheets'}},
-    dest: 'public/stylesheets'
+    dest: 'public/assets/debug'
   },
   images: {
     source: {options: {cwd: 'app/assets/images'}},
     watch: {options: {cwd: 'app/assets/images'}},
-    dest: 'public/images'
+    dest: 'public/assets/debug'
+  },
+  digest: {
+    source: {options: {cwd: 'public/assets/debug'}},
+    watch: {options: {cwd: 'public/assets/debug'}},
+    dest: 'public/assets/digest'
   }
 }
 const PresetNodeLib = {
@@ -136,6 +171,11 @@ const PresetNodeLib = {
     source: {options: {cwd: 'lib'}},
     watch: {options: {cwd: 'lib'}},
     dest: 'dist'
+  },
+  digest: {
+    source: {options: {cwd: 'dist'}},
+    watch: {options: {cwd: 'dist'}},
+    dest: 'dist/digest'
   }
 }
 
@@ -158,6 +198,11 @@ const PresetNodeSrc = {
     source: {options: {cwd: 'lib'}},
     watch: {options: {cwd: 'lib'}},
     dest: 'dist'
+  },
+  digest: {
+    source: {options: {cwd: 'dist'}},
+    watch: {options: {cwd: 'dist'}},
+    dest: 'dist/digest'
   }
 }
 
@@ -176,7 +221,7 @@ const Preset = class {
   }
 }
 
-const Default$15 = {
+const Default$1 = {
   watch: true,
   debug: false
 }
@@ -190,7 +235,7 @@ const Base = class {
    */
   constructor(gulp, config) {
     this.gulp = gulpHelp(gulp, {afterPrintCallback: () => console.log(`For configuration help see https://github.com/alienfast/gulp-pipeline \n`)}) // eslint-disable-line no-console
-    this.config = extend(true, {}, Default$15, config)
+    this.config = extend(true, {}, Default$1, config)
     this.debug(`[${this.constructor.name}] using resolved config: ${stringify(this.config)}`)
   }
 
@@ -202,7 +247,7 @@ const Base = class {
 
   debug(msg) {
     if (this.config.debug) {
-      this.log(`[${Util.colors.cyan('debug')}] ${msg}`)
+      this.log(`[${Util.colors.cyan('debug')}][${Util.colors.cyan(this.constructor.name)}] ${msg}`)
     }
   }
 
@@ -247,7 +292,7 @@ ${error.message}`
   }
 }
 
-const Default$14 = {
+const Default = {
   watch: true,
   debug: false,
   task: {
@@ -284,7 +329,7 @@ const BaseRecipe = class extends Base {
       presetTypeConfig = {}
     }
 
-    super(gulp, extend(true, {}, Default$14, {baseDirectories: preset.baseDirectories}, presetTypeConfig, config))
+    super(gulp, extend(true, {}, Default, {baseDirectories: preset.baseDirectories}, presetTypeConfig, config))
     if(this.createHelpText !== undefined) {
       this.config.task.help = this.createHelpText()
     }
@@ -326,6 +371,10 @@ const BaseRecipe = class extends Base {
       this.debug(`Registering task: ${Util.colors.green(name)}`)
       this.gulp.task(name, this.config.task.help, () => {
         //this.log(`Running task: ${Util.colors.green(name)}`)
+
+        if(this.config.debug) {
+          this.debugDump(`Executing ${Util.colors.green(name)} with options:`, this.config.options)
+        }
         return this.run()
       })
     }
@@ -409,7 +458,7 @@ const Autoprefixer = class extends BaseRecipe {
 
 let PluginError = Util.PluginError
 
-const Default = {
+const Default$2 = {
   debug: false,
   presetType: 'javascripts',
   task: {
@@ -439,7 +488,7 @@ const EsLint = class extends BaseRecipe {
    * @param config - customized overrides for this recipe
    */
   constructor(gulp, preset, config = {}) {
-    super(gulp, preset, extend(true, {}, Default, config))
+    super(gulp, preset, extend(true, {}, Default$2, config))
   }
 
   createHelpText(){
@@ -561,8 +610,8 @@ const EsLint = class extends BaseRecipe {
   }
 }
 
-const Default$1 = {
-  debug: true,
+const Default$3 = {
+  debug: false,
   presetType: 'images',
   task: {
     name: 'images'
@@ -592,7 +641,7 @@ const Images = class extends BaseRecipe {
    * @param config - customized overrides for this recipe
    */
   constructor(gulp, preset, config = {}) {
-    super(gulp, preset, extend(true, {}, Default$1, config))
+    super(gulp, preset, extend(true, {}, Default$3, config))
     this.browserSync = BrowserSync.create()
   }
 
@@ -628,7 +677,9 @@ const Images = class extends BaseRecipe {
   }
 }
 
-const Default$2 = {
+const node_modules = findup('node_modules')
+
+const Default$4 = {
   debug: false,
   presetType: 'stylesheets',
   task: {
@@ -649,7 +700,7 @@ const Default$2 = {
   options: {
     // WARNING: `includePaths` this should be a fully qualified path if overriding
     //  @see https://github.com/sass/node-sass/issues/1377
-    includePaths: [findup('node_modules')] // this will find any node_modules above the current working directory
+    includePaths: [node_modules] // this will find any node_modules above the current working directory
   },
   // capture defaults from autoprefixer class
   autoprefixer: {
@@ -666,7 +717,7 @@ const Sass = class extends BaseRecipe {
    * @param config - customized overrides for this recipe
    */
   constructor(gulp, preset, config = {}) {
-    super(gulp, preset, extend(true, {}, Default$2, config))
+    super(gulp, preset, extend(true, {}, Default$4, config))
     this.browserSync = BrowserSync.create()
   }
 
@@ -675,9 +726,8 @@ const Sass = class extends BaseRecipe {
   }
 
   run(watching = false) {
-    // add debug for importing
+    // add debug for importing problems (can be very helpful)
     if(this.config.debug && this.config.options.importer === undefined) {
-      this.debugDump('options', this.config.options)
       this.config.options.importer = (url, prev, done) => {
         this.debug(`importing ${url} from ${prev}`)
         done({file: url})
@@ -698,7 +748,7 @@ const Sass = class extends BaseRecipe {
   }
 }
 
-const Default$3 = {
+const Default$5 = {
   debug: false,
   presetType: 'stylesheets',
   task: {
@@ -730,7 +780,7 @@ const ScssLint = class extends BaseRecipe {
    * @param config - customized overrides for this recipe
    */
   constructor(gulp, preset, config = {}) {
-    super(gulp, preset, extend(true, {}, Default$3, config))
+    super(gulp, preset, extend(true, {}, Default$5, config))
   }
 
   createHelpText(){
@@ -747,7 +797,7 @@ const ScssLint = class extends BaseRecipe {
   }
 }
 
-const Default$4 = {
+const Default$6 = {
   debug: false,
   watch: true
 }
@@ -760,7 +810,7 @@ const TaskSeries = class extends Base {
    * @param config - customized overrides
    */
   constructor(gulp, taskName, recipes, config = {}) {
-    super(gulp, extend(true, {}, Default$4, config))
+    super(gulp, extend(true, {}, Default$6, config))
     this.recipes = recipes
     this.registerTask(taskName, recipes)
 
@@ -793,7 +843,9 @@ const TaskSeries = class extends Base {
   }
 
   flattenedRecipes(){
-    return [].concat(...this.recipes)
+    let recipes = [].concat(...this.recipes)
+    //this.log(`flattenedRecipes: ${stringify(recipes)}`)
+    return recipes
   }
 
   watchableRecipes(){
@@ -972,8 +1024,11 @@ const TaskSeries = class extends Base {
   }
 }
 
-const Default$5 = {
-  debug: false,
+const node_modules$1 = findup('node_modules')
+
+
+const Default$7 = {
+  debug: true,
   presetType: 'javascripts',
   task: {
     name: 'rollup:es'
@@ -992,8 +1047,52 @@ const Default$5 = {
     //entry: 'src/index.js', // ** resolved from the source glob/cwd **
     //dest: '', // ** resolved from preset **
     sourceMap: true,
-    format: 'es6'
-    //plugins: [],
+    format: 'es6',
+    plugins: []
+  }
+}
+
+// This nodeResolve configuration is not used unless it is within the plugins: [nodeResolve(this.config.nodeResolve.options)] - pass this.config.nodeResolve.enabled == true in config to enable default options
+const NodeResolve = {
+  nodeResolve: {
+    enabled: false,
+
+    // - see https://github.com/rollup/rollup-plugin-node-resolve
+    options: {
+      // use "jsnext:main" if possible
+      // – see https://github.com/rollup/rollup/wiki/jsnext:main
+      jsnext: true,
+
+      // use "main" field or index.js, even if it's not an ES6 module (needs to be converted from CommonJS to ES6
+      // – see https://github.com/rollup/rollup-plugin-commonjs
+      main: true,
+
+      //skip: [ 'some-big-dependency' ], // if there's something your bundle requires that you DON'T want to include, add it to 'skip'
+
+      // By default, built-in modules such as `fs` and `path` are treated as external if a local module with the same name
+      // can't be found. If you really want to turn off this behaviour for some reason, use `builtins: false`
+      builtins: false,
+
+      // Some package.json files have a `browser` field which specifies alternative files to load for people bundling
+      // for the browser. If that's you, use this option, otherwise pkg.browser will be ignored.
+      browser: true,
+
+      // not all files you want to resolve are .js files
+      extensions: [ '.js', '.json' ]
+    }
+  }
+}
+
+const CommonJs = {
+  commonjs: {
+    enabled: false,
+    options: {
+      include: `${node_modules$1}/**`,
+      //exclude: [ `${node_modules}/foo/**', `${node_modules}/bar/**` ],
+
+      // search for files other than .js files (must already be transpiled by a previous plugin!)
+      extensions: [ '.js' ] // defaults to [ '.js' ]
+    }
   }
 }
 
@@ -1006,7 +1105,33 @@ const RollupEs = class extends BaseRecipe {
    * @param config - customized overrides for this recipe
    */
   constructor(gulp, preset, config = {}) {
-    super(gulp, preset, extend(true, {}, Default$5, config))
+
+    if (!config.options.dest) {
+      throw new Error(`options.dest filename must be specified.`)
+    }
+
+    super(gulp, preset, extend(true, {}, Default$7, NodeResolve, CommonJs, config))
+
+    // Utilize the presets to get the dest cwd/base directory, then add the remaining passed-in file path/name
+    this.config.options.dest = `${this.config.dest}/${this.config.options.dest}`
+
+    //----------------------------------------------
+    // plugins order: nodeResolve, commonjs, babel
+
+    // Add commonjs before babel
+    if(this.config.commonjs.enabled) {
+      this.debug('Adding commonjs plugin')
+      // add at the beginning
+      this.config.options.plugins.unshift(commonjs(this.config.commonjs.options))
+    }
+
+    // Add nodeResolve before (commonjs &&|| babel)
+    if(this.config.nodeResolve.enabled) {
+      this.debug('Adding nodeResolve plugin')
+      // add at the beginning
+      this.config.options.plugins.unshift(nodeResolve(this.config.nodeResolve.options))
+    }
+
     //this.browserSync = BrowserSync.create()
   }
 
@@ -1044,11 +1169,11 @@ const RollupEs = class extends BaseRecipe {
       },
       this.config.options)
 
-    if (!options.dest) {
-      throw new Error(`dest must be specified.`)
+    if(this.config.debug) {
+      let prunedOptions = extend(true, {}, options)
+      prunedOptions.plugins = `[ (count: ${this.config.options.plugins.length}) ]`
+      this.debug(`Executing rollup with options: ${stringify(prunedOptions)}`)
     }
-
-    this.debug(`Executing rollup with options: ${stringify(options)}`)
 
     return rollup$1(options)
       .then((bundle) => {
@@ -1061,7 +1186,7 @@ const RollupEs = class extends BaseRecipe {
   }
 }
 
-const Default$6 = {
+const Default$8 = {
   task: {
     name: 'rollup:cjs'
   },
@@ -1072,6 +1197,12 @@ const Default$6 = {
       babelrc: false,
       presets: ['es2015-rollup']
     })]
+  },
+  nodeResolve: {
+    enabled: true // bundle a full package with dependencies?
+  },
+  commonjs: {
+    enabled: true // convert dependencies to commonjs modules for rollup
   }
 }
 
@@ -1089,17 +1220,20 @@ const RollupCjs = class extends RollupEs {
    * @param config - customized overrides for this recipe
    */
   constructor(gulp, preset, config = {}) {
-    super(gulp, preset, extend(true, {}, Default$6, config))
+    super(gulp, preset, extend(true, {}, Default$8, config))
   }
 }
 
-const Default$7 = {
+const Default$9 = {
   task: {
     name: 'rollup:iife'
   },
   options: {
     //dest: '', // required
     format: 'iife'
+  },
+  nodeResolve: {
+    enabled: true // by nature, iife is the full package so bundle up those dependencies.
   }
 }
 
@@ -1117,11 +1251,11 @@ const RollupIife = class extends RollupCjs {
    * @param config - customized overrides for this recipe
    */
   constructor(gulp, preset, config = {}) {
-    super(gulp, preset, extend(true, {}, Default$7, config))
+    super(gulp, preset, extend(true, {}, Default$9, config))
   }
 }
 
-const Default$8 = {
+const Default$10 = {
   task: {
     name: 'rollup:amd'
   },
@@ -1145,11 +1279,11 @@ const RollupAmd = class extends RollupCjs {
    * @param config - customized overrides for this recipe
    */
   constructor(gulp, preset, config = {}) {
-    super(gulp, preset, extend(true, {}, Default$8, config))
+    super(gulp, preset, extend(true, {}, Default$10, config))
   }
 }
 
-const Default$9 = {
+const Default$11 = {
   task: {
     name: 'rollup:umd'
   },
@@ -1173,11 +1307,11 @@ const RollupUmd = class extends RollupCjs {
    * @param config - customized overrides for this recipe
    */
   constructor(gulp, preset, config = {}) {
-    super(gulp, preset, extend(true, {}, Default$9, config))
+    super(gulp, preset, extend(true, {}, Default$11, config))
   }
 }
 
-const Default$16 = {
+const Default$13 = {
   debug: false,
   watch: false,
   sync: true  // necessary so that tasks can be run in a series, can be overriden for other purposes
@@ -1192,7 +1326,7 @@ const BaseClean = class extends BaseRecipe {
    * @param config - customized overrides for this recipe
    */
   constructor(gulp, preset, config = {}) {
-    super(gulp, preset, extend(true, {}, Default$16, config))
+    super(gulp, preset, extend(true, {}, Default$13, config))
   }
 
   createHelpText(){
@@ -1227,7 +1361,7 @@ const BaseClean = class extends BaseRecipe {
   }
 }
 
-const Default$10 = {
+const Default$12 = {
   presetType: 'images',
   task: {
     name: 'clean:images'
@@ -1243,11 +1377,11 @@ const CleanImages = class extends BaseClean {
    * @param config - customized overrides for this recipe
    */
   constructor(gulp, preset, config = {}) {
-    super(gulp, preset, extend(true, {}, Default$10, config))
+    super(gulp, preset, extend(true, {}, Default$12, config))
   }
 }
 
-const Default$11 = {
+const Default$14 = {
   presetType: 'stylesheets',
   task: {
     name: 'clean:stylesheets'
@@ -1263,11 +1397,11 @@ const CleanStylesheets = class extends BaseClean {
    * @param config - customized overrides for this recipe
    */
   constructor(gulp, preset, config = {}) {
-    super(gulp, preset, extend(true, {}, Default$11, config))
+    super(gulp, preset, extend(true, {}, Default$14, config))
   }
 }
 
-const Default$12 = {
+const Default$15 = {
   presetType: 'javascripts',
   task: {
     name: 'clean:javascripts'
@@ -1283,11 +1417,31 @@ const CleanJavascripts = class extends BaseClean {
    * @param config - customized overrides for this recipe
    */
   constructor(gulp, preset, config = {}) {
-    super(gulp, preset, extend(true, {}, Default$12, config))
+    super(gulp, preset, extend(true, {}, Default$15, config))
   }
 }
 
-const Default$13 = {
+const Default$16 = {
+  presetType: 'digest',
+  task: {
+    name: 'clean:digest'
+  }
+}
+
+const CleanDigest = class extends BaseClean {
+
+  /**
+   *
+   * @param gulp - gulp instance
+   * @param preset - base preset configuration - either one from preset.js or a custom hash
+   * @param config - customized overrides for this recipe
+   */
+  constructor(gulp, preset, config = {}) {
+    super(gulp, preset, extend(true, {}, Default$16, config))
+  }
+}
+
+const Default$17 = {
   debug: false,
   watch: false,
   presetType: 'macro',
@@ -1305,19 +1459,137 @@ const Clean = class extends BaseRecipe {
    * @param config - customized overrides
    */
   constructor(gulp, preset, config = {}) {
-    super(gulp, preset, extend(true, {}, Default$13, config))
+    super(gulp, preset, extend(true, {}, Default$17, config))
 
     this.cleanImages = new CleanImages(gulp, preset)
     this.cleanStylesheets = new CleanStylesheets(gulp, preset)
     this.cleanJavascripts = new CleanJavascripts(gulp, preset)
+    this.cleanDigest = new CleanDigest(gulp, preset)
   }
 
   run() {
     this.cleanImages.run()
     this.cleanStylesheets.run()
     this.cleanJavascripts.run()
+    this.cleanDigest.run()
   }
 }
 
-export { Preset, Rails, Autoprefixer, EsLint, Images, Sass, ScssLint, TaskSeries, RollupEs, RollupCjs, RollupIife, RollupAmd, RollupUmd, CleanImages, CleanStylesheets, CleanJavascripts, Clean };
+const Default$18 = {
+  debug: false,
+  presetType: 'digest',
+  task: {
+    name: 'rev'
+  },
+  watch: {
+    glob: ['**', '!digest', '!digest/**', '!*.map'],
+    options: {
+      //cwd: ** resolved from preset **
+    }
+  },
+  source: {
+    glob: ['**', '!digest', '!digest/**', '!*.map'],
+    options: {
+      //cwd: ** resolved from preset **
+    }
+  },
+  options: {}
+}
+
+const Rev = class extends BaseRecipe {
+
+  /**
+   *
+   * @param gulp - gulp instance
+   * @param preset - base preset configuration - either one from preset.js or a custom hash
+   * @param config - customized overrides for this recipe
+   */
+  constructor(gulp, preset, config = {}) {
+    super(gulp, preset, extend(true, {}, Default$18, config))
+    this.browserSync = BrowserSync.create()
+  }
+
+  createHelpText() {
+    return `Adds revision digest to assets from ${this.config.source.options.cwd}/${this.config.source.glob}`
+  }
+
+  run(watching = false) {
+
+    // FIXME merge in the clean as a task
+
+
+    return this.gulp.src(this.config.source.glob, this.config.source.options)
+      //.pipe(changed(this.config.dest)) // ignore unchanged files
+      .pipe(gulpif(this.config.debug, debug(this.debugOptions())))
+      .pipe(rev(this.config.options))
+      .pipe(this.gulp.dest(this.config.dest))
+      .pipe(rev.manifest())
+      .pipe(this.gulp.dest(this.config.dest))
+      .on('error', (error) => {
+        this.notifyError(error, watching)
+      })
+      .pipe(this.browserSync.stream())
+
+  }
+}
+
+const Default$19 = {
+  debug: false,
+  presetType: 'digest',
+  task: {
+    name: 'minifyCss'
+  },
+  watch: {
+    glob: ['digest/**.css'],
+    options: {
+      //cwd: ** resolved from preset **
+    }
+  },
+  source: {
+    glob: ['digest/**.css'],
+    options: {
+      //cwd: ** resolved from preset **
+    }
+  },
+  options: {}
+}
+
+/**
+ * Recipe to be run after Rev or any other that places final assets in the digest destination directory
+ */
+const MinifyCss = class extends BaseRecipe {
+
+  /**
+   *
+   * @param gulp - gulp instance
+   * @param preset - base preset configuration - either one from preset.js or a custom hash
+   * @param config - customized overrides for this recipe
+   */
+  constructor(gulp, preset, config = {}) {
+    super(gulp, preset, extend(true, {}, Default$19, config))
+    this.browserSync = BrowserSync.create()
+  }
+
+  createHelpText() {
+    return `Minifies digest css from ${this.config.source.options.cwd}/${this.config.source.glob}`
+  }
+
+  run(watching = false) {
+
+    // FIXME merge in the clean as a task
+
+
+    return this.gulp.src(this.config.source.glob, this.config.source.options)
+      .pipe(gulpif(this.config.debug, debug(this.debugOptions())))
+      .pipe(cssnano(this.config.options))
+      .pipe(this.gulp.dest(this.config.dest))
+      .on('error', (error) => {
+        this.notifyError(error, watching)
+      })
+      .pipe(this.browserSync.stream())
+
+  }
+}
+
+export { Preset, Rails, Autoprefixer, EsLint, Images, Sass, ScssLint, TaskSeries, RollupEs, RollupCjs, RollupIife, RollupAmd, RollupUmd, CleanImages, CleanStylesheets, CleanJavascripts, CleanDigest, Clean, Rev, MinifyCss };
 //# sourceMappingURL=gulp-pipeline.es.js.map

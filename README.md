@@ -12,6 +12,8 @@ Here's a `gulpfile.babel.js` that provides tasks to build and watch an ES2015/SC
 // Assuming project named: acme
 
 import { Preset, Clean, CleanDigest, EsLint, Images, MinifyCss, Rev, ScssLint, Sass, RollupEs, RollupCjs, RollupIife, TaskSeries } from 'gulp-pipeline'
+// ES2015 tip: import your list of classes from 'gulp-pipeline/src/index' so you can inspect source as you write your file.  The line above will otherwise use the commonjs rollup dist file.
+
 import gulp from 'gulp'
 
 // Utilize one of the common directory structure configs

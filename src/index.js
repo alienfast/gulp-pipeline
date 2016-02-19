@@ -22,3 +22,5 @@ export { default as Clean } from './clean'
 
 export { default as Rev } from './rev'
 export { default as MinifyCss } from './minifyCss'
+
+export { default as Mocha } from './mocha'

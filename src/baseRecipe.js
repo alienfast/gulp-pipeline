@@ -1,4 +1,5 @@
 import Base from './base'
+import Preset from './preset'
 import extend from 'extend'
 import Util from 'gulp-util'
 import stringify from 'stringify-object'
@@ -21,32 +22,18 @@ const BaseRecipe = class extends Base {
    */
   constructor(gulp, preset, config) {
 
-    if (!preset) {
-      throw new Error(`Preset must be specified.  Please use one from the preset.js or specify a custom preset configuration.`)
-    }
+    super(gulp, extend(true, {},
+      Default,
+      {baseDirectories: preset.baseDirectories},
+      Preset.resolveConfig(preset, config)))
 
-    if (!config || !config.presetType) {
-      throw new Error(`'presetType' must be specified in the config (usually the Default config).  See preset.js for a list of types such as javascripts, stylesheets, etc.`)
-    }
-
-    let presetTypeConfig = null
-    if (config.presetType !== 'macro') {
-      presetTypeConfig = preset[config.presetType]
-      if (!presetTypeConfig) {
-        throw new Error(`Unable to resolve configuration for presetType: ${config.presetType} from preset: ${stringify(preset)}`)
-      }
-    }
-    else {
-      presetTypeConfig = {}
-    }
-
-    super(gulp, extend(true, {}, Default, {baseDirectories: preset.baseDirectories}, presetTypeConfig, config))
-    if(this.createHelpText !== undefined) {
+    if (this.createHelpText !== undefined) {
       this.config.task.help = this.createHelpText()
     }
     this.registerTask()
     this.registerWatchTask()
   }
+
 
   //createHelpText(){
   //  // empty implementation that can dynamically create help text instead of the static config.task.help
@@ -70,7 +57,7 @@ const BaseRecipe = class extends Base {
     }
   }
 
-  createWatchHelpText(){
+  createWatchHelpText() {
     return Util.colors.grey(`|___ watches ${this.config.watch.options.cwd}/${this.config.watch.glob}`)
   }
 
@@ -83,7 +70,7 @@ const BaseRecipe = class extends Base {
       this.gulp.task(name, this.config.task.help, () => {
         //this.log(`Running task: ${Util.colors.green(name)}`)
 
-        if(this.config.debug) {
+        if (this.config.debug) {
           this.debugDump(`Executing ${Util.colors.green(name)} with options:`, this.config.options)
         }
         return this.run()

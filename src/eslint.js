@@ -7,8 +7,6 @@ import debug from 'gulp-debug'
 import gulpif from 'gulp-if'
 import Util from 'gulp-util'
 
-let PluginError = Util.PluginError
-
 export const Default = {
   debug: false,
   presetType: 'javascripts',
@@ -62,7 +60,7 @@ const EsLint = class extends BaseRecipe {
       .pipe(eslint.result((results) => { // this is single file #result not #results, we don't get notified on #results
         let count = results.errorCount;
         if (count > 0) {
-          throw new PluginError(
+          throw new Util.PluginError(
             'gulp-eslint',
             {
               message: 'Failed with' + (count === 1 ? ' error' : ' errors')

@@ -5,7 +5,7 @@ import stringify from 'stringify-object'
 
 const Default = {
   debug: false,
-  watch: true
+  watch: true  // register a watch task that aggregates all watches and runs the full sequence
 }
 
 const TaskSeries = class extends Base {
@@ -25,7 +25,7 @@ const TaskSeries = class extends Base {
     }
   }
 
-  createHelpText(){
+  createHelpText() {
     let taskNames = this.flattenedRecipes().reduce((a, b) => {
       return a.concat(b.taskName());
     }, [])
@@ -33,7 +33,8 @@ const TaskSeries = class extends Base {
     // use the config to generate the dynamic help
     return `Runs series [${taskNames.join(', ')}]`
   }
-  createWatchHelpText(){
+
+  createWatchHelpText() {
     let taskNames = this.watchableRecipes().reduce((a, b) => {
       return a.concat(b.taskName());
     }, [])
@@ -42,23 +43,28 @@ const TaskSeries = class extends Base {
   }
 
   registerTask(taskName) {
-    this.debug(`Registering task: ${Util.colors.green(taskName)} for ${stringify(this.toTaskNames(this.recipes))}`)
+    let tasks = this.toTaskNames(this.recipes)
+
+    this.debugDump('this.recipes', this.recipes)
+    this.debugDump('tasks', tasks)
+
+    this.debug(`Registering task: ${Util.colors.green(taskName)} for ${stringify(tasks)}`)
     this.gulp.task(taskName, this.createHelpText(), () => {
-      return this.run(this.recipes)
+      return this.run(tasks)
     })
   }
 
-  flattenedRecipes(){
+  flattenedRecipes() {
     let recipes = [].concat(...this.recipes)
-    //this.log(`flattenedRecipes: ${stringify(recipes)}`)
+    //this.debugDump(`flattenedRecipes`, recipes)
     return recipes
   }
 
-  watchableRecipes(){
+  watchableRecipes() {
     // create an array of watchable recipes
     let watchableRecipes = []
-    for(let recipe of this.flattenedRecipes()) {
-      if(recipe.config.watch){
+    for (let recipe of this.flattenedRecipes()) {
+      if (recipe.config.watch) {
         watchableRecipes.push(recipe)
       }
     }
@@ -67,11 +73,17 @@ const TaskSeries = class extends Base {
 
   registerWatchTask(taskName, recipes) {
     // generate watch task
+    let watchableRecipes = this.watchableRecipes()
+    if (watchableRecipes.length < 1) {
+      this.debug(`No watchable recipes for task: ${Util.colors.green(taskName)}`)
+      return
+    }
+
     this.debug(`Registering task: ${Util.colors.green(taskName)}`)
     this.gulp.task(taskName, this.createWatchHelpText(), () => {
 
       // watch the watchable recipes and make them #run the series
-      for(let recipe of this.watchableRecipes()){
+      for (let recipe of watchableRecipes) {
         this.log(`[${Util.colors.green(taskName)}] watching ${recipe.taskName()} ${recipe.config.watch.glob}...`)
         this.gulp.watch(recipe.config.watch.glob, recipe.config.watch.options, (event) => {
           this.log(`[${Util.colors.green(taskName)}] ${event.path} was ${event.type}, running series...`);
@@ -83,28 +95,21 @@ const TaskSeries = class extends Base {
     })
   }
 
-  run(recipes){
+  run(tasks) {
     // generate the task sequence
-    let tasks = this.toTaskNames(recipes)
     return this.runSequence(...tasks)
   }
 
   toTaskNames(recipes, tasks = []) {
+    //this.debugDump(`toTaskNames`, recipes)
     for (let recipe of recipes) {
+      //this.debugDump(`recipe taskName[${recipe.taskName? recipe.taskName() : ''}] isArray[${Array.isArray(recipe)}]`, recipe)
       if (Array.isArray(recipe)) {
-        let series = []
-        this.toTaskNames(recipe, series)
-        tasks.push(series)
+        tasks.push(this.toTaskNames(recipe, []))
       }
       else {
-        if (this.config.watch) {
-          // if the series is a 'watch', only add 'watch' enabled recipes
-          if (recipe.config.watch) {
-            tasks.push(recipe.taskName())
-          }
-        } else {
-          tasks.push(recipe.taskName())
-        }
+        this.debug(`Adding to list ${recipe.taskName()}`)
+        tasks.push(recipe.taskName())
       }
     }
 

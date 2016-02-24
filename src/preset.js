@@ -63,28 +63,32 @@ const PresetNodeLib = {
 }
 
 // Rails, the oddball from a structure consideration
+const railsJs = 'app/assets/javascripts'
+const railsSs = 'app/assets/stylesheets'
+const railsImages = 'app/assets/images'
+const railsDest = 'public/assets/debug'
 const PresetRails = {
   javascripts: {
     source: {
       glob: 'application.js',
-      options: {cwd: 'app/assets/javascripts'}
+      options: {cwd: railsJs}
     },
-    watch: {options: {cwd: 'app/assets/javascripts'}},
-    dest: 'public/assets/debug'
+    watch: {options: {cwd: railsJs}},
+    dest: railsDest
   },
   stylesheets: {
-    source: {options: {cwd: 'app/assets/stylesheets'}},
-    watch: {options: {cwd: 'app/assets/stylesheets'}},
-    dest: 'public/assets/debug'
+    source: {options: {cwd: railsSs}},
+    watch: {options: {cwd: railsSs}},
+    dest: railsDest
   },
   images: {
-    source: {options: {cwd: 'app/assets/images'}},
-    watch: {options: {cwd: 'app/assets/images'}},
-    dest: 'public/assets/debug'
+    source: {options: {cwd: railsImages}},
+    watch: {options: {cwd: railsImages}},
+    dest: railsDest
   },
   digest: {
-    source: {options: {cwd: 'public/assets/debug'}},
-    watch: {options: {cwd: 'public/assets/debug'}},
+    source: {options: {cwd: railsDest}},
+    watch: {options: {cwd: railsDest}},
     dest: 'public/assets/digest'
   }
 }

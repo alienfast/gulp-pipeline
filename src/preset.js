@@ -1,7 +1,7 @@
 import extend from 'extend'
 import Rails from './rails'
 import stringify from 'stringify-object'
-import Util from 'gulp-util'
+//import Util from 'gulp-util'
 
 
 // NOTE: `source` and `watch` are node-glob options hashes. e.g. gulp.src(source.glob, source.options)
@@ -144,7 +144,7 @@ const Preset = class {
     // now that we've determined the typeConfig, overlay the overrides
     let resolved = extend(true, {}, typeConfig, configOverrides)
 
-    Util.log(`resolved config with preset: \n${stringify(resolved)}`)
+    //Util.log(`resolved config with preset: \n${stringify(resolved)}`)
     return resolved
   }
 }

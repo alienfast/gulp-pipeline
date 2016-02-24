@@ -130,7 +130,7 @@ const RollupEs = class extends BaseRecipe {
     let entry = glob.sync(this.config.source.glob, this.config.source.options)
 
     if (!entry || entry.length <= 0) {
-      throw new Error(`Unable to resolveEntry() for source: ${stringify(this.config.source)}`)
+      throw new Error(`Unable to resolveEntry() for source: ${stringify(this.config.source)} from ${process.cwd()}`)
     }
 
     if (entry.length > 1) {

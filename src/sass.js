@@ -18,13 +18,13 @@ export const Default = {
     name: 'sass'
   },
   watch: {
-    glob: '**/*.scss',
+    //glob: ** resolved from preset **
     options: {
       //cwd: ** resolved from preset **
     }
   },
   source: {
-    glob: ['*.scss', '!_*.scss'],
+    //glob: ** resolved from preset **
     options: {
       //cwd: ** resolved from preset **
     }

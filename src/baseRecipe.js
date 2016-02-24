@@ -27,6 +27,9 @@ const BaseRecipe = class extends Base {
       {baseDirectories: preset.baseDirectories},
       Preset.resolveConfig(preset, config)))
 
+    // in case someone needs to inspect it later i.e. buildControl
+    this.preset = preset
+
     if (this.createHelpText !== undefined) {
       this.config.task.help = this.createHelpText()
     }

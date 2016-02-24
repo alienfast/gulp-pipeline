@@ -12,7 +12,7 @@ export const Default = {
     name: 'scsslint'
   },
   watch: {
-    glob: '**/*.scss',
+    //glob: ** resolved from preset **
     options: {
       //cwd: ** resolved from preset **
     }

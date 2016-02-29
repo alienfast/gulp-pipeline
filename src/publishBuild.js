@@ -36,7 +36,7 @@ const Default = {
     name: 'README.md',
     template: `# %sourceName%
 
-%sourceTagLink% built from commit %sourceCommitLink% on branch \`%sourceBranch%\`
+%sourceTagLink% built from commit %sourceCommitLink% on branch \`%sourceBranch%\`. See the [README](../..) for more details
 
 ---
 <sup>Built and published by [gulp-pipeline](https://github.com/alienfast/gulp-pipeline) using [build-control](https://github.com/alienfast/build-control)</sup>
@@ -95,6 +95,9 @@ const PublishBuild = class extends BasePublish {
   run() {
     let buildControl = new BuildControl(this.config.options)
 
+    // bump the version and commit to git
+    buildControl.npm.bump()
+
     this.prepareBuildFiles()
 
     // generate a readme on the branch if one is not copied in.
@@ -108,7 +111,11 @@ const PublishBuild = class extends BasePublish {
       }
     }
 
+    // run the commit/tagging/pushing
     buildControl.run()
+
+    // publish to npm
+    buildControl.npm.publish()
   }
 
   resolvePath(cwd, base = process.cwd()) {

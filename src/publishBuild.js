@@ -30,15 +30,11 @@ import glob from 'glob'
  *  Have long running maintenance on an old version?  Publish to a different dist branch like { options: {branch: 'dist-v3'} }
  */
 const Default = {
-  clean: {
-    before: true,
-    after: false
-  },
+  //debug: true,
   readme: {
     enabled: true,
     name: 'README.md',
-    template:
-`# %sourceName%
+    template: `# %sourceName%
 
 %sourceTagLink% built from commit %sourceCommitLink% on branch \`%sourceBranch%\`
 
@@ -66,21 +62,19 @@ const PublishBuild = class extends BasePublish {
   /**
    * Copy all the configured sources to the config.dir directory
    */
-  prepareBuild() {
+  prepareBuildFiles() {
     let buildDir = this.config.dir
     this.debug(`Using build directory: ${buildDir}`)
-
-    // first remove the dest folder and reestablish one
-    fs.ensureDirSync(buildDir)
 
     // copy preset type files
     for (let type of this.config.source.types) {
       let typePreset = this.preset[type]
 
+      this.log(`Copying ${typePreset.source.options.cwd}/${typePreset.source.all}...`)
       for (let name of glob.sync(typePreset.source.all, typePreset.source.options)) {
         let from = path.join(typePreset.source.options.cwd, name)
         let to = path.join(buildDir, from)
-        this.debug(`copying ${from} to ${to}...`)
+        this.log(`\t...to ${to}`)
         fs.copySync(from, to)
       }
     }
@@ -88,24 +82,20 @@ const PublishBuild = class extends BasePublish {
     // copy any additional configured files
     for (let fileGlob of this.config.source.files) {
 
+      this.log(`Copying ${fileGlob}...`)
       for (let fromFullPath of glob.sync(fileGlob, {realpath: true})) {
         let from = path.relative(process.cwd(), fromFullPath)
         let to = path.join(buildDir, from)
-        this.debug(`copying ${from} to ${to}...`)
+        this.log(`\t...to ${to}`)
         fs.copySync(from, to)
       }
     }
   }
 
   run() {
-    // clean dir
-    if (this.config.clean.before) {
-      fs.removeSync(this.config.dir)
-    }
-
-    this.prepareBuild()
-
     let buildControl = new BuildControl(this.config.options)
+
+    this.prepareBuildFiles()
 
     // generate a readme on the branch if one is not copied in.
     if (this.config.readme.enabled) {
@@ -119,11 +109,6 @@ const PublishBuild = class extends BasePublish {
     }
 
     buildControl.run()
-
-    // clean dir
-    if (this.config.clean.after) {
-      fs.removeSync(this.config.dir)
-    }
   }
 
   resolvePath(cwd, base = process.cwd()) {

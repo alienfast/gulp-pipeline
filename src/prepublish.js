@@ -7,7 +7,11 @@ const Default = {
     name: 'prepublish',
     help: 'Checks tag name and ensures directory has all files committed.'
   },
-  tagExistsError: false
+  options: {
+    tag: {
+      existsFailure: true
+    }
+  }
 }
 
 /**
@@ -27,9 +31,8 @@ const Prepublish = class extends BasePublish {
   }
 
   run() {
-
     let buildControl = new BuildControl(this.config.options)
-    buildControl.prepublishCheck(this.config.tagExistsError)
+    buildControl.prepublishCheck()
   }
 }
 

@@ -22,7 +22,14 @@ export const Default = {
   presetType: 'macro',
   options: { // see https://github.com/alienfast/build-control/blob/master/src/buildControl.js#L11
     //cwd: 'build', // Uses recipe's dir
-    branch: 'dist'
+    branch: 'dist',
+    tag: {
+      existsFailure: false
+    },
+    clean: {
+      before: true,
+      after: false
+    }
   }
 }
 

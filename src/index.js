@@ -25,4 +25,5 @@ export { default as MinifyCss } from './minifyCss'
 
 export { default as Mocha } from './mocha'
 
+export { default as Prepublish } from './prepublish'
 export { default as PublishBuild } from './publishBuild'

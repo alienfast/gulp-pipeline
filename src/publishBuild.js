@@ -1,4 +1,4 @@
-import BaseRecipe from './baseRecipe'
+import BasePublish from './basePublish'
 import BuildControl from 'build-control/src/buildControl'
 import extend from 'extend'
 import fs from 'fs-extra'
@@ -30,12 +30,6 @@ import glob from 'glob'
  *  Have long running maintenance on an old version?  Publish to a different dist branch like { options: {branch: 'dist-v3'} }
  */
 const Default = {
-
-  dir: 'build', // directory to assemble the files - make sure to add this to your .gitignore so you don't publish this to your source branch
-  source: {
-    types: ['javascripts', 'stylesheets'], // source types to resolve from preset and copy into the build directory pushing to the dist branch
-    files: ['package.json', 'bower.json', 'LICENSE*', 'dist'] // any additional file patterns to copy to `dir`
-  },
   clean: {
     before: true,
     after: false
@@ -52,19 +46,13 @@ const Default = {
 <sup>Built and published by [gulp-pipeline](https://github.com/alienfast/gulp-pipeline) using [build-control](https://github.com/alienfast/build-control)</sup>
 `
   },
-  watch: false,
-  presetType: 'macro',
   task: {
     name: 'publishBuild',
     help: 'Assembles and pushes the build to a branch'
-  },
-  options: { // see https://github.com/alienfast/build-control/blob/master/src/buildControl.js#L11
-    //cwd: 'build', // Uses recipe's dir
-    branch: 'dist'
   }
 }
 
-const PublishBuild = class extends BaseRecipe {
+const PublishBuild = class extends BasePublish {
 
   /**
    *
@@ -73,9 +61,6 @@ const PublishBuild = class extends BaseRecipe {
    */
   constructor(gulp, preset, config = {}) {
     super(gulp, preset, extend(true, {}, Default, config))
-
-    // use the dir as the cwd to the BuildControl class
-    this.config.options = extend(true, {cwd: this.config.dir}, this.config.options)
   }
 
   /**
@@ -132,6 +117,7 @@ const PublishBuild = class extends BaseRecipe {
         fs.writeFileSync(readme, buildControl.interpolate(this.config.readme.template))
       }
     }
+
     buildControl.run()
 
     // clean dir

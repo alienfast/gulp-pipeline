@@ -1,4 +1,5 @@
 import BaseRecipe from './baseRecipe'
+import BuildControl from 'build-control/src/buildControl'
 import extend from 'extend'
 import fs from 'fs-extra'
 import path from 'path'
@@ -35,11 +36,26 @@ const Default = {
     types: ['javascripts', 'stylesheets'], // source types to resolve from preset and copy into the build directory pushing to the dist branch
     files: ['package.json', 'bower.json', 'LICENSE*', 'dist'] // any additional file patterns to copy to `dir`
   },
+  clean: {
+    before: true,
+    after: false
+  },
+  readme: {
+    enabled: true,
+    name: 'README.md',
+    template:
+`# %sourceName%
 
+%sourceTagLink% built from commit %sourceCommitLink% on branch \`%sourceBranch%\`
+
+---
+<sup>Built and published by [gulp-pipeline](https://github.com/alienfast/gulp-pipeline) using [build-control](https://github.com/alienfast/build-control)</sup>
+`
+  },
   watch: false,
   presetType: 'macro',
   task: {
-    name: 'buildControl',
+    name: 'publishBuild',
     help: 'Assembles and pushes the build to a branch'
   },
   options: { // see https://github.com/alienfast/build-control/blob/master/src/buildControl.js#L11
@@ -48,7 +64,7 @@ const Default = {
   }
 }
 
-const BuildControl = class extends BaseRecipe {
+const PublishBuild = class extends BaseRecipe {
 
   /**
    *
@@ -70,7 +86,6 @@ const BuildControl = class extends BaseRecipe {
     this.debug(`Using build directory: ${buildDir}`)
 
     // first remove the dest folder and reestablish one
-    fs.removeSync(buildDir)
     fs.ensureDirSync(buildDir)
 
     // copy preset type files
@@ -98,9 +113,31 @@ const BuildControl = class extends BaseRecipe {
   }
 
   run() {
+    // clean dir
+    if (this.config.clean.before) {
+      fs.removeSync(this.config.dir)
+    }
+
     this.prepareBuild()
 
-    // TODO: finally run build control
+    let buildControl = new BuildControl(this.config.options)
+
+    // generate a readme on the branch if one is not copied in.
+    if (this.config.readme.enabled) {
+      let readme = path.join(this.config.dir, this.config.readme.name)
+      if (fs.existsSync(readme)) {
+        this.log(`Found readme at ${readme}.  Will not generate a new one from the template.  Turn this message off with { readme: {enabled: false} }`)
+      }
+      else {
+        fs.writeFileSync(readme, buildControl.interpolate(this.config.readme.template))
+      }
+    }
+    buildControl.run()
+
+    // clean dir
+    if (this.config.clean.after) {
+      fs.removeSync(this.config.dir)
+    }
   }
 
   resolvePath(cwd, base = process.cwd()) {
@@ -113,4 +150,4 @@ const BuildControl = class extends BaseRecipe {
   }
 }
 
-export default BuildControl
+export default PublishBuild

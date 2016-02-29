@@ -11,17 +11,8 @@ export const Default = {
   task: {
     name: 'scsslint'
   },
-  watch: {
-    //glob: ** resolved from preset **
-    options: {
-      //cwd: ** resolved from preset **
-    }
-  },
   source: {
     glob: '**/*.scss',
-    options: {
-      //cwd: ** resolved from preset **
-    }
   },
   options: {
     customReport: scssLintStylish

@@ -25,4 +25,4 @@ export { default as MinifyCss } from './minifyCss'
 
 export { default as Mocha } from './mocha'
 
-export { default as BuildControl } from './buildControl'
+export { default as PublishBuild } from './publishBuild'

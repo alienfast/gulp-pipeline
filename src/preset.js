@@ -14,9 +14,13 @@ const Baseline = {
       all: '**/*.js'
     },
     test: {
+      glob: '**/*.js',
       options: {cwd: 'test'}
     },
-    watch: {options: {cwd: 'src'}},
+    watch: {
+      glob: '**/*.js',
+      options: {cwd: 'src'}
+    },
     dest: 'dist'
   },
   stylesheets: {

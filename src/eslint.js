@@ -13,17 +13,8 @@ export const Default = {
   task: {
     name: 'eslint'
   },
-  watch: {
-    glob: '**/*.js',
-    options: {
-      //cwd: ** resolved from preset **
-    }
-  },
   source: {
-    glob: '**/*.js',
-    options: {
-      //cwd: ** resolved from preset **
-    }
+    glob: '**/*.js'
   },
   options: {}
 }

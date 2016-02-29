@@ -17,18 +17,6 @@ export const Default = {
   task: {
     name: 'sass'
   },
-  watch: {
-    //glob: ** resolved from preset **
-    options: {
-      //cwd: ** resolved from preset **
-    }
-  },
-  source: {
-    //glob: ** resolved from preset **
-    options: {
-      //cwd: ** resolved from preset **
-    }
-  },
   options: {
     // WARNING: `includePaths` this should be a fully qualified path if overriding
     //  @see https://github.com/sass/node-sass/issues/1377

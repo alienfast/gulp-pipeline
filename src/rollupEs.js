@@ -17,16 +17,6 @@ export const Default = {
   task: {
     name: 'rollup:es'
   },
-
-  watch: {
-    glob: '**/*.js',
-    options: {
-      //cwd: ** resolved from preset **
-    }
-  },
-  //source: { }, ** resolved from preset **
-  //dest: '', ** resolved from preset **
-
   options: {
     //entry: 'src/index.js', // ** resolved from the source glob/cwd **
     //dest: '', // ** resolved from preset **

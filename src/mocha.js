@@ -11,18 +11,6 @@ export const Default = {
   task: {
     name: 'mocha'
   },
-  watch: {
-    glob: '**/*.js',
-    options: {
-      //cwd: ** resolved from preset **
-    }
-  },
-  source: {
-    glob: '**/*.js',
-    options: {
-      //cwd: ** resolved from preset **
-    }
-  },
   options: {}
 }
 

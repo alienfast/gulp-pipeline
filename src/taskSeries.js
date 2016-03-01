@@ -27,7 +27,7 @@ const TaskSeries = class extends Base {
 
   createHelpText() {
     let taskNames = this.flattenedRecipes().reduce((a, b) => {
-      return a.concat(b.taskName());
+      return a.concat(b.taskName())
     }, [])
 
     // use the config to generate the dynamic help
@@ -36,7 +36,7 @@ const TaskSeries = class extends Base {
 
   createWatchHelpText() {
     let taskNames = this.watchableRecipes().reduce((a, b) => {
-      return a.concat(b.taskName());
+      return a.concat(b.taskName())
     }, [])
 
     return Util.colors.grey(`|___ aggregates watches from [${taskNames.join(', ')}] and runs full series`)
@@ -45,18 +45,21 @@ const TaskSeries = class extends Base {
   registerTask(taskName) {
     let tasks = this.toTaskNames(this.recipes)
 
-    this.debugDump('this.recipes', this.recipes)
-    this.debugDump('tasks', tasks)
-
     this.debug(`Registering task: ${Util.colors.green(taskName)} for ${stringify(tasks)}`)
     this.gulp.task(taskName, this.createHelpText(), () => {
       return this.run(tasks)
     })
   }
 
+  flatten(list) {
+    return list.reduce(
+      (a, b) => a.concat(Array.isArray(b) ? this.flatten(b) : b), []
+    )
+  }
+
   flattenedRecipes() {
-    let recipes = [].concat(...this.recipes)
-    //this.debugDump(`flattenedRecipes`, recipes)
+    let recipes = this.flatten(this.recipes)
+    this.debugDump(`flattenedRecipes`, recipes)
     return recipes
   }
 

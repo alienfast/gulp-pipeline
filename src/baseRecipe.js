@@ -8,7 +8,9 @@ export const Default = {
   watch: true,
   debug: false,
   task: {
-    help: ''
+    help: '',
+    prefix: '', // task name prefix
+    suffix: ''  // task name suffix
   }
 }
 
@@ -82,7 +84,10 @@ const BaseRecipe = class extends Base {
   }
 
   taskName() {
-    return this.config.task.name || this.constructor.name // guarantee something is present for error messages
+    if(!this.config.task.name){
+      this.notifyError(`Expected ${this.constructor.name} to have a task name in the configuration.`)
+    }
+    return `${this.config.task.prefix}${this.config.task.name}${this.config.task.suffix}`
   }
 
   watchTaskName() {

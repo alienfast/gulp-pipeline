@@ -1,6 +1,7 @@
 import extend from 'extend'
 import Rails from './rails'
 import stringify from 'stringify-object'
+
 //import Util from 'gulp-util'
 
 // NOTE: `source` and `watch` are node-glob options hashes. e.g. gulp.src(source.glob, source.options)

@@ -73,7 +73,7 @@ const PublishBuild = class extends BasePublish {
 
     this.prepareBuildFiles()
 
-    this.generateReadme()
+    this.generateReadme(buildControl)
 
     // run the commit/tagging/pushing
     buildControl.run()
@@ -84,7 +84,7 @@ const PublishBuild = class extends BasePublish {
     }
   }
 
-  generateReadme() {
+  generateReadme(buildControl) {
     // generate a readme on the branch if one is not copied in.
     if (this.config.readme.enabled) {
       let readme = path.join(this.config.dir, this.config.readme.name)

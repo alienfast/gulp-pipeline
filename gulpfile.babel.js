@@ -10,7 +10,8 @@ import RollupIife from './src/rollupIife'
 import TaskSeries from './src/taskSeries'
 import extend from 'extend'
 
-
+import PublishBuild from './src/publishBuild'
+import Prepublish from './src/prepublish'
 
 // Let's eat our own dogfood and use our own recipes to generate our dist packages
 let preset = Preset.nodeSrc()
@@ -37,6 +38,15 @@ let recipes = [
 // Simple helper to create the `default` and `default:watch` tasks as a sequence of the recipes already defined
 new TaskSeries(gulp, 'default', recipes)
 
+
+let buildControlConfig = {
+  debug: false,
+  options: {}
+}
+
+let prepublish = new Prepublish(gulp, preset, buildControlConfig)
+let publishBuild = new PublishBuild(gulp, preset, buildControlConfig)
+new TaskSeries(gulp, 'publish', [prepublish].concat(recipes).concat(publishBuild))
 
 // sample
 //import Images from './src/images'

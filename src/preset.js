@@ -51,10 +51,9 @@ const PresetNodeSrc = {}
 
 const PresetNodeLib = {
   javascripts: {
-    source: {
-      options: {cwd: 'lib'}
-    },
+    source: { options: {cwd: 'lib'}},
     watch: {options: {cwd: 'lib'}}
+    //test: {options: {cwd: 'test'}}
   },
   stylesheets: {
     source: {options: {cwd: 'lib'}},
@@ -99,6 +98,10 @@ const PresetRails = {
 
 
 const Preset = class {
+  static baseline(overrides = {}) {
+    return extend(true, {}, Baseline, overrides)
+  }
+
   static nodeLib(overrides = {}) {
     return extend(true, {}, Baseline, PresetNodeLib, overrides)
   }

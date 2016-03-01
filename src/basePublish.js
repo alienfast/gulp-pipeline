@@ -1,11 +1,6 @@
 import BaseRecipe from './baseRecipe'
-import BuildControl from 'build-control/src/buildControl'
 import extend from 'extend'
-import fs from 'fs-extra'
 import path from 'path'
-import process from 'process'
-import pathIsAbsolute from 'path-is-absolute'
-import glob from 'glob'
 
 
 /**

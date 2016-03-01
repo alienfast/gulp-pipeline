@@ -62,7 +62,7 @@ const PresetNodeLib = {
   },
   images: {
     source: {options: {cwd: 'lib'}},
-    watch: {options: {cwd: 'lib'}},
+    watch: {options: {cwd: 'lib'}}
   }
 }
 

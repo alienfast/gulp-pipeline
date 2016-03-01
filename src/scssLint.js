@@ -12,7 +12,7 @@ export const Default = {
     name: 'scsslint'
   },
   source: {
-    glob: '**/*.scss',
+    glob: '**/*.scss'
   },
   options: {
     customReport: scssLintStylish

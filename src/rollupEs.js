@@ -6,7 +6,7 @@ import glob from 'glob'
 import stringify from 'stringify-object'
 import nodeResolve from 'rollup-plugin-node-resolve'
 import commonjs from 'rollup-plugin-commonjs'
-
+import process from 'process'
 import findup from 'findup-sync'
 const node_modules = findup('node_modules')
 

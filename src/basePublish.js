@@ -1,7 +1,5 @@
 import BaseRecipe from './baseRecipe'
 import extend from 'extend'
-import path from 'path'
-
 
 /**
  *  This is the base for publish recipes using BuildControl

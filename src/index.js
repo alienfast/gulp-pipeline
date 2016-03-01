@@ -1,8 +1,10 @@
 export { default as Preset } from './preset'
 export { default as Rails } from './rails'
 
-export { default as Autoprefixer } from './autoprefixer'
 export { default as EsLint } from './eslint'
+export { default as Uglify } from './uglify'
+
+export { default as Autoprefixer } from './autoprefixer'
 export { default as Images } from './images'
 export { default as Sass } from './sass'
 export { default as ScssLint } from './scssLint'

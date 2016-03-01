@@ -135,6 +135,26 @@ There are many things you can do here (not an exhaustive list):
 ## You don't have a recipe that does ______
 Submit a PR and we'll include it!
 
+## My directory structure doesn't fit the pattern
+No problem, just start with the `#baseline` and add your overrides such as the following:
+
+  ```javascript
+  let preset = Preset.baseline({
+    javascripts: {
+      source: { options: {cwd: 'js/src'}},
+      watch: {options: {cwd: 'js/src'}},
+      test: {options: {cwd: 'js/tests'}}
+    },
+    stylesheets: {
+      source: {options: {cwd: 'scss'}},
+      watch: {options: {cwd: 'scss'}}
+    },
+    images: {
+      source: {options: {cwd: 'images'}},
+      watch: {options: {cwd: 'images'}}
+    }
+  })
+  ```
 
 ## Credits
 > If I have seen further, it is by standing on the shoulders of giants. - Sir Isaac Newton

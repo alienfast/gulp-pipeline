@@ -9,7 +9,7 @@ import glob from 'glob'
 
 
 const Default = {
-  debug: false,
+  debug: true,
   watch: false,
   presetType: 'macro',
   task: {
@@ -71,8 +71,11 @@ const Copy = class extends BaseRecipe {
       this.log(`Copying ${options.cwd}/${pattern}...`)
       for (let fromFullPath of glob.sync(pattern, options)) {
         let from = path.relative(process.cwd(), fromFullPath)
-        let to = path.join(this.config.dest, from)
-        this.log(`\t...to ${to}`)
+        let toRelative = path.relative(options.cwd, from) // grab the path of the file relative to the cwd of the source cwd - allows nesting
+        let to = path.join(this.config.dest, toRelative)
+
+        //this.debug(`\t${from} -> ${to}`)
+        this.log(`\t-> ${to}`)
         //fs.copySync(from, to)
       }
     }

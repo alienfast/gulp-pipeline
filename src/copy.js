@@ -17,9 +17,9 @@ const Default = {
   },
   process: (content, srcpath) => {  // eslint-disable-line no-unused-vars
   }, // allows modification of the file content before writing to destination
-  //encoding: 'utf8',
-  //mode: false,            // True will copy the existing file/directory permissions, otherwise set the mode e.g. 0644
-  //timestamp: false,       // Preserve the timestamp attributes(atime and mtime) when copying files. Timestamp will not be preserved
+  encoding: 'utf8',
+  mode: false,            // True will copy the existing file/directory permissions, otherwise set the mode e.g. 0644
+  timestamp: false,       // Preserve the timestamp attributes(atime and mtime) when copying files. Timestamp will not be preserved
   //                        //    when the file contents or name are changed during copying.
   //preserveBOM: false,     // Whether to preserve the BOM on this.read rather than strip it.
 
@@ -63,11 +63,22 @@ const Copy = class extends BaseRecipe {
     return `Copies ${this.config.source.options.cwd}/${this.config.source.glob} to ${this.config.dest}`
   }
 
+  chmod(from, to) {
+    if (this.config.mode !== false) {
+      fs.chmodSync(to, (this.config.mode === true) ? fs.lstatSync(from).mode : this.config.mode)
+    }
+  }
+
   run() {
 
+    let dirs = {}
     let tally = {
       dirs: 0,
       files: 0
+    }
+    let copyOptions = {
+      encoding: this.config.encoding,
+      process: this.config.process
     }
 
     let options = extend(true, {}, this.config.source.options, {realpath: true})
@@ -79,104 +90,41 @@ const Copy = class extends BaseRecipe {
         let toRelative = path.relative(options.cwd, from) // grab the path of the file relative to the cwd of the source cwd - allows nesting
         let to = path.join(this.config.dest, toRelative)
 
-        //this.debug(`\t${from} -> ${to}`)
-        //this.log(`\t-> ${to}`)
-        //fs.copySync(from, to)
-
-
         if (File.isDir(from)) {
-          this.debug(`\t${chalk.cyan(to)}`)
-          //File.mkdir(to)
-          //  if (this.config.mode !== false) {
-          //    fs.chmodSync(to, (this.config.mode === true) ? fs.lstatSync(from).mode : this.config.mode)
-          //  }
-          //
-          //  if (this.config.timestamp) {
-          //    dirs[to] = from
-          //  }
-          //
+          this.log(`\t${chalk.cyan(to)}`)
+          File.mkdir(to)
+          this.chmod(from, to)
+          dirs[to] = from
           tally.dirs++
         }
         else {
-          //this.debug(`Copying ${chalk.cyan(from)} -> ${chalk.cyan(to)}`)
           this.log(`\t-> ${chalk.cyan(to)}`)
-          //  File.copy(from, to, copyOptions)
-          //  File.syncTimestamp(from, to)
-          //  if (this.config.mode !== false) {
-          //    fs.chmodSync(to, (this.config.mode === true) ? fs.lstatSync(from).mode : this.config.mode)
-          //  }
+          File.copy(from, to, copyOptions)
+          File.syncTimestamp(from, to)
+          this.chmod(from, to)
           tally.files++
         }
-
-
       }
     }
 
-    //----------
+    if (this.config.timestamp) {
+      Object.keys(dirs).sort((a, b) => {
+        return b.length - a.length
+      }).forEach((to) => {
+        File.syncTimestamp(dirs[to], to)
+      })
+    }
 
-    //let copyOptions = {
-    //  encoding: this.config.encoding,
-    //  process: this.config.process,
-    //  noProcess: this.config.noProcess
-    //}
-    //
-    //
-    //let isExpandedPair
-    //let dirs = {}
-
-
-    // TODO: convert this to use glob
-
-    //this.files.forEach((filePair) => {
-    //  isExpandedPair = filePair.orig.expand || false
-    //
-    //  filePair.from.forEach((from) => {
-    //    let to = filePair.dest
-    //
-    //    if (File.detectDestType(to) === 'directory') {
-    //      to = isExpandedPair ? to : path.join(to, from)
-    //    }
-    //
-    //    if (File.isDir(from)) {
-    //      this.debug(`Creating ${chalk.cyan(to)}`)
-    //      File.mkdir(to)
-    //      if (this.config.mode !== false) {
-    //        fs.chmodSync(to, (this.config.mode === true) ? fs.lstatSync(from).mode : this.config.mode)
-    //      }
-    //
-    //      if (this.config.timestamp) {
-    //        dirs[to] = from
-    //      }
-    //
-    //      tally.dirs++
-    //    }
-    //    else {
-    //      this.debug(`Copying ${chalk.cyan(from)} -> ${chalk.cyan(to)}`)
-    //      File.copy(from, to, copyOptions)
-    //      File.syncTimestamp(from, to)
-    //      if (this.config.mode !== false) {
-    //        fs.chmodSync(to, (this.config.mode === true) ? fs.lstatSync(from).mode : this.config.mode)
-    //      }
-    //      tally.files++
-    //    }
-    //  })
-    //})
-    //
-    //if (this.config.timestamp) {
-    //  Object.keys(dirs).sort(function (a, b) {
-    //    return b.length - a.length
-    //  }).forEach(function (to) {
-    //    File.syncTimestamp(dirs[to], to)
-    //  })
-    //}
-    //
+    let msg = ''
     if (tally.dirs) {
-      this.log(`Created ${chalk.cyan(tally.dirs.toString()) + (tally.dirs === 1 ? ' directory' : ' directories')}`)
+      msg += `Created ${chalk.cyan(tally.dirs.toString()) + (tally.dirs === 1 ? ' directory' : ' directories')}`
     }
 
     if (tally.files) {
-      this.log((tally.dirs ? ', copied ' : 'Copied ') + chalk.cyan(tally.files.toString()) + (tally.files === 1 ? ' file' : ' files'))
+      msg += (tally.dirs ? ', copied ' : 'Copied ') + chalk.cyan(tally.files.toString()) + (tally.files === 1 ? ' file' : ' files')
     }
+
+    this.log(msg)
   }
 }
 

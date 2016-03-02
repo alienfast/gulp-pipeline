@@ -1,13 +1,13 @@
 import Base from '../base'
-//import fs from 'fs-extra'
-//import path from 'path'
-//import fileSyncCmp from 'file-sync-cmp'
-//import process from 'process'
-//import iconv from 'iconv-lite'
-//import Buffer from 'buffer'
-//
-//const isWindows = (process.platform === 'win32')
-//const pathSeparatorRe = /[\/\\]/g;
+import fs from 'fs-extra'
+import path from 'path'
+import fileSyncCmp from 'file-sync-cmp'
+import process from 'process'
+import iconv from 'iconv-lite'
+import Buffer from 'buffer'
+
+const isWindows = (process.platform === 'win32')
+const pathSeparatorRe = /[\/\\]/g;
 
 /**
  * Implementation can use our base class, but is exposed as static methods in the exported File class
@@ -16,7 +16,7 @@ import Base from '../base'
  *
  *  @credit to grunt for the grunt.file implementation. See license for attribution.
  */
-const Implementation = class extends Base {
+const FileImplementation = class extends Base {
   constructor(config) {
     super(config)
   }
@@ -26,25 +26,26 @@ const Implementation = class extends Base {
     if (!options) {
       options = {}
     }
-    // If a process function was specified, and noProcess isn't true or doesn't match the srcpath, process the file's source.
-    let process = options.process && options.noProcess !== true && !(options.noProcess && this.isMatch(options.noProcess, srcpath))
+    // If a process function was specified, process the file's source.
+
     // If the file will be processed, use the encoding as-specified. Otherwise, use an encoding of null to force the file to be read/written as a Buffer.
-    let readWriteOptions = process ? options : {encoding: null}
-    // Actually read the this.
+    let readWriteOptions = options.process ? options : {encoding: null}
+
     let contents = this.read(srcpath, readWriteOptions)
-    if (process) {
+    if (options.process) {
       this.debug('Processing source...')
       try {
         contents = options.process(contents, srcpath)
       }
       catch (e) {
-        this.notifyError('Error while processing "' + srcpath + '" this.', e)
+        this.notifyError(`Error while processing ${srcpath}.`, e)
       }
     }
     // Abort copy if the process function returns false.
     if (contents === false) {
       this.debug('Write aborted.')
-    } else {
+    }
+    else {
       this.write(destpath, contents, readWriteOptions)
     }
   }
@@ -122,7 +123,7 @@ const Implementation = class extends Base {
     if (mode == null) {
       mode = parseInt('0777', 8) & (~process.umask())
     }
-    dirpath.split(pathSeparatorRe).reduce(function (parts, part) {
+    dirpath.split(pathSeparatorRe).reduce((parts, part) => {
       parts += part + '/'
       let subpath = path.resolve(parts)
       if (!this.exists(subpath)) {
@@ -130,7 +131,7 @@ const Implementation = class extends Base {
           fs.mkdirSync(subpath, mode)
         }
         catch (e) {
-          this.notifyError('Unable to create directory "' + subpath + '" (Error code: ' + e.code + ').', e)
+          this.notifyError(`Unable to create directory ${subpath} (Error code: ${e.code}).`, e)
         }
       }
       return parts
@@ -158,7 +159,8 @@ const Implementation = class extends Base {
   detectDestType(dest) {
     if (dest.endsWith('/')) {
       return 'directory'
-    } else {
+    }
+    else {
       return 'file'
     }
   }
@@ -204,6 +206,6 @@ const File = class {
 }
 
 //  singleton
-let instance = new Implementation({})
+let instance = new FileImplementation({})
 
 export default File

@@ -16,6 +16,7 @@ export { default as RollupIife } from './rollupIife'
 export { default as RollupAmd } from './rollupAmd'
 export { default as RollupUmd } from './rollupUmd'
 
+export { default as Copy } from './copy'
 export { default as CleanImages } from './cleanImages'
 export { default as CleanStylesheets } from './cleanStylesheets'
 export { default as CleanJavascripts } from './cleanJavascripts'

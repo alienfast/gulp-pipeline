@@ -1,4 +1,4 @@
-import Base from './base'
+import BaseGulp from './baseGulp'
 import extend from 'extend'
 import Util from 'gulp-util'
 import stringify from 'stringify-object'
@@ -8,7 +8,7 @@ const Default = {
   watch: true  // register a watch task that aggregates all watches and runs the full sequence
 }
 
-const TaskSeries = class extends Base {
+const TaskSeries = class extends BaseGulp {
 
   /**
    *

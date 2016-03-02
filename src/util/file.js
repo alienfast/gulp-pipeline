@@ -1,13 +1,13 @@
 import Base from '../base'
-import fs from 'fs-extra'
-import path from 'path'
-import fileSyncCmp from 'file-sync-cmp'
-import process from 'process'
-import iconv from 'iconv-lite'
-import Buffer from 'buffer'
-
-const isWindows = (process.platform === 'win32')
-const pathSeparatorRe = /[\/\\]/g;
+//import fs from 'fs-extra'
+//import path from 'path'
+//import fileSyncCmp from 'file-sync-cmp'
+//import process from 'process'
+//import iconv from 'iconv-lite'
+//import Buffer from 'buffer'
+//
+//const isWindows = (process.platform === 'win32')
+//const pathSeparatorRe = /[\/\\]/g;
 
 /**
  * Implementation can use our base class, but is exposed as static methods in the exported File class
@@ -16,7 +16,7 @@ const pathSeparatorRe = /[\/\\]/g;
  *
  *  @credit to grunt for the grunt.file implementation. See license for attribution.
  */
-class Implementation extends Base {
+const Implementation = class extends Base {
   constructor(config) {
     super(config)
   }

@@ -1,4 +1,4 @@
-import Base from './base'
+import BaseGulp from './baseGulp'
 import Preset from './preset'
 import extend from 'extend'
 import Util from 'gulp-util'
@@ -14,7 +14,7 @@ export const Default = {
   }
 }
 
-const BaseRecipe = class extends Base {
+const BaseRecipe = class extends BaseGulp {
 
   /**
    *

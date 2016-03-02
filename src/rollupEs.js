@@ -76,9 +76,10 @@ const RollupEs = class extends BaseRecipe {
    *
    * @param gulp - gulp instance
    * @param preset - base preset configuration - either one from preset.js or a custom hash
-   * @param config - customized overrides for this recipe
+   * @param configs - customized overrides for this recipe
    */
-  constructor(gulp, preset, config = {}) {
+  constructor(gulp, preset, ...configs) {
+    let config = extend(true, {}, ...configs)
 
     if (!config.options.dest) {
       throw new Error(`options.dest filename must be specified.`)

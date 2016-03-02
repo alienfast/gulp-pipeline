@@ -25,6 +25,12 @@ const Base = class {
 
   // ----------------------------------------------
   // protected
+  requireValue(value, name){
+    if(value === undefined || value == null){
+      this.notifyError(`${name} must be defined, found: ${value}`)
+    }
+  }
+
   log(msg) {
     Util.log(msg)
   }

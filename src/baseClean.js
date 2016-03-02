@@ -14,7 +14,7 @@ const BaseClean = class extends BaseRecipe {
    *
    * @param gulp - gulp instance
    * @param preset - base preset configuration - either one from preset.js or a custom hash
-   * @param config - customized overrides for this recipe
+   * @param configs - customized overrides for this recipe
    */
   constructor(gulp, preset, config = {}) {
     super(gulp, preset, extend(true, {}, Default, config))

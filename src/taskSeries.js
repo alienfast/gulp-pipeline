@@ -13,10 +13,10 @@ const TaskSeries = class extends Base {
   /**
    *
    * @param gulp - gulp instance
-   * @param config - customized overrides
+   * @param configs - customized overrides
    */
-  constructor(gulp, taskName, recipes, config = {}) {
-    super(gulp, extend(true, {}, Default, config))
+  constructor(gulp, taskName, recipes, ...configs) {
+    super(gulp, extend(true, {}, Default, ...configs))
     this.recipes = recipes
     this.registerTask(taskName, recipes)
 

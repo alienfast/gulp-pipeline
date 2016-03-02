@@ -59,8 +59,8 @@ const PublishBuild = class extends BasePublish {
    * @param gulp - gulp instance
    * @param config - customized overrides
    */
-  constructor(gulp, preset, config = {}) {
-    super(gulp, preset, extend(true, {}, Default, config))
+  constructor(gulp, preset, ...configs) {
+    super(gulp, preset, extend(true, {}, Default, ...configs))
   }
 
   run() {

@@ -22,8 +22,8 @@ const Clean = class extends BaseRecipe {
    * @param gulp - gulp instance
    * @param config - customized overrides
    */
-  constructor(gulp, preset, config = {}) {
-    super(gulp, preset, extend(true, {}, Default, config))
+  constructor(gulp, preset, ...configs) {
+    super(gulp, preset, extend(true, {}, Default, ...configs))
 
     this.cleanImages = new CleanImages(gulp, preset)
     this.cleanStylesheets = new CleanStylesheets(gulp, preset)

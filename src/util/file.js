@@ -17,7 +17,7 @@ const pathSeparatorRe = /[\/\\]/g;
  *  @credit to grunt for the grunt.file implementation. See license for attribution.
  */
 const FileImplementation = class extends Base {
-  constructor(config) {
+  constructor(config = {debug: true}) {
     super(config)
   }
 
@@ -72,8 +72,7 @@ const FileImplementation = class extends Base {
     // Create path, if necessary.
     this.mkdir(path.dirname(filepath))
     try {
-      // If contents is already a Buffer, don't try to encode it. If no encoding
-      // was specified, use the default.
+      // If contents is already a Buffer, don't try to encode it. If no encoding was specified, use the default.
       if (!Buffer.isBuffer(contents)) {
         contents = iconv.encode(contents, options.encoding || this.defaultEncoding)
       }
@@ -83,7 +82,7 @@ const FileImplementation = class extends Base {
       return true
     }
     catch (e) {
-      this.notifyError('Unable to write "' + filepath + '" file (Error code: ' + e.code + ').', e)
+      this.notifyError(`Unable to write ${filepath} file (Error code: ${e.code}).`, e)
     }
   }
 
@@ -93,7 +92,7 @@ const FileImplementation = class extends Base {
       options = {}
     }
     let contents
-    this.debug('Reading ' + filepath + '...')
+    this.debug(`Reading ${filepath}...`)
     try {
       contents = fs.readFileSync(String(filepath))
       // If encoding is not explicitly null, convert from encoded buffer to a
@@ -206,6 +205,6 @@ const File = class {
 }
 
 //  singleton
-let instance = new FileImplementation({})
+let instance = new FileImplementation()
 
 export default File

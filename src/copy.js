@@ -6,7 +6,7 @@ import path from 'path'
 import chalk from 'chalk'
 import process from 'process'
 import glob from 'glob'
-
+import fs from 'fs-extra'
 
 const Default = {
   debug: true,
@@ -29,7 +29,8 @@ const Default = {
       cwd: process.cwd()  // base path
     }
   },
-  dest: undefined         // base path
+  dest: undefined,         // base path
+  options: {}
 }
 
 /**
@@ -70,61 +71,65 @@ const Copy = class extends BaseRecipe {
   }
 
   run() {
+    try {
+      let dirs = {}
+      let tally = {
+        dirs: 0,
+        files: 0
+      }
+      let copyOptions = {
+        encoding: this.config.encoding,
+        process: this.config.process
+      }
 
-    let dirs = {}
-    let tally = {
-      dirs: 0,
-      files: 0
-    }
-    let copyOptions = {
-      encoding: this.config.encoding,
-      process: this.config.process
-    }
+      let options = extend(true, {}, this.config.source.options, {realpath: true})
+      for (let pattern of this.config.source.glob) {
 
-    let options = extend(true, {}, this.config.source.options, {realpath: true})
-    for (let pattern of this.config.source.glob) {
+        this.log(`Copying ${options.cwd}/${pattern}...`)
+        for (let fromFullPath of glob.sync(pattern, options)) {
+          let from = path.relative(process.cwd(), fromFullPath)
+          let toRelative = path.relative(options.cwd, from) // grab the path of the file relative to the cwd of the source cwd - allows nesting
+          let to = path.join(this.config.dest, toRelative)
 
-      this.log(`Copying ${options.cwd}/${pattern}...`)
-      for (let fromFullPath of glob.sync(pattern, options)) {
-        let from = path.relative(process.cwd(), fromFullPath)
-        let toRelative = path.relative(options.cwd, from) // grab the path of the file relative to the cwd of the source cwd - allows nesting
-        let to = path.join(this.config.dest, toRelative)
-
-        if (File.isDir(from)) {
-          this.log(`\t${chalk.cyan(to)}`)
-          File.mkdir(to)
-          this.chmod(from, to)
-          dirs[to] = from
-          tally.dirs++
-        }
-        else {
-          this.log(`\t-> ${chalk.cyan(to)}`)
-          File.copy(from, to, copyOptions)
-          File.syncTimestamp(from, to)
-          this.chmod(from, to)
-          tally.files++
+          if (File.isDir(from)) {
+            this.log(`\t${chalk.cyan(to)}`)
+            File.mkdir(to)
+            this.chmod(from, to)
+            dirs[from] = to
+            tally.dirs++
+          }
+          else {
+            this.log(`\t-> ${chalk.cyan(to)}`)
+            File.copy(from, to, copyOptions)
+            if (this.config.timestamp) {
+              File.syncTimestamp(from, to)
+            }
+            this.chmod(from, to)
+            tally.files++
+          }
         }
       }
-    }
 
-    if (this.config.timestamp) {
-      Object.keys(dirs).sort((a, b) => {
-        return b.length - a.length
-      }).forEach((to) => {
-        File.syncTimestamp(dirs[to], to)
-      })
-    }
+      if (this.config.timestamp) {
+        for (let from of Object.keys(dirs)) {
+          File.syncTimestamp(from, dirs[from])
+        }
+      }
 
-    let msg = ''
-    if (tally.dirs) {
-      msg += `Created ${chalk.cyan(tally.dirs.toString()) + (tally.dirs === 1 ? ' directory' : ' directories')}`
-    }
+      let msg = ''
+      if (tally.dirs) {
+        msg += `Created ${chalk.cyan(tally.dirs.toString()) + (tally.dirs === 1 ? ' directory' : ' directories')}`
+      }
 
-    if (tally.files) {
-      msg += (tally.dirs ? ', copied ' : 'Copied ') + chalk.cyan(tally.files.toString()) + (tally.files === 1 ? ' file' : ' files')
-    }
+      if (tally.files) {
+        msg += (tally.dirs ? ', copied ' : 'Copied ') + chalk.cyan(tally.files.toString()) + (tally.files === 1 ? ' file' : ' files')
+      }
 
-    this.log(msg)
+      this.log(msg)
+    }
+    catch(error){
+      this.notifyError(error)
+    }
   }
 }
 

@@ -4,7 +4,7 @@ import path from 'path'
 import fileSyncCmp from 'file-sync-cmp'
 import process from 'process'
 import iconv from 'iconv-lite'
-import Buffer from 'buffer'
+import {Buffer} from 'buffer'
 
 const isWindows = (process.platform === 'win32')
 const pathSeparatorRe = /[\/\\]/g;
@@ -18,7 +18,7 @@ const pathSeparatorRe = /[\/\\]/g;
  */
 const FileImplementation = class extends Base {
   constructor(config = {debug: true}) {
-    super(config)
+    super({encoding: "utf8"}, config)
   }
 
   // Read a file, optionally processing its content, then write the output.
@@ -38,12 +38,12 @@ const FileImplementation = class extends Base {
         contents = options.process(contents, srcpath)
       }
       catch (e) {
-        this.notifyError(`Error while processing ${srcpath}.`, e)
+        this.notifyError(`Error while executing process function on ${srcpath}.`, e)
       }
     }
     // Abort copy if the process function returns false.
     if (contents === false) {
-      this.debug('Write aborted.')
+      this.debug('Write aborted, no contents.')
     }
     else {
       this.write(destpath, contents, readWriteOptions)
@@ -74,7 +74,7 @@ const FileImplementation = class extends Base {
     try {
       // If contents is already a Buffer, don't try to encode it. If no encoding was specified, use the default.
       if (!Buffer.isBuffer(contents)) {
-        contents = iconv.encode(contents, options.encoding || this.defaultEncoding)
+        contents = iconv.encode(contents, options.encoding || this.config.encoding)
       }
       // Actually write this.
       fs.writeFileSync(filepath, contents)
@@ -98,7 +98,7 @@ const FileImplementation = class extends Base {
       // If encoding is not explicitly null, convert from encoded buffer to a
       // string. If no encoding was specified, use the default.
       if (options.encoding !== null) {
-        contents = iconv.decode(contents, options.encoding || this.defaultEncoding)
+        contents = iconv.decode(contents, options.encoding || this.config.encoding)
         // Strip any BOM that might exist.
         if (!this.config.preserveBOM && contents.charCodeAt(0) === 0xFEFF) {
           contents = contents.substring(1)

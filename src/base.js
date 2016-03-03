@@ -41,9 +41,9 @@ const Base = class {
     this.debug(`${msg}:\n${stringify(obj)}`)
   }
 
-  notifyError(error) {
+  notifyError(error, e) {
     this.log(error)
-    throw error
+    throw e
   }
 
   debugOptions() {

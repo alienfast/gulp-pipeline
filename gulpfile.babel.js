@@ -46,7 +46,7 @@ let buildControlConfig = {
 
 let prepublish = new Prepublish(gulp, preset, buildControlConfig)
 let publishBuild = new PublishBuild(gulp, preset, buildControlConfig)
-new TaskSeries(gulp, 'publish', [prepublish].concat(recipes).concat(publishBuild))
+new TaskSeries(gulp, 'publish', [prepublish, recipes, publishBuild])
 
 // sample
 //import Images from './src/images'

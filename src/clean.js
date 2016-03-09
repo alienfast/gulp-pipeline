@@ -24,10 +24,10 @@ const Clean = class extends BaseRecipe {
   constructor(gulp, preset, ...configs) {
     super(gulp, preset, Default, ...configs)
 
-    this.cleanImages = new CleanImages(gulp, preset)
-    this.cleanStylesheets = new CleanStylesheets(gulp, preset)
-    this.cleanJavascripts = new CleanJavascripts(gulp, preset)
-    this.cleanDigest = new CleanDigest(gulp, preset)
+    this.cleanImages = new CleanImages(gulp, preset, ...configs)
+    this.cleanStylesheets = new CleanStylesheets(gulp, preset, ...configs)
+    this.cleanJavascripts = new CleanJavascripts(gulp, preset, ...configs)
+    this.cleanDigest = new CleanDigest(gulp, preset, ...configs)
   }
 
   run() {

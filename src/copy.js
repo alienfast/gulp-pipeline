@@ -5,7 +5,7 @@ import extend from 'extend'
 import path from 'path'
 import chalk from 'chalk'
 import process from 'process'
-import glob from 'glob'
+import globAll from 'glob-all'
 import fs from 'fs-extra'
 
 const Default = {
@@ -83,30 +83,28 @@ const Copy = class extends BaseRecipe {
       }
 
       let options = extend(true, {}, this.config.source.options, {realpath: true})
-      for (let pattern of this.config.source.glob) {
+      let pattern = this.config.source.glob
+      this.log(`Copying ${options.cwd}/${pattern}...`)
+      for (let fromFullPath of globAll.sync(pattern, options)) {
+        let from = path.relative(process.cwd(), fromFullPath)
+        let toRelative = path.relative(options.cwd, from) // grab the path of the file relative to the cwd of the source cwd - allows nesting
+        let to = path.join(this.config.dest, toRelative)
 
-        this.log(`Copying ${options.cwd}/${pattern}...`)
-        for (let fromFullPath of glob.sync(pattern, options)) {
-          let from = path.relative(process.cwd(), fromFullPath)
-          let toRelative = path.relative(options.cwd, from) // grab the path of the file relative to the cwd of the source cwd - allows nesting
-          let to = path.join(this.config.dest, toRelative)
-
-          if (File.isDir(from)) {
-            this.log(`\t${chalk.cyan(to)}`)
-            File.mkdir(to)
-            this.chmod(from, to)
-            dirs[from] = to
-            tally.dirs++
+        if (File.isDir(from)) {
+          this.log(`\t${chalk.cyan(to)}`)
+          File.mkdir(to)
+          this.chmod(from, to)
+          dirs[from] = to
+          tally.dirs++
+        }
+        else {
+          this.log(`\t-> ${chalk.cyan(to)}`)
+          File.copy(from, to, copyOptions)
+          if (this.config.timestamp) {
+            File.syncTimestamp(from, to)
           }
-          else {
-            this.log(`\t-> ${chalk.cyan(to)}`)
-            File.copy(from, to, copyOptions)
-            if (this.config.timestamp) {
-              File.syncTimestamp(from, to)
-            }
-            this.chmod(from, to)
-            tally.files++
-          }
+          this.chmod(from, to)
+          tally.files++
         }
       }
 
@@ -127,7 +125,7 @@ const Copy = class extends BaseRecipe {
 
       this.log(msg)
     }
-    catch(error){
+    catch (error) {
       this.notifyError(error)
     }
   }

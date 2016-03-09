@@ -16,6 +16,7 @@ const Default = {
     name: 'copy'
   },
   process: (content, srcpath) => {  // eslint-disable-line no-unused-vars
+    return content
   }, // allows modification of the file content before writing to destination
   encoding: 'utf8',
   mode: false,            // True will copy the existing file/directory permissions, otherwise set the mode e.g. 0644

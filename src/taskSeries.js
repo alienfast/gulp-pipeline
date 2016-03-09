@@ -27,7 +27,7 @@ const TaskSeries = class extends BaseGulp {
 
   createHelpText() {
     let taskNames = this.flattenedRecipes().reduce((a, b) => {
-      return a.concat(b.taskName())
+      return a.concat(this.toTaskName(b))
     }, [])
 
     // use the config to generate the dynamic help
@@ -67,7 +67,7 @@ const TaskSeries = class extends BaseGulp {
     // create an array of watchable recipes
     let watchableRecipes = []
     for (let recipe of this.flattenedRecipes()) {
-      if (recipe.config.watch) {
+      if ((typeof recipe !== "string") && recipe.config.watch) {
         watchableRecipes.push(recipe)
       }
     }
@@ -103,6 +103,17 @@ const TaskSeries = class extends BaseGulp {
     return this.runSequence(...tasks)
   }
 
+  toTaskName(recipe) {
+    let taskName = null
+    if (typeof recipe === "string") {
+      taskName = recipe
+    }
+    else {
+      taskName = recipe.taskName()
+    }
+    return taskName
+  }
+
   toTaskNames(recipes, tasks = []) {
     //this.debugDump(`toTaskNames`, recipes)
     for (let recipe of recipes) {
@@ -111,12 +122,26 @@ const TaskSeries = class extends BaseGulp {
         tasks.push(this.toTaskNames(recipe, []))
       }
       else {
-        this.debug(`Adding to list ${recipe.taskName()}`)
-        tasks.push(recipe.taskName())
+        let taskName = this.toTaskName(recipe)
+        this.validateTaskString(taskName)
+        this.debug(`Adding to list ${taskName}`)
+        tasks.push(taskName)
       }
     }
 
     return tasks
+  }
+
+  validateTaskString(taskName) {
+    let isString = (typeof taskName === "string")
+
+    if (!isString) {
+      throw new Error(`Task ${taskName} is not a string.`)
+    }
+
+    if (isString && !this.gulp.hasTask(taskName)) {
+      throw new Error(`Task ${taskName} is not configured task in gulp.`)
+    }
   }
 
   // -----------------------------------
@@ -210,18 +235,18 @@ const TaskSeries = class extends BaseGulp {
     }
 
     for (let t of taskSets) {
-      let isTask = (typeof t === "string")
+      let isString = (typeof t === "string")
       let isArray = !skipArrays && Array.isArray(t)
 
-      if (!isTask && !isArray) {
+      if (!isString && !isArray) {
         throw new Error(`Task ${t} is not a valid task string.`)
       }
 
-      if (isTask && !this.gulp.hasTask(t)) {
+      if (isString && !this.gulp.hasTask(t)) {
         throw new Error(`Task ${t} is not configured as a task on gulp.`)
       }
 
-      if (skipArrays && isTask) {
+      if (skipArrays && isString) {
         if (foundTasks[t]) {
           throw new Error(`Task ${t} is listed more than once. This is probably a typo.`)
         }

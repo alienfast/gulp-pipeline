@@ -9,7 +9,7 @@ import globAll from 'glob-all'
 import fs from 'fs-extra'
 
 const Default = {
-  debug: true,
+  debug: false,
   watch: false,
   presetType: 'macro',
   task: {

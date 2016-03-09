@@ -17,7 +17,7 @@ const pathSeparatorRe = /[\/\\]/g;
  *  @credit to grunt for the grunt.file implementation. See license for attribution.
  */
 const FileImplementation = class extends Base {
-  constructor(config = {debug: true}) {
+  constructor(config = {}) {
     super({encoding: "utf8"}, config)
   }
 

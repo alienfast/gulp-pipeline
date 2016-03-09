@@ -1,5 +1,4 @@
 import BaseRecipe from './baseRecipe'
-import extend from 'extend'
 import CleanImages from './cleanImages'
 import CleanStylesheets from './cleanStylesheets'
 import CleanJavascripts from './cleanJavascripts'
@@ -23,7 +22,7 @@ const Clean = class extends BaseRecipe {
    * @param config - customized overrides
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, extend(true, {}, Default, ...configs))
+    super(gulp, preset, Default, ...configs)
 
     this.cleanImages = new CleanImages(gulp, preset)
     this.cleanStylesheets = new CleanStylesheets(gulp, preset)

@@ -1,5 +1,5 @@
+import Ruby from './ruby/ruby'
 import path from 'path'
-//import extend from 'extend'
 import glob from 'glob'
 import spawn from 'cross-spawn'
 import fs from 'fs'
@@ -13,7 +13,7 @@ const GemfileLock = `Gemfile.lock`
 const Rails = class {
   static enumerateEngines() {
 
-    let results = spawn.sync(this.localPath('railsRunner.sh'), [this.localPath('enumerateEngines.rb')], {
+    let results = spawn.sync(Ruby.localPath('railsRunner.sh'), [Ruby.localPath('enumerateEngines.rb')], {
       sdtio: 'inherit',
       cwd: this.railsAppCwd()
     })
@@ -48,23 +48,6 @@ const Rails = class {
       throw new Error(`railsAppCwd() should only find one rails application but found ${entries}`)
     }
     return path.join(entries[0], '../..')
-  }
-
-  static localPath(name) {
-    let filename = `rails/${name}`
-
-    // if using source dir
-    let filepath = filepath = path.join(__dirname, filename) // eslint-disable-line no-undef
-    try {
-      fs.statSync(filepath)
-    }
-    catch (error) {
-      // if using dist dir
-      filepath = path.join(__dirname, '../src', filename) // eslint-disable-line no-undef
-      fs.statSync(filepath)
-    }
-
-    return filepath
   }
 
   /**

@@ -22,12 +22,12 @@ const BaseRecipe = class extends BaseGulp {
    * @param preset - base preset configuration - either one from preset.js or a custom hash
    * @param configs - customized overrides for this recipe
    */
-  constructor(gulp, preset, config) {
+  constructor(gulp, preset, ...configs) {
 
     super(gulp, extend(true, {},
       Default,
       {baseDirectories: preset.baseDirectories},
-      Preset.resolveConfig(preset, config)))
+      Preset.resolveConfig(preset, ...configs)))
 
     // in case someone needs to inspect it later i.e. buildControl
     this.preset = preset

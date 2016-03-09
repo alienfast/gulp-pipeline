@@ -30,3 +30,4 @@ export { default as Mocha } from './mocha'
 
 export { default as Prepublish } from './prepublish'
 export { default as PublishBuild } from './publishBuild'
+export { default as Jekyll } from './jekyll'

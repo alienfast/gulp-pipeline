@@ -6,8 +6,14 @@ import Util from 'gulp-util'
 import shelljs from 'shelljs'
 
 export const Default = {
+  debug: false,
   watch: true,
-  debug: false
+  task: {
+    name: undefined,
+    help: '',
+    prefix: '', // task name prefix
+    suffix: ''  // task name suffix
+  }
 }
 
 const BaseGulp = class extends Base {
@@ -18,8 +24,25 @@ const BaseGulp = class extends Base {
    * @param config - customized overrides
    */
   constructor(gulp, ...configs) {
-    super(...configs)
+    super(Default, ...configs)
     this.gulp = gulpHelp(gulp, {afterPrintCallback: () => console.log(`For configuration help see https://github.com/alienfast/gulp-pipeline \n`)}) // eslint-disable-line no-console
+  }
+
+
+  taskName() {
+    if(!this.config.task.name){
+      this.notifyError(`Expected ${this.constructor.name} to have a task name in the configuration.`)
+    }
+    return `${this.config.task.prefix}${this.config.task.name}${this.config.task.suffix}`
+  }
+
+  watchTaskName() {
+    if (this.config.watch && this.config.watch.name) {
+      return this.config.watch.name
+    }
+    else {
+      return `${this.taskName()}:watch`
+    }
   }
 
   notifyError(error, watching = false) {

@@ -6,12 +6,7 @@ import stringify from 'stringify-object'
 
 export const Default = {
   watch: true,
-  debug: false,
-  task: {
-    help: '',
-    prefix: '', // task name prefix
-    suffix: ''  // task name suffix
-  }
+  debug: false
 }
 
 const BaseRecipe = class extends BaseGulp {

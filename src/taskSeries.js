@@ -16,12 +16,12 @@ const TaskSeries = class extends BaseGulp {
    * @param configs - customized overrides
    */
   constructor(gulp, taskName, recipes, ...configs) {
-    super(gulp, extend(true, {}, Default, ...configs))
+    super(gulp, extend(true, {}, Default, {task: {name: taskName}}, ...configs))
     this.recipes = recipes
-    this.registerTask(taskName, recipes)
+    this.registerTask(this.taskName(), recipes)
 
     if (this.config.watch) {
-      this.registerWatchTask(`${taskName}:watch`, recipes)
+      this.registerWatchTask(this.watchTaskName(), recipes)
     }
   }
 

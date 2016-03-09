@@ -5,7 +5,6 @@ import process from 'process'
 import Ruby from './ruby/ruby'
 
 const Default = {
-  debug: true,
   watch: false,
   presetType: 'macro',
   task: {
@@ -37,7 +36,7 @@ const Jekyll = class extends BaseRecipe {
 
     let rawConfigFile = this.rawConfig()
 
-    // Insert temporary config path into the config option
+    // If raw is specified, add the temporary config file to the list of configs passed into the jekyll command
     if (rawConfigFile) {
       config += `,${rawConfigFile}`
     }
@@ -52,10 +51,10 @@ const Jekyll = class extends BaseRecipe {
       let tmpFile = tmp.fileSync({prefix: '_config.', postfix: '.yml'})
 
       // Write raw to file
-      fs.writeFileSync(tmpFile.path, this.config.options.raw)
+      fs.writeFileSync(tmpFile.name, this.config.options.raw)
 
       // return the file path
-      return tmpFile.path
+      return tmpFile.name
     }
     else {
       return null

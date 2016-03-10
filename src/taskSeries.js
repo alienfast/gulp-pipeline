@@ -234,30 +234,30 @@ const TaskSeries = class extends BaseGulp {
       throw new Error('No tasks were provided to run-sequence')
     }
 
-    for (let t of taskSets) {
-      let isString = (typeof t === "string")
-      let isArray = !skipArrays && Array.isArray(t)
+    for (let nextEntry of taskSets) {
+      let isString = (typeof nextEntry === "string")
+      let isArray = !skipArrays && Array.isArray(nextEntry)
 
       if (!isString && !isArray) {
-        throw new Error(`Task ${t} is not a valid task string.`)
+        throw new Error(`Task \`${nextEntry}\` (${typeof nextEntry}) is not a valid task string: \n${stringify(nextEntry)}`)
       }
 
-      if (isString && !this.gulp.hasTask(t)) {
-        throw new Error(`Task ${t} is not configured as a task on gulp.`)
+      if (isString && !this.gulp.hasTask(nextEntry)) {
+        throw new Error(`Task ${nextEntry} is not configured as a task on gulp.`)
       }
 
       if (skipArrays && isString) {
-        if (foundTasks[t]) {
-          throw new Error(`Task ${t} is listed more than once. This is probably a typo.`)
+        if (foundTasks[nextEntry]) {
+          throw new Error(`Task ${nextEntry} is listed more than once. This is probably a typo.`)
         }
-        foundTasks[t] = true
+        foundTasks[nextEntry] = true
       }
 
       if (isArray) {
-        if (t.length === 0) {
+        if (nextEntry.length === 0) {
           throw new Error(`An empty array was provided as a task set`)
         }
-        this.verifyTaskSets(t, true, foundTasks)
+        this.verifyTaskSets(nextEntry, true, foundTasks)
       }
     }
   }

@@ -151,32 +151,30 @@ const TaskSeries = class extends BaseGulp {
   // - Forced to include this/modify it as the #use(gulp) binding of the gulp instance didn't work with es class approach
 
   runSequence(...taskSets) {
+    this.debugDump(`runSequence`, taskSets)
+
     this.callBack = typeof taskSets[taskSets.length - 1] === 'function' ? taskSets.pop() : false
     this.debug(`currentTaskSet = null`)
     this.currentTaskSet = null
     this.verifyTaskSets(taskSets)
     this.taskSets = taskSets
 
-    this.onEnd = (e) => this.onTaskEnd(e)
-    this.onErr = (e) => this.onError(e)
+    this._onTaskEnd = (e) => this.onTaskEnd(e)
+    this._onError = (e) => this.onError(e)
 
-    this.gulp.on('task_stop', this.onEnd)
-    this.gulp.on('task_err', this.onErr)
+    this.gulp.on('task_stop', this._onTaskEnd)
+    this.gulp.on('task_err', this._onError)
 
     this.runNextSet()
   }
 
   finish(e) {
     this.debugDump(`finish`, e)
-    this.gulp.removeListener('task_stop', this.onEnd)
-    this.gulp.removeListener('task_err', this.onErr)
+    this.gulp.removeListener('task_stop', this._onTaskEnd)
+    this.gulp.removeListener('task_err', this._onError)
 
     let error = null
     if (e && e.err) {
-      this.debugDump(`finish e`, e)
-      //error = new Util.PluginError('run-sequence', {
-      //  message: `An error occured in task [${e.task}].`
-      //})
       error = {
         task: e.task,
         message: e.err,
@@ -188,7 +186,6 @@ const TaskSeries = class extends BaseGulp {
       this.callback(error)
     }
     else if (error) {
-      //this.log(Util.colors.red(error.toString()))
       this.notifyError(error)
     }
   }
@@ -199,7 +196,7 @@ const TaskSeries = class extends BaseGulp {
   }
 
   onTaskEnd(event) {
-    this.debugDump(`onTaskEnd`, event)
+    this.debug(`onTaskEnd: ${event.task}`)
     //this.debugDump(`this.currentTaskSet`, this.currentTaskSet)
 
     let i = this.currentTaskSet.indexOf(event.task)
@@ -217,8 +214,10 @@ const TaskSeries = class extends BaseGulp {
       if (!Array.isArray(command)) {
         command = [command]
       }
-      this.debug(`gulp.start(currentTaskSet = ${command}) isArray: ${Array.isArray(command)}`)
+      this.debugDump(`gulp.start(currentTaskSet = ${command}) isArray: ${Array.isArray(command)}`, command)
       this.currentTaskSet = command
+
+      //this.debugDump('Available gulp tasks', Object.keys(this.gulp.tasks))
       this.gulp.start(command)
     }
     else {

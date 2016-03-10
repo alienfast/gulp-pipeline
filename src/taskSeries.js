@@ -217,7 +217,7 @@ const TaskSeries = class extends BaseGulp {
       if (!Array.isArray(command)) {
         command = [command]
       }
-      this.debug(`currentTaskSet = ${command}`)
+      this.debug(`gulp.start(currentTaskSet = ${command}) isArray: ${Array.isArray(command)}`)
       this.currentTaskSet = command
       this.gulp.start(command)
     }
@@ -226,7 +226,7 @@ const TaskSeries = class extends BaseGulp {
     }
   }
 
-  verifyTaskSets(taskSets, skipArrays, foundTasks = {}) {
+  verifyTaskSets(taskSets, foundTasks = {}) {
 
     this.debug(`verifyTaskSets: ${stringify(taskSets)}`)
 
@@ -236,28 +236,26 @@ const TaskSeries = class extends BaseGulp {
 
     for (let nextEntry of taskSets) {
       let isString = (typeof nextEntry === "string")
-      let isArray = !skipArrays && Array.isArray(nextEntry)
+      let isArray = Array.isArray(nextEntry)
 
       if (!isString && !isArray) {
-        throw new Error(`Task \`${nextEntry}\` (${typeof nextEntry}) is not a valid task string: \n${stringify(nextEntry)}`)
+        throw new Error(`Task \`${nextEntry}\` (${typeof nextEntry}) is neither a string nor an array: \n${stringify(nextEntry)}`)
       }
 
       if (isString && !this.gulp.hasTask(nextEntry)) {
         throw new Error(`Task ${nextEntry} is not configured as a task on gulp.`)
       }
 
-      if (skipArrays && isString) {
-        if (foundTasks[nextEntry]) {
-          throw new Error(`Task ${nextEntry} is listed more than once. This is probably a typo.`)
-        }
-        foundTasks[nextEntry] = true
+      if (foundTasks[nextEntry]) {
+        throw new Error(`Task ${nextEntry} is listed more than once. This is probably a typo.`)
       }
+      foundTasks[nextEntry] = true
 
       if (isArray) {
         if (nextEntry.length === 0) {
           throw new Error(`An empty array was provided as a task set`)
         }
-        this.verifyTaskSets(nextEntry, true, foundTasks)
+        this.verifyTaskSets(nextEntry, foundTasks)
       }
     }
   }

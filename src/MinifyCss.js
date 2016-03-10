@@ -42,7 +42,7 @@ const MinifyCss = class extends BaseRecipe {
     this.browserSync = BrowserSync.create()
   }
 
-  createHelpText() {
+  createDescription() {
     return `Minifies digest css from ${this.config.source.options.cwd}/${this.config.source.glob}`
   }
 

@@ -30,7 +30,7 @@ const Mocha = class extends BaseRecipe {
       ...configs))
   }
 
-  createHelpText() {
+  createDescription() {
     return `Tests ${this.config.test.options.cwd}/${this.config.test.glob}`
   }
 

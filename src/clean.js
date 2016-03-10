@@ -10,7 +10,7 @@ const Default = {
   presetType: 'macro',
   task: {
     name: 'clean',
-    help: 'Cleans images, stylesheets, and javascripts.'
+    description: 'Cleans images, stylesheets, and javascripts.'
   }
 }
 

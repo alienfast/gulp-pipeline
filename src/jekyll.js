@@ -9,7 +9,7 @@ const Default = {
   presetType: 'macro',
   task: {
     name: 'jekyll',
-    help: 'Builds a jekyll site'
+    description: 'Builds a jekyll site'
   },
   cwd: process.cwd(),
   options: {

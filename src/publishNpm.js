@@ -5,7 +5,7 @@ import extend from 'extend'
 const Default = {
   task: {
     name: 'publishNpm',
-    help: 'Publishes package on npm'
+    description: 'Publishes package on npm'
   },
   options: {}
 }

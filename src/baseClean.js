@@ -20,7 +20,7 @@ const BaseClean = class extends BaseRecipe {
     super(gulp, preset, extend(true, {}, Default, config))
   }
 
-  createHelpText(){
+  createDescription(){
     // use the config to generate the dynamic help
     return `Cleans ${this.config.dest}`
   }

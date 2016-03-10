@@ -1,5 +1,4 @@
 import Base from './base'
-import gulpHelp from 'gulp-help'
 import console from 'console'
 import notify from 'gulp-notify'
 import Util from 'gulp-util'
@@ -10,7 +9,7 @@ export const Default = {
   watch: true,
   task: {
     name: undefined,
-    help: '',
+    description: '',
     prefix: '', // task name prefix
     suffix: ''  // task name suffix
   }
@@ -25,7 +24,7 @@ const BaseGulp = class extends Base {
    */
   constructor(gulp, ...configs) {
     super(Default, ...configs)
-    this.gulp = gulpHelp(gulp, {afterPrintCallback: () => console.log(`For configuration help see https://github.com/alienfast/gulp-pipeline \n`)}) // eslint-disable-line no-console
+    this.gulp = gulp
   }
 
 

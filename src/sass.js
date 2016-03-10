@@ -41,7 +41,7 @@ const Sass = class extends BaseRecipe {
     this.browserSync = BrowserSync.create()
   }
 
-  createHelpText() {
+  createDescription() {
     return `Compiles ${this.config.source.options.cwd}/${this.config.source.glob}`
   }
 

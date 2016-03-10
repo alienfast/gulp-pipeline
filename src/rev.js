@@ -39,7 +39,7 @@ const Rev = class extends BaseRecipe {
     this.browserSync = BrowserSync.create()
   }
 
-  createHelpText() {
+  createDescription() {
     return `Adds revision digest to assets from ${this.config.source.options.cwd}/${this.config.source.glob}`
   }
 

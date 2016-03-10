@@ -31,7 +31,7 @@ const EsLint = class extends BaseRecipe {
     super(gulp, preset, extend(true, {}, Default, ...configs))
   }
 
-  createHelpText(){
+  createDescription(){
     return `Lints ${this.config.source.options.cwd}/${this.config.source.glob}`
   }
 

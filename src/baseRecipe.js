@@ -27,24 +27,19 @@ const BaseRecipe = class extends BaseGulp {
     // in case someone needs to inspect it later i.e. buildControl
     this.preset = preset
 
-    if (this.createHelpText !== undefined) {
-      this.config.task.help = this.createHelpText()
+    if (this.createDescription !== undefined) {
+      this.config.task.description = this.createDescription()
     }
     this.registerTask()
     this.registerWatchTask()
   }
-
-
-  //createHelpText(){
-  //  // empty implementation that can dynamically create help text instead of the static config.task.help
-  //}
 
   registerWatchTask() {
     if (this.config.watch) {
       // generate watch task e.g. sass:watch
       let name = this.watchTaskName()
       this.debug(`Registering task: ${Util.colors.green(name)}`)
-      this.gulp.task(name, this.createWatchHelpText(), () => {
+      let taskFn = () => {
         this.log(`[${Util.colors.green(name)}] watching ${this.config.watch.glob} ${stringify(this.config.watch.options)}...`)
 
         return this.gulp.watch(this.config.watch.glob, this.config.watch.options, (event) => {
@@ -53,33 +48,36 @@ const BaseRecipe = class extends BaseGulp {
             .resolve(this.run(true))
             .then(() => this.logFinish())
         })
-      })
+      }
+      taskFn.description = this.createWatchDescription()
+      this.gulp.task(name, taskFn)
     }
   }
 
-  createWatchHelpText() {
+  createWatchDescription() {
     return Util.colors.grey(`|___ watches ${this.config.watch.options.cwd}/${this.config.watch.glob}`)
   }
-
 
   registerTask() {
     if (this.config.task) {
       // generate primary task e.g. sass
       let name = this.taskName()
       this.debug(`Registering task: ${Util.colors.green(name)}`)
-      this.gulp.task(name, this.config.task.help, () => {
+      let taskFn = (done) => {
         //this.log(`Running task: ${Util.colors.green(name)}`)
 
         if (this.config.debug) {
           this.debugDump(`Executing ${Util.colors.green(name)} with options:`, this.config.options)
         }
         return this.run()
-      })
+      }
+      taskFn.description = this.config.task.description
+      this.gulp.task(name, taskFn)
     }
   }
 
   taskName() {
-    if(!this.config.task.name){
+    if (!this.config.task.name) {
       this.notifyError(`Expected ${this.constructor.name} to have a task name in the configuration.`)
     }
     return `${this.config.task.prefix}${this.config.task.name}${this.config.task.suffix}`

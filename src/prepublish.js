@@ -5,7 +5,7 @@ import extend from 'extend'
 const Default = {
   task: {
     name: 'prepublish',
-    help: 'Checks tag name and ensures directory has all files committed.'
+    description: 'Checks tag name and ensures directory has all files committed.'
   },
   options: {
     tag: {

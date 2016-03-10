@@ -36,7 +36,7 @@ const Uglify = class extends BaseRecipe {
     super(gulp, preset, extend(true, {}, Default, ...configs))
   }
 
-  createHelpText(){
+  createDescription(){
     return `Uglifies ${this.config.source.options.cwd}/${this.config.source.glob} to ${this.config.dest}/${this.config.options.dest}`
   }
 

@@ -61,7 +61,7 @@ const Copy = class extends BaseRecipe {
     }
   }
 
-  createHelpText() {
+  createDescription() {
     return `Copies ${this.config.source.options.cwd}/${this.config.source.glob} to ${this.config.dest}`
   }
 

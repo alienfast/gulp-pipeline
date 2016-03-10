@@ -43,7 +43,7 @@ const Images = class extends BaseRecipe {
     this.browserSync = BrowserSync.create()
   }
 
-  createHelpText() {
+  createDescription() {
     return `Minifies change images from ${this.config.source.options.cwd}/${this.config.source.glob}`
   }
 

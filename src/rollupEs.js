@@ -156,7 +156,7 @@ const RollupEs = class extends BaseRecipe {
       })
       .catch((error) => {
         error.plugin = 'rollup'
-        this.notifyError(error, watching)
+        this.notifyError(error, done, watching)
       })
   }
 }

@@ -56,7 +56,7 @@ const Rev = class extends BaseRecipe {
       .pipe(rev.manifest())
       .pipe(this.gulp.dest(this.config.dest))
       .on('error', (error) => {
-        this.notifyError(error, watching)
+        this.notifyError(error, done, watching)
       })
       .pipe(this.browserSync.stream())
 

@@ -39,7 +39,7 @@ const Mocha = class extends BaseRecipe {
       .pipe(gulpif(this.config.debug, debug(this.debugOptions())))
       .pipe(mocha({reporter: 'nyan'})) // gulp-mocha needs filepaths so you can't have any plugins before it
       .on('error', (error) => {
-        this.notifyError(error, watching)
+        this.notifyError(error, done, watching)
       })
 
     return bundle

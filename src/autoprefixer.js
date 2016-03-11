@@ -1,6 +1,5 @@
 import BaseRecipe from './baseRecipe'
 import autoprefixer from 'gulp-autoprefixer'
-import extend from 'extend'
 import gulpif from 'gulp-if'
 import debug from 'gulp-debug'
 
@@ -47,7 +46,7 @@ const Autoprefixer = class extends BaseRecipe {
    * @param configs - customized overrides for this recipe
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, extend(true, {}, Default, ...configs))
+    super(gulp, preset, Default, ...configs)
   }
 
   run(done, watching = false) {
@@ -56,7 +55,7 @@ const Autoprefixer = class extends BaseRecipe {
       .pipe(gulpif(this.config.debug, debug(this.debugOptions())))
       .pipe(autoprefixer(this.config.options))
       .on('error', (error) => {
-        this.notifyError(error, watching)
+        this.notifyError(error, done, watching)
       })
       .pipe(this.gulp.dest(this.config.dest))
   }

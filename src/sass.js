@@ -59,7 +59,7 @@ const Sass = class extends BaseRecipe {
       .pipe(sourcemaps.init())
       .pipe(sass(this.config.options))
       .on('error', (error) => {
-        this.notifyError(error, watching)
+        this.notifyError(error, done, watching)
       })
       .pipe(autoprefixer(this.config.autoprefixer.options))
       .pipe(sourcemaps.write())

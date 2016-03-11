@@ -60,7 +60,7 @@ const EsLint = class extends BaseRecipe {
         }
       }))
       .on('error', (error) => {
-        this.notifyError(error, watching)
+        this.notifyError(error, done, watching)
       })
 
       // 2. Attempt now that returns are in place with the gulpif

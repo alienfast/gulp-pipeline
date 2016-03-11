@@ -40,7 +40,7 @@ const ScssLint = class extends BaseRecipe {
       .pipe(gulpif(this.config.debug, debug(this.debugOptions())))
       .pipe(scssLint(this.config.options))
       .on('error', (error) => {
-        this.notifyError(error, watching)
+        this.notifyError(error, done, watching)
       })
   }
 }

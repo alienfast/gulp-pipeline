@@ -43,7 +43,7 @@ const BaseGulp = class extends Base {
     }
   }
 
-  notifyError(error, watching = false) {
+  notifyError(error, done, watching = false) {
 
     //this.debugDump('notifyError', error)
 
@@ -88,7 +88,8 @@ const BaseGulp = class extends Base {
 
     // Prevent the 'watch' task from stopping
     if (!watching && this.gulp) {
-      this.gulp.emit('end')
+      //this.gulp.emit('end')
+      this.donezo(done)
     }
     else {
       throw error

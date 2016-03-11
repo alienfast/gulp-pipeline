@@ -51,12 +51,12 @@ const Images = class extends BaseRecipe {
 
     var tasks = this.config.baseDirectories.map((baseDirectory) => {
       // join the base dir with the relative cwd
-      return this.runOne(path.join(baseDirectory, this.config.source.options.cwd), watching)
+      return this.runOne(done, path.join(baseDirectory, this.config.source.options.cwd), watching)
     })
     return merge(tasks);
   }
 
-  runOne(cwd, watching) {
+  runOne(done, cwd, watching) {
 
     // setup a run with a single cwd a.k.a base directory FIXME: perhaps this could be in the base recipe? or not?
     let options = extend({}, this.config.source.options)
@@ -68,7 +68,7 @@ const Images = class extends BaseRecipe {
       .pipe(gulpif(this.config.debug, debug(this.debugOptions())))
       .pipe(imagemin(this.config.options))
       .on('error', (error) => {
-        this.notifyError(error, watching)
+        this.notifyError(error, done, watching)
       })
       .pipe(this.gulp.dest(this.config.dest))
       .pipe(this.browserSync.stream())

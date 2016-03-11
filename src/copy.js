@@ -128,7 +128,7 @@ const Copy = class extends BaseRecipe {
       this.donezo(done)
     }
     catch (error) {
-      this.notifyError(error)
+      this.notifyError(error, done)
     }
   }
 }

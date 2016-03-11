@@ -48,7 +48,7 @@ const Uglify = class extends BaseRecipe {
       .pipe(concat(this.config.options.dest))
       .pipe(uglify(this.config.options))
       .on('error', (error) => {
-        this.notifyError(error, watching)
+        this.notifyError(error, done, watching)
       })
       .pipe(this.gulp.dest(this.config.dest))
 

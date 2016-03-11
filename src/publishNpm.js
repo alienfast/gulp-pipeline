@@ -26,9 +26,10 @@ const PublishNpm = class extends BasePublish {
     super(gulp, preset, extend(true, {}, Default, ...configs))
   }
 
-  run() {
+  run(done) {
     let npm = new Npm(this.config.options)
     npm.publish()
+    this.donezo(done)
   }
 }
 

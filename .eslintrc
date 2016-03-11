@@ -4,8 +4,7 @@
   "extends": "eslint:recommended",
 //  "ecmaFeatures": { "modules": true },
   "env": {
-    "browser": false,
-    "jquery": false
+    "es6": true
   }
 //,
 //  "rules": {

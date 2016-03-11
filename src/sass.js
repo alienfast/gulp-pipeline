@@ -45,7 +45,7 @@ const Sass = class extends BaseRecipe {
     return `Compiles ${this.config.source.options.cwd}/${this.config.source.glob}`
   }
 
-  run(watching = false) {
+  run(done, watching = false) {
     // add debug for importing problems (can be very helpful)
     if(this.config.debug && this.config.options.importer === undefined) {
       this.config.options.importer = (url, prev, done) => {

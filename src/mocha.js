@@ -34,7 +34,7 @@ const Mocha = class extends BaseRecipe {
     return `Tests ${this.config.test.options.cwd}/${this.config.test.glob}`
   }
 
-  run(watching = false) {
+  run(done, watching = false) {
     let bundle = this.gulp.src(this.config.test.glob, this.config.test.options)
       .pipe(gulpif(this.config.debug, debug(this.debugOptions())))
       .pipe(mocha({reporter: 'nyan'})) // gulp-mocha needs filepaths so you can't have any plugins before it

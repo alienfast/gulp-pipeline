@@ -30,9 +30,11 @@ const Prepublish = class extends BasePublish {
     super(gulp, preset, extend(true, {}, Default, ...configs))
   }
 
-  run() {
+  run(done) {
     let buildControl = new BuildControl(this.config.options)
     buildControl.prepublishCheck()
+
+    this.donezo(done)
   }
 }
 

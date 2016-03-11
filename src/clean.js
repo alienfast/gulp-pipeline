@@ -30,11 +30,13 @@ const Clean = class extends BaseRecipe {
     this.cleanDigest = new CleanDigest(gulp, preset, ...configs)
   }
 
-  run() {
+  run(done) {
     this.cleanImages.run()
     this.cleanStylesheets.run()
     this.cleanJavascripts.run()
     this.cleanDigest.run()
+
+    this.donezo(done)
   }
 }
 

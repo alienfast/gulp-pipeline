@@ -134,7 +134,7 @@ const RollupEs = class extends BaseRecipe {
     return `Rollup ${this.config.source.options.cwd}/${this.config.source.glob} in the ${this.config.options.format} format to ${this.config.options.dest}`
   }
 
-  run(watching = false) {
+  run(done, watching = false) {
     let options = extend(true, {
         entry: this.resolveEntry(),
         onwarn: (message) => {

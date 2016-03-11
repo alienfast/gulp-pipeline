@@ -46,7 +46,7 @@ const MinifyCss = class extends BaseRecipe {
     return `Minifies digest css from ${this.config.source.options.cwd}/${this.config.source.glob}`
   }
 
-  run(watching = false) {
+  run(done, watching = false) {
 
     // FIXME merge in the clean as a task
 

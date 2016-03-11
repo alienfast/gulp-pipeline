@@ -25,7 +25,7 @@ const BaseClean = class extends BaseRecipe {
     return `Cleans ${this.config.dest}`
   }
 
-  run(watching = false) {
+  run(done, watching = false) {
     if (this.config.sync) {
       let paths = del.sync(this.config.dest)
       this.logDeleted(paths)
@@ -40,6 +40,8 @@ const BaseClean = class extends BaseRecipe {
           this.notifyError(error, watching)
         })
     }
+
+    this.donezo(done)
   }
 
   logDeleted(paths) {

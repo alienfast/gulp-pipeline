@@ -40,7 +40,7 @@ const Uglify = class extends BaseRecipe {
     return `Uglifies ${this.config.source.options.cwd}/${this.config.source.glob} to ${this.config.dest}/${this.config.options.dest}`
   }
 
-  run(watching = false) {
+  run(done, watching = false) {
     // eslint() attaches the lint output to the "eslint" property of the file object so it can be used by other modules.
     let bundle = this.gulp.src(this.config.source.glob, this.config.source.options)
       .pipe(gulpif(this.config.debug, debug(this.debugOptions())))

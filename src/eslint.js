@@ -35,9 +35,9 @@ const EsLint = class extends BaseRecipe {
     return `Lints ${this.config.source.options.cwd}/${this.config.source.glob}`
   }
 
-  run(watching = false) {
+  run(done, watching = false) {
     // eslint() attaches the lint output to the "eslint" property of the file object so it can be used by other modules.
-    let bundle = this.gulp.src(this.config.source.glob, this.config.source.options)
+    return this.gulp.src(this.config.source.glob, this.config.source.options)
       .pipe(gulpif(this.config.debug, debug(this.debugOptions())))
       .pipe(eslint(this.config.options))
       .pipe(eslint.format()) // outputs the lint results to the console. Alternatively use eslint.formatEach() (see Docs).
@@ -145,8 +145,6 @@ const EsLint = class extends BaseRecipe {
     //.pipe(jscs())      // enforce style guide
     //.pipe(stylish())  // log style errors
     //.pipe(jscs.reporter('fail')) // fail on error
-
-    return bundle
   }
 }
 

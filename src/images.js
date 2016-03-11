@@ -47,7 +47,7 @@ const Images = class extends BaseRecipe {
     return `Minifies change images from ${this.config.source.options.cwd}/${this.config.source.glob}`
   }
 
-  run(watching = false) {
+  run(done, watching = false) {
 
     var tasks = this.config.baseDirectories.map((baseDirectory) => {
       // join the base dir with the relative cwd

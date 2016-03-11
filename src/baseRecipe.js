@@ -45,7 +45,7 @@ const BaseRecipe = class extends BaseGulp {
         return this.gulp.watch(this.config.watch.glob, this.config.watch.options, (event) => {
           this.log(`File ${event.path} was ${event.type}, running ${this.taskName()}...`);
           return Promise
-            .resolve(this.run(true))
+            .resolve(this.run(null, true))
             .then(() => this.logFinish())
         })
       }
@@ -94,6 +94,17 @@ const BaseRecipe = class extends BaseGulp {
 
   logFinish(message = 'finished.') {
     this.log(`[${Util.colors.green(this.taskName())}] ${message}`)
+  }
+
+  /**
+   * if done is provided, run it
+   *
+   * @param done
+   */
+  donezo(done){
+    if(done){
+      done()
+    }
   }
 }
 

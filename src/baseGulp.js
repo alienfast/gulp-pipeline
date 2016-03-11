@@ -1,5 +1,4 @@
 import Base from './base'
-import console from 'console'
 import notify from 'gulp-notify'
 import Util from 'gulp-util'
 import shelljs from 'shelljs'
@@ -45,6 +44,9 @@ const BaseGulp = class extends Base {
   }
 
   notifyError(error, watching = false) {
+
+    //this.debugDump('notifyError', error)
+
     let lineNumber = (error.lineNumber) ? `Line ${error.lineNumber} -- ` : ''
     let taskName = error.task || this.taskName()
 

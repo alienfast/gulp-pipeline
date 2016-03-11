@@ -63,7 +63,7 @@ const PublishBuild = class extends BasePublish {
     super(gulp, preset, extend(true, {}, Default, ...configs))
   }
 
-  run() {
+  run(done) {
     let buildControl = new BuildControl(this.config.options)
 
     // bump the version and commit to git
@@ -82,6 +82,8 @@ const PublishBuild = class extends BasePublish {
     if(this.config.npm.publish) {
       buildControl.npm.publish()
     }
+
+    done()
   }
 
   generateReadme(buildControl) {

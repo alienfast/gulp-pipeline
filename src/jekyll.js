@@ -31,7 +31,7 @@ const Jekyll = class extends BaseRecipe {
     super(gulp, preset, Default, ...configs)
   }
 
-  run() {
+  run(done) {
     let config = `--config ${this.config.options.config}`
 
     let rawConfigFile = this.rawConfig()
@@ -42,6 +42,8 @@ const Jekyll = class extends BaseRecipe {
     }
 
     this.exec(`${Ruby.localPath(('rubyRunner.sh'))} ${this.config.options.baseCommand} jekyll build ${config}`)
+
+    this.donezo(done)
   }
 
   // Create temporary config file if needed

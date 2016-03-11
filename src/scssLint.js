@@ -35,7 +35,7 @@ const ScssLint = class extends BaseRecipe {
     return `Lints ${this.config.source.options.cwd}/${this.config.source.glob}`
   }
 
-  run(watching = false) {
+  run(done, watching = false) {
     return this.gulp.src(this.config.source.glob, this.config.source.options)
       .pipe(gulpif(this.config.debug, debug(this.debugOptions())))
       .pipe(scssLint(this.config.options))

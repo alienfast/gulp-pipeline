@@ -71,7 +71,7 @@ const Copy = class extends BaseRecipe {
     }
   }
 
-  run() {
+  run(done) {
     try {
       let dirs = {}
       let tally = {
@@ -125,6 +125,7 @@ const Copy = class extends BaseRecipe {
       }
 
       this.log(msg)
+      this.donezo(done)
     }
     catch (error) {
       this.notifyError(error)

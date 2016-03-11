@@ -39,7 +39,7 @@ const BaseRecipe = class extends BaseGulp {
       // generate watch task e.g. sass:watch
       let name = this.watchTaskName()
       this.debug(`Registering task: ${Util.colors.green(name)}`)
-      let taskFn = () => {
+      this.watchFn = () => {
         this.log(`[${Util.colors.green(name)}] watching ${this.config.watch.glob} ${stringify(this.config.watch.options)}...`)
 
         return this.gulp.watch(this.config.watch.glob, this.config.watch.options, (event) => {
@@ -49,8 +49,8 @@ const BaseRecipe = class extends BaseGulp {
             .then(() => this.logFinish())
         })
       }
-      taskFn.description = this.createWatchDescription()
-      this.gulp.task(name, taskFn)
+      this.watchFn.description = this.createWatchDescription()
+      this.gulp.task(name, this.watchFn)
     }
   }
 
@@ -63,16 +63,16 @@ const BaseRecipe = class extends BaseGulp {
       // generate primary task e.g. sass
       let name = this.taskName()
       this.debug(`Registering task: ${Util.colors.green(name)}`)
-      let taskFn = (done) => {
+      this.taskFn = (done) => {
         //this.log(`Running task: ${Util.colors.green(name)}`)
 
         if (this.config.debug) {
           this.debugDump(`Executing ${Util.colors.green(name)} with options:`, this.config.options)
         }
-        return this.run()
+        return this.run(done)
       }
-      taskFn.description = this.config.task.description
-      this.gulp.task(name, taskFn)
+      this.taskFn.description = this.config.task.description
+      this.gulp.task(name, this.taskFn)
     }
   }
 

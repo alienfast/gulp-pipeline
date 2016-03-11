@@ -1,5 +1,4 @@
 import BaseGulp from './baseGulp'
-import extend from 'extend'
 import Util from 'gulp-util'
 import stringify from 'stringify-object'
 
@@ -16,7 +15,7 @@ const TaskSeries = class extends BaseGulp {
    * @param configs - customized overrides
    */
   constructor(gulp, taskName, recipes, ...configs) {
-    super(gulp, extend(true, {}, Default, {task: {name: taskName}}, ...configs))
+    super(gulp, Default, {task: {name: taskName}}, ...configs)
     this.recipes = recipes
     this.registerTask(this.taskName(), recipes)
 
@@ -101,47 +100,6 @@ const TaskSeries = class extends BaseGulp {
   run(tasks) {
     // generate the task sequence
     return this.runSequence(...tasks)
-  }
-
-  toTaskName(recipe) {
-    let taskName = null
-    if (typeof recipe === "string") {
-      taskName = recipe
-    }
-    else {
-      taskName = recipe.taskName()
-    }
-    return taskName
-  }
-
-  toTaskNames(recipes, tasks = []) {
-    //this.debugDump(`toTaskNames`, recipes)
-    for (let recipe of recipes) {
-      //this.debugDump(`recipe taskName[${recipe.taskName? recipe.taskName() : ''}] isArray[${Array.isArray(recipe)}]`, recipe)
-      if (Array.isArray(recipe)) {
-        tasks.push(this.toTaskNames(recipe, []))
-      }
-      else {
-        let taskName = this.toTaskName(recipe)
-        this.validateTaskString(taskName)
-        this.debug(`Adding to list ${taskName}`)
-        tasks.push(taskName)
-      }
-    }
-
-    return tasks
-  }
-
-  validateTaskString(taskName) {
-    let isString = (typeof taskName === "string")
-
-    if (!isString) {
-      throw new Error(`Task ${taskName} is not a string.`)
-    }
-
-    if (isString && !this.gulp.hasTask(taskName)) {
-      throw new Error(`Task ${taskName} is not configured task in gulp.`)
-    }
   }
 }
 

@@ -8,6 +8,9 @@ import RollupCjs from './src/rollupCjs'
 import RollupUmd from './src/rollupUmd'
 import RollupIife from './src/rollupIife'
 import TaskSeries from './src/taskSeries'
+import series from './src/util/series'
+import parallel from './src/util/parallel'
+
 import extend from 'extend'
 
 import PublishBuild from './src/publishBuild'
@@ -22,22 +25,20 @@ let jsOverrides = {debug: false, nodeResolve: {enabled: false}, commonjs: {enabl
 // NOTE: it's overkill to generate all of these, but what the hell, it's a fair example.
 
 // instantiate ordered array of recipes (for each instantiation the tasks will be created e.g. rollup:es and rollup:es:watch)
-let recipes = [
+let recipes = series(gulp,
   new Clean(gulp, preset),
   new EsLint(gulp, preset),
-  [
+  parallel(gulp,
     new RollupEs(gulp, preset, extend(true, {options: {dest: 'gulp-pipeline.es.js'}}, jsOverrides)),
     new RollupAmd(gulp, preset, extend(true, {options: {dest: 'gulp-pipeline.amd.js'}}, jsOverrides)),
     new RollupCjs(gulp, preset, extend(true, {options: {dest: 'gulp-pipeline.cjs.js'}}, jsOverrides)),
     new RollupUmd(gulp, preset, extend(true, {options: {dest: 'gulp-pipeline.umd.js', moduleName: 'gulpPipeline'}}, jsOverrides)),
-    new RollupIife(gulp, preset, extend(true, {options: {dest: 'gulp-pipeline.iife.js', moduleName: 'gulpPipeline'}}, jsOverrides)),
-  ]
-]
-
+    new RollupIife(gulp, preset, extend(true, {options: {dest: 'gulp-pipeline.iife.js', moduleName: 'gulpPipeline'}}, jsOverrides))
+  )
+)
 
 // Simple helper to create the `default` and `default:watch` tasks as a sequence of the recipes already defined
-new TaskSeries(gulp, 'default', recipes)
-
+//new TaskSeries(gulp, 'default', recipes)
 
 let buildControlConfig = {
   debug: false,
@@ -46,7 +47,15 @@ let buildControlConfig = {
 
 let prepublish = new Prepublish(gulp, preset, buildControlConfig)
 let publishBuild = new PublishBuild(gulp, preset, buildControlConfig)
-new TaskSeries(gulp, 'publish', [prepublish, recipes, publishBuild])
+//new TaskSeries(gulp, 'publish', [prepublish, recipes, publishBuild])
+
+
+
+
+
+
+
+
 
 // sample
 //import Images from './src/images'

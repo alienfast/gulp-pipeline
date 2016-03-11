@@ -6,35 +6,49 @@ const Recipes = class extends Base {
     super(config)
   }
 
-  toTaskName(recipe) {
+  /**
+   * Prefer to return the taskFn instead of a string, but return the string if that's all that is given to us.
+   *
+   * @param recipe
+   * @returns {*}
+   */
+  toTask(recipe) {
     let taskName = null
     if (typeof recipe === "string") {
+      // any given task name should be returned as-is
       taskName = recipe
-    }
-    else if (typeof recipe === "function") {
-      taskName = recipe
+      this.debug(`toTask(): ${taskName}`)
     }
     else {
-      taskName = recipe.taskName()
+      if (typeof recipe === "function") {
+        // any given fn should be return as-is i.e. series/parallel
+        taskName = recipe
+      }
+      else {
+        // any recipe should be converted to string task name
+        taskName = recipe.taskFn
+      }
+      this.debug(`toTask(): ${taskName.name || taskName.displayName}`)
     }
     return taskName
   }
 
-  toTaskNames(recipes, tasks = []) {
+  /**
+   * Yield the nearest set of task names - return nested series/parallel fn - do not follow them and flatten them (they will do that themselves if using the helper methods)
+   *
+   * @param recipes
+   * @returns {Array}
+   */
+  toTasks(recipes, tasks = []) {
+    this.debugDump('toTasks: recipes', recipes)
 
-    console.log('*****************************************')
-    this.debug(`toTaskNames: typeof ${typeof recipes}`)
-    this.debugDump('recipes', recipes)
-
-    //this.debugDump(`toTaskNames`, recipes)
     for (let recipe of recipes) {
       //this.debugDump(`recipe taskName[${recipe.taskName? recipe.taskName() : ''}] isArray[${Array.isArray(recipe)}]`, recipe)
       if (Array.isArray(recipe)) {
-        tasks.push(this.toTaskNames(recipe, []))
+        tasks.push(this.toTasks(recipe, []))
       }
       else {
-        let taskName = this.toTaskName(recipe)
-        this.debug(`Adding to list ${taskName}`)
+        let taskName = this.toTask(recipe)
         tasks.push(taskName)
       }
     }

@@ -35,7 +35,7 @@ let recipes = series(gulp,
   )
 )
 
-// Simple helper to create the `default` and `default:watch` tasks as a sequence of the recipes already defined
+// Simple helper to create the `default` and `default:watch` tasks as sequence of the recipes already defined, aggregating watches
 new Aggregate(gulp, 'default', recipes, {debug: true})
 //gulp.task('default', recipes)
 

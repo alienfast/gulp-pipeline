@@ -26,7 +26,7 @@ const Aggregate = class extends BaseGulp {
   }
 
   createHelpText() {
-    //let taskNames = new Recipes().toTaskNames(this.recipes)
+    //let taskNames = new Recipes().toTasks(this.recipes)
     //
     //// use the config to generate the dynamic help
     //return `Runs [${taskNames.join(', ')}]`
@@ -42,7 +42,7 @@ const Aggregate = class extends BaseGulp {
   }
 
   registerTask(taskName) {
-    //let tasks = this.toTaskNames(this.recipes)
+    //let tasks = this.toTasks(this.recipes)
     //this.debug(`Registering task: ${Util.colors.green(taskName)} for ${stringify(tasks)}`)
 
     //this.taskFn = (done) => {
@@ -52,6 +52,7 @@ const Aggregate = class extends BaseGulp {
     //this.taskFn.description = this.createHelpText()
 
     this.gulp.task(taskName, this.recipes)
+    //this.gulp.task(taskName, (done) => {done()})
     this.recipes.description = this.createHelpText()
   }
 
@@ -95,16 +96,11 @@ const Aggregate = class extends BaseGulp {
         this.gulp.watch(recipe.config.watch.glob, recipe.config.watch.options, (event) => {
           this.log(`[${Util.colors.green(taskName)}] ${event.path} was ${event.type}, running series...`);
           return Promise
-            .resolve(this.run(recipes))
+            .resolve(this.recipes)
             .then(() => this.log(`[${Util.colors.green(taskName)}] finished`))
         })
       }
     })
-  }
-
-  run(done, tasks) {
-    // generate the task sequence
-    return tasks
   }
 }
 

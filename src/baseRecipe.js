@@ -63,6 +63,8 @@ const BaseRecipe = class extends BaseGulp {
       // generate primary task e.g. sass
       let name = this.taskName()
       this.debug(`Registering task: ${Util.colors.green(name)}`)
+
+      // set a fn for use by the task, also used by aggregate/series/parallel
       this.taskFn = (done) => {
         //this.log(`Running task: ${Util.colors.green(name)}`)
 
@@ -71,7 +73,12 @@ const BaseRecipe = class extends BaseGulp {
         }
         return this.run(done)
       }
+
+      // set metadata on fn for discovery by gulp
+      this.taskFn.displayName = name
       this.taskFn.description = this.config.task.description
+
+      // register the task
       this.gulp.task(name, this.taskFn)
     }
   }

@@ -89,7 +89,14 @@ const BaseGulp = class extends Base {
     // Prevent the 'watch' task from stopping
     if (!watching && this.gulp) {
       //this.gulp.emit('end')
-      this.donezo(done)
+      //this.donezo(done) // if this is not used, we see "Did you forget to signal async completion?", if it is used, things continue
+
+      //throw error // if we throw, we don't get to see eslint error pretty list for example
+
+      // If this runs, eslint's pretty results don't print
+      if(done) {
+        done(error)
+      }
     }
     else {
       throw error

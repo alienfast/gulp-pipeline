@@ -37,6 +37,7 @@ let recipes = series(gulp,
 
 // Simple helper to create the `default` and `default:watch` tasks as a sequence of the recipes already defined
 new Aggregate(gulp, 'default', recipes, {debug: true})
+//gulp.task('default', recipes)
 
 let buildControlConfig = {
   debug: false,

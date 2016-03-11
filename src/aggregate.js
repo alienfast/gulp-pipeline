@@ -26,10 +26,11 @@ const Aggregate = class extends BaseGulp {
   }
 
   createHelpText() {
-    let taskNames = new Recipes().toTaskNames(this.recipes)
-
-    // use the config to generate the dynamic help
-    return `Runs [${taskNames.join(', ')}]`
+    //let taskNames = new Recipes().toTaskNames(this.recipes)
+    //
+    //// use the config to generate the dynamic help
+    //return `Runs [${taskNames.join(', ')}]`
+    return ''
   }
 
   createWatchHelpText() {
@@ -43,12 +44,15 @@ const Aggregate = class extends BaseGulp {
   registerTask(taskName) {
     //let tasks = this.toTaskNames(this.recipes)
     //this.debug(`Registering task: ${Util.colors.green(taskName)} for ${stringify(tasks)}`)
-    let taskFn = (done) => {
-      return this.run(done, tasks)
-    }
 
-    this.gulp.task(taskName, taskFn)
-    this.taskFn.description = this.createHelpText()
+    //this.taskFn = (done) => {
+    //  return this.run(done, tasks)
+    //}
+    //this.gulp.task(taskName, this.taskFn)
+    //this.taskFn.description = this.createHelpText()
+
+    this.gulp.task(taskName, this.recipes)
+    this.recipes.description = this.createHelpText()
   }
 
   flatten(list) {

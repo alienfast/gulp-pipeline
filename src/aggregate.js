@@ -1,4 +1,5 @@
 import BaseGulp from './baseGulp'
+import Recipes from './util/recipes'
 import Util from 'gulp-util'
 import stringify from 'stringify-object'
 
@@ -7,7 +8,7 @@ const Default = {
   watch: true  // register a watch task that aggregates all watches and runs the full sequence
 }
 
-const TaskSeries = class extends BaseGulp {
+const Aggregate = class extends BaseGulp {
 
   /**
    *
@@ -19,18 +20,16 @@ const TaskSeries = class extends BaseGulp {
     this.recipes = recipes
     this.registerTask(this.taskName(), recipes)
 
-    if (this.config.watch) {
-      this.registerWatchTask(this.watchTaskName(), recipes)
-    }
+    //if (this.config.watch) {
+    //  this.registerWatchTask(this.watchTaskName(), recipes)
+    //}
   }
 
   createHelpText() {
-    let taskNames = this.flattenedRecipes().reduce((a, b) => {
-      return a.concat(this.toTaskName(b))
-    }, [])
+    let taskNames = new Recipes().toTaskNames(this.recipes)
 
     // use the config to generate the dynamic help
-    return `Runs series [${taskNames.join(', ')}]`
+    return `Runs [${taskNames.join(', ')}]`
   }
 
   createWatchHelpText() {
@@ -42,12 +41,14 @@ const TaskSeries = class extends BaseGulp {
   }
 
   registerTask(taskName) {
-    let tasks = this.toTaskNames(this.recipes)
+    //let tasks = this.toTaskNames(this.recipes)
+    //this.debug(`Registering task: ${Util.colors.green(taskName)} for ${stringify(tasks)}`)
+    let taskFn = (done) => {
+      return this.run(done, tasks)
+    }
 
-    this.debug(`Registering task: ${Util.colors.green(taskName)} for ${stringify(tasks)}`)
-    this.gulp.task(taskName, this.createHelpText(), () => {
-      return this.run(tasks)
-    })
+    this.gulp.task(taskName, taskFn)
+    this.taskFn.description = this.createHelpText()
   }
 
   flatten(list) {
@@ -97,10 +98,10 @@ const TaskSeries = class extends BaseGulp {
     })
   }
 
-  run(tasks) {
+  run(done, tasks) {
     // generate the task sequence
-    return this.runSequence(...tasks)
+    return tasks
   }
 }
 
-export default TaskSeries
+export default Aggregate

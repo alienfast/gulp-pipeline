@@ -7,11 +7,9 @@ import RollupAmd from './src/rollupAmd'
 import RollupCjs from './src/rollupCjs'
 import RollupUmd from './src/rollupUmd'
 import RollupIife from './src/rollupIife'
-import TaskSeries from './src/taskSeries'
+import Aggregate from './src/aggregate'
 import series from './src/util/series'
 import parallel from './src/util/parallel'
-
-import extend from 'extend'
 
 import PublishBuild from './src/publishBuild'
 import Prepublish from './src/prepublish'
@@ -29,16 +27,16 @@ let recipes = series(gulp,
   new Clean(gulp, preset),
   new EsLint(gulp, preset, {debug:false}),
   parallel(gulp,
-    new RollupEs(gulp, preset, extend(true, {options: {dest: 'gulp-pipeline.es.js'}}, jsOverrides)),
-    new RollupAmd(gulp, preset, extend(true, {options: {dest: 'gulp-pipeline.amd.js'}}, jsOverrides)),
-    new RollupCjs(gulp, preset, extend(true, {options: {dest: 'gulp-pipeline.cjs.js'}}, jsOverrides)),
-    new RollupUmd(gulp, preset, extend(true, {options: {dest: 'gulp-pipeline.umd.js', moduleName: 'gulpPipeline'}}, jsOverrides)),
-    new RollupIife(gulp, preset, extend(true, {options: {dest: 'gulp-pipeline.iife.js', moduleName: 'gulpPipeline'}}, jsOverrides))
+    new RollupEs(gulp, preset, {options: {dest: 'gulp-pipeline.es.js'}}, jsOverrides),
+    new RollupAmd(gulp, preset, {options: {dest: 'gulp-pipeline.amd.js'}}, jsOverrides),
+    new RollupCjs(gulp, preset, {options: {dest: 'gulp-pipeline.cjs.js'}}, jsOverrides),
+    new RollupUmd(gulp, preset, {options: {dest: 'gulp-pipeline.umd.js', moduleName: 'gulpPipeline'}}, jsOverrides),
+    new RollupIife(gulp, preset, {options: {dest: 'gulp-pipeline.iife.js', moduleName: 'gulpPipeline'}}, jsOverrides)
   )
 )
 
 // Simple helper to create the `default` and `default:watch` tasks as a sequence of the recipes already defined
-//new TaskSeries(gulp, 'default', recipes)
+new Aggregate(gulp, 'default', recipes, {debug: true})
 
 let buildControlConfig = {
   debug: false,
@@ -47,7 +45,7 @@ let buildControlConfig = {
 
 let prepublish = new Prepublish(gulp, preset, buildControlConfig)
 let publishBuild = new PublishBuild(gulp, preset, buildControlConfig)
-//new TaskSeries(gulp, 'publish', [prepublish, recipes, publishBuild])
+//new Aggregate(gulp, 'publish', series(gulp, prepublish, recipes, publishBuild))
 
 
 
@@ -88,7 +86,7 @@ let publishBuild = new PublishBuild(gulp, preset, buildControlConfig)
 //
 //
 //// Simple helper to create the `default` and `default:watch` tasks as a series of the recipes already defined
-//new TaskSeries(gulp, 'default', recipes)
+//new Aggregate(gulp, 'default', recipes)
 //
 //// Create the production digest assets
 //let digest = [
@@ -96,4 +94,4 @@ let publishBuild = new PublishBuild(gulp, preset, buildControlConfig)
 //  new Rev(gulp, preset),
 //  new MinifyCss(gulp, preset)
 //]
-//new TaskSeries(gulp, 'digest', digest)
+//new Aggregate(gulp, 'digest', digest)

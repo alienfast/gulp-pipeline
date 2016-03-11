@@ -1,6 +1,10 @@
 import Base from '../base'
 
-const RecipesImplementation = class extends Base {
+const Recipes = class extends Base {
+
+  constructor(config = {debug: true}) {
+    super(config)
+  }
 
   toTaskName(recipe) {
     let taskName = null
@@ -17,6 +21,11 @@ const RecipesImplementation = class extends Base {
   }
 
   toTaskNames(recipes, tasks = []) {
+
+    console.log('*****************************************')
+    this.debug(`toTaskNames: typeof ${typeof recipes}`)
+    this.debugDump('recipes', recipes)
+
     //this.debugDump(`toTaskNames`, recipes)
     for (let recipe of recipes) {
       //this.debugDump(`recipe taskName[${recipe.taskName? recipe.taskName() : ''}] isArray[${Array.isArray(recipe)}]`, recipe)
@@ -33,18 +42,5 @@ const RecipesImplementation = class extends Base {
     return tasks
   }
 }
-
-const Recipes = class {
-  static toTaskNames(recipes, tasks = []){
-    return instance.toTaskNames(recipes, tasks)
-  }
-
-  static toTaskName(recipe){
-    return instance.toTaskName(recipe)
-  }
-}
-
-//  singleton
-let instance = new RecipesImplementation()
 
 export default Recipes

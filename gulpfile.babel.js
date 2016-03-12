@@ -25,7 +25,7 @@ let jsOverrides = {debug: false, nodeResolve: {enabled: false}, commonjs: {enabl
 // instantiate ordered array of recipes (for each instantiation the tasks will be created e.g. rollup:es and rollup:es:watch)
 let recipes = series(gulp,
   new Clean(gulp, preset),
-  new EsLint(gulp, preset, {debug:false}),
+  new EsLint(gulp, preset),
   parallel(gulp,
     new RollupEs(gulp, preset, {options: {dest: 'gulp-pipeline.es.js'}}, jsOverrides),
     new RollupAmd(gulp, preset, {options: {dest: 'gulp-pipeline.amd.js'}}, jsOverrides),

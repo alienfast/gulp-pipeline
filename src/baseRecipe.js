@@ -102,17 +102,6 @@ const BaseRecipe = class extends BaseGulp {
   logFinish(message = 'finished.') {
     this.log(`[${Util.colors.green(this.taskName())}] ${message}`)
   }
-
-  /**
-   * if done is provided, run it
-   *
-   * @param done
-   */
-  donezo(done){
-    if(done){
-      done()
-    }
-  }
 }
 
 export default BaseRecipe

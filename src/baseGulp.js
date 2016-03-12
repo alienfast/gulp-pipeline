@@ -28,7 +28,7 @@ const BaseGulp = class extends Base {
 
 
   taskName() {
-    if(!this.config.task.name){
+    if (!this.config.task.name) {
       this.notifyError(`Expected ${this.constructor.name} to have a task name in the configuration.`)
     }
     return `${this.config.task.prefix}${this.config.task.name}${this.config.task.suffix}`
@@ -88,21 +88,34 @@ const BaseGulp = class extends Base {
 
     // Prevent the 'watch' task from stopping
     if (!watching && this.gulp) {
-      //this.gulp.emit('end')
-      //this.donezo(done) // if this is not used, we see "Did you forget to signal async completion?", if it is used, things continue
-
-      //throw error // if we throw, we don't get to see eslint error pretty list for example
-
-      // If this runs, eslint's pretty results don't print
-      if(done) {
-        done(error)
-      }
+      // if this is not used, we see "Did you forget to signal async completion?", it also unfortunately logs more distracting information below.  But we need to exec the callback with an error to halt execution.
+      this.donezo(done, error)
     }
     else {
       throw error
     }
   }
 
+  /**
+   * if done is provided, run it
+   *
+   * @param done
+   */
+  donezo(done, error = null) {
+    if (done) {
+      if (error) {
+        this.debug('executing callback with error')
+        done(error)
+      }
+      else {
+        this.debug('executing callback without error')
+        done()
+      }
+    }
+    else {
+      this.debug(`done callback was not provided`)
+    }
+  }
 
   /**
    * Wraps shellJs calls that act on the file structure to give better output and error handling
@@ -119,7 +132,7 @@ const BaseGulp = class extends Base {
       this.notifyError('cwd is required')
     }
 
-    if(command.includes(`undefined`)){
+    if (command.includes(`undefined`)) {
       this.notifyError(`Invalid command: ${command}`)
     }
 

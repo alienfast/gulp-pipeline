@@ -1,7 +1,6 @@
 import BaseGulp from './baseGulp'
-import Recipes from './util/recipes'
+//import Recipes from './util/recipes'
 import Util from 'gulp-util'
-import stringify from 'stringify-object'
 
 const Default = {
   debug: false,
@@ -18,11 +17,11 @@ const Aggregate = class extends BaseGulp {
   constructor(gulp, taskName, recipes, ...configs) {
     super(gulp, Default, {task: {name: taskName}}, ...configs)
     this.recipes = recipes
-    this.registerTask(this.taskName(), recipes)
+    this.registerTask(this.taskName())
 
-    //if (this.config.watch) {
-    //  this.registerWatchTask(this.watchTaskName(), recipes)
-    //}
+    if (this.config.watch) {
+      this.registerWatchTask(this.watchTaskName())
+    }
   }
 
   createHelpText() {
@@ -38,32 +37,95 @@ const Aggregate = class extends BaseGulp {
       return a.concat(b.taskName())
     }, [])
 
-    return Util.colors.grey(`|___ aggregates watches from [${taskNames.join(', ')}] and runs full series`)
+    return Util.colors.grey(`|___ aggregates watches from [${taskNames.join(', ')}] and runs all tasks on any change`)
   }
 
   registerTask(taskName) {
     //let tasks = this.toTasks(this.recipes)
     //this.debug(`Registering task: ${Util.colors.green(taskName)} for ${stringify(tasks)}`)
-
-    //this.taskFn = (done) => {
-    //  return this.run(done, tasks)
-    //}
-    //this.gulp.task(taskName, this.taskFn)
-    //this.taskFn.description = this.createHelpText()
-
     this.gulp.task(taskName, this.recipes)
-    //this.gulp.task(taskName, (done) => {done()})
     this.recipes.description = this.createHelpText()
   }
 
+  registerWatchTask(taskName) {
+    // generate watch task
+    let watchableRecipes = this.watchableRecipes()
+    if (watchableRecipes.length < 1) {
+      this.debug(`No watchable recipes for task: ${Util.colors.green(taskName)}`)
+      return
+    }
+
+    this.debug(`Registering task: ${Util.colors.green(taskName)}`)
+
+    let startFn = (event) => {
+
+    }
+    let finishFn = () => {
+      this.log(`[${Util.colors.green(taskName)}] finished`)
+    }
+
+    //let runFn = this.gulp.series(
+    //  startFn,
+    //  this.recipes,
+    //  finishFn
+    //)
+    this.runFn = (done) => {
+      // ensure that multiple watches do not run the entire set of recipes multiple times on a single change
+      if(this.running){
+        this.debug('Already running, not running it again....')
+        done()
+        return
+      }
+      else{
+
+        this.debug('NOT running, allowing it to run....')
+        this.running = true
+      }
+
+      try{
+        //return this.gulp.series(this.recipes(), finishFn)()
+        this.recipes()
+        done()
+      }
+      finally{
+        this.running = false
+      }
+    }
+
+    let watchFn = () => {
+      // watch the watchable recipes and make them #run the series
+      for (let recipe of watchableRecipes) {
+        this.log(`[${Util.colors.green(taskName)}] watching ${recipe.taskName()} ${recipe.config.watch.glob}...`)
+
+
+
+        let watcher = this.gulp.watch(recipe.config.watch.glob, recipe.config.watch.options, this.runFn)
+        let recipeName = Util.colors.grey(`(${recipe.taskName()})`)
+        // add watchers for logging/information
+        watcher.on('add', (path) => {
+          this.log(`[${Util.colors.green(taskName)} ${recipeName}] ${path} was added, running...`)
+        })
+        watcher.on('change', (path) => {
+          this.log(`[${Util.colors.green(taskName)} ${recipeName}] ${path} was changed, running...`)
+        })
+        watcher.on('unlink', (path) => {
+          this.log(`[${Util.colors.green(taskName)} ${recipeName}] ${path} was deleted, running...`)
+        })
+      }
+    }
+
+    watchFn.description = this.createWatchHelpText()
+    this.gulp.task(taskName, watchFn)
+  }
+
   flatten(list) {
-    return list.reduce(
-      (a, b) => a.concat(Array.isArray(b) ? this.flatten(b) : b), []
-    )
+    return list.reduce((a, b) =>
+      // parallel and series set `.recipes` on the function as metadata
+      a.concat((typeof b === "function" && b.recipes) ? this.flatten(b.recipes) : b), [])
   }
 
   flattenedRecipes() {
-    let recipes = this.flatten(this.recipes)
+    let recipes = this.flatten([this.recipes])
     this.debugDump(`flattenedRecipes`, recipes)
     return recipes
   }
@@ -77,30 +139,6 @@ const Aggregate = class extends BaseGulp {
       }
     }
     return watchableRecipes
-  }
-
-  registerWatchTask(taskName, recipes) {
-    // generate watch task
-    let watchableRecipes = this.watchableRecipes()
-    if (watchableRecipes.length < 1) {
-      this.debug(`No watchable recipes for task: ${Util.colors.green(taskName)}`)
-      return
-    }
-
-    this.debug(`Registering task: ${Util.colors.green(taskName)}`)
-    this.gulp.task(taskName, this.createWatchHelpText(), () => {
-
-      // watch the watchable recipes and make them #run the series
-      for (let recipe of watchableRecipes) {
-        this.log(`[${Util.colors.green(taskName)}] watching ${recipe.taskName()} ${recipe.config.watch.glob}...`)
-        this.gulp.watch(recipe.config.watch.glob, recipe.config.watch.options, (event) => {
-          this.log(`[${Util.colors.green(taskName)}] ${event.path} was ${event.type}, running series...`);
-          return Promise
-            .resolve(this.recipes)
-            .then(() => this.log(`[${Util.colors.green(taskName)}] finished`))
-        })
-      }
-    })
   }
 }
 

@@ -46,7 +46,7 @@ let buildControlConfig = {
 
 let prepublish = new Prepublish(gulp, preset, buildControlConfig)
 let publishBuild = new PublishBuild(gulp, preset, buildControlConfig)
-//new Aggregate(gulp, 'publish', series(gulp, prepublish, recipes, publishBuild))
+new Aggregate(gulp, 'publish', series(gulp, prepublish, recipes, publishBuild))
 
 
 

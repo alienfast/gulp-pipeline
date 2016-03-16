@@ -5,7 +5,6 @@ import extend from 'extend'
 //import stylish from 'gulp-jscs-stylish'
 import debug from 'gulp-debug'
 import gulpif from 'gulp-if'
-import Util from 'gulp-util'
 
 export const Default = {
   debug: false,

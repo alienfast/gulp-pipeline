@@ -2,7 +2,7 @@ import BaseClean from './baseClean'
 import extend from 'extend'
 
 export const Default = {
-  presetType: 'digest',
+  presetType: 'postProcessor',
   task: {
     name: 'clean:digest'
   }

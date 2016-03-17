@@ -7,7 +7,7 @@ import rev   from 'gulp-rev'
 
 export const Default = {
   debug: false,
-  presetType: 'digest',
+  presetType: 'postProcessor',
   task: {
     name: 'rev'
   },

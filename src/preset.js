@@ -41,7 +41,7 @@ const Baseline = {
     watch: {options: {cwd: 'images'}},
     dest: 'dist'
   },
-  digest: {
+  postProcessor: {
     source: {options: {cwd: 'dist'}},
     watch: {options: {cwd: 'dist'}},
     dest: 'dist/digest'
@@ -90,7 +90,7 @@ const PresetRails = {
     watch: {options: {cwd: railsImages}},
     dest: railsDest
   },
-  digest: {
+  postProcessor: {
     source: {options: {cwd: railsDest}},
     watch: {options: {cwd: railsDest}},
     dest: 'public/assets/digest'

@@ -7,18 +7,18 @@ import cssnano from 'gulp-cssnano'
 
 export const Default = {
   debug: false,
-  presetType: 'digest',
+  presetType: 'postProcessor',
   task: {
     name: 'minifyCss'
   },
   watch: {
-    glob: ['digest/**.css'],
+    glob: ['**/*.css'],
     options: {
       //cwd: ** resolved from preset **
     }
   },
   source: {
-    glob: ['digest/**.css'],
+    glob: ['**/*.css'],
     options: {
       //cwd: ** resolved from preset **
     }

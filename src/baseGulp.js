@@ -86,9 +86,16 @@ const BaseGulp = class extends Base {
     }
     this.log(report)
 
+
+
+this.log(`watching? ${watching}`)
+this.log(`done was provided? ${done}`)
+
     // Prevent the 'watch' task from stopping
-    if (!watching && this.gulp) {
+    //if (!watching && this.gulp) {
+    if (this.gulp) {
       // if this is not used, we see "Did you forget to signal async completion?", it also unfortunately logs more distracting information below.  But we need to exec the callback with an error to halt execution.
+
       this.donezo(done, error)
     }
     else {

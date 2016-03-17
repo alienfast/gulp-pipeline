@@ -55,64 +55,77 @@ const Aggregate = class extends BaseGulp {
       return
     }
 
+    let x = () => {}
+
+
     this.debug(`Registering task: ${Util.colors.green(taskName)}`)
 
-    let startFn = (event) => {
+    // on error ensure that we reset the flag so that it runs again
+    this.gulp.on('error', (error) => {
+      this.debug(`Yay! listened for the error and am able to reset the running flag!`)
+      this.recipes.running = false
+    })
 
-    }
-    let finishFn = () => {
-      this.log(`[${Util.colors.green(taskName)}] finished`)
-    }
-
-    //let runFn = this.gulp.series(
-    //  startFn,
-    //  this.recipes,
-    //  finishFn
-    //)
-    this.runFn = (done) => {
-      // ensure that multiple watches do not run the entire set of recipes multiple times on a single change
-      if(this.running){
-        this.debug('Already running, not running it again....')
-        done()
-        return
-      }
-      else{
-
-        this.debug('NOT running, allowing it to run....')
-        this.running = true
-      }
-
-      try{
-        //return this.gulp.series(this.recipes(), finishFn)()
-        this.recipes()
-        done()
-      }
-      finally{
-        this.running = false
-      }
-    }
 
     let watchFn = () => {
       // watch the watchable recipes and make them #run the series
       for (let recipe of watchableRecipes) {
         this.log(`[${Util.colors.green(taskName)}] watching ${recipe.taskName()} ${recipe.config.watch.glob}...`)
 
+        // declare this in here so we can use different display names in the log
+        let runFn = (done) => {
+          // ensure that multiple watches do not run the entire set of recipes multiple times on a single change
+          if (this.recipes.running) {
+            this.debug('Multiple matching watchers, skipping this one...')
+            done()
+            return
+          }
+          else {
+            this.debug('Allowing it to run....')
+            this.recipes.running = true
+          }
+
+          // FIXME: this.recipes.running is never reset on error (as expected on something like eslint), our code is simply not called.  We need a way for this code to be signaled
+
+          try {
+            let finishFn = () => {
+              this.log(`[${Util.colors.green(taskName)}] finished`)
+              this.recipes.running = false
+            }
+
+            this.gulp.series(this.recipes, finishFn, done)()
+          }
+          catch (error) {
+            this.recipes.running = false
 
 
-        let watcher = this.gulp.watch(recipe.config.watch.glob, recipe.config.watch.options, this.runFn)
+            this.debug('Marking finished - encountered error')
+            this.notifyError(error, done, true)
+          }
+        }
+        runFn.displayName = `${recipe.taskName()} watcher`
+
+        let watcher = this.gulp.watch(recipe.config.watch.glob, recipe.config.watch.options, runFn)
         let recipeName = Util.colors.grey(`(${recipe.taskName()})`)
         // add watchers for logging/information
         watcher.on('add', (path) => {
-          this.log(`[${Util.colors.green(taskName)} ${recipeName}] ${path} was added, running...`)
+          if (!this.recipes.running) {
+            this.log(`[${Util.colors.green(taskName)} ${recipeName}] ${path} was added, running...`)
+          }
         })
         watcher.on('change', (path) => {
-          this.log(`[${Util.colors.green(taskName)} ${recipeName}] ${path} was changed, running...`)
+          if (!this.recipes.running) {
+            this.log(`[${Util.colors.green(taskName)} ${recipeName}] ${path} was changed, running...`)
+          }
         })
         watcher.on('unlink', (path) => {
-          this.log(`[${Util.colors.green(taskName)} ${recipeName}] ${path} was deleted, running...`)
+          if (!this.recipes.running) {
+            this.log(`[${Util.colors.green(taskName)} ${recipeName}] ${path} was deleted, running...`)
+          }
         })
       }
     }
+
 
     watchFn.description = this.createWatchHelpText()
     this.gulp.task(taskName, watchFn)

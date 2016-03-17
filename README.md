@@ -6,12 +6,62 @@ This **is not** just for rails, it's agnostic and works for anything (node, angu
 With that said, did we mention that gulp-pipeline + [gulp-pipeline-rails](https://github.com/alienfast/gulp-pipeline-rails) enables you to remove sprockets and easily serve gulp assets with rails?
 
 ## Usage
+
+### NPM ES2015 package sample 
+
+This project serves as a reasonable npm package example, complete with build, bump version, and publish build to a seperate branch and publish to npm!
+
+```javascript
+
+import { Preset, Clean, EsLint, RollupEs, RollupAmd, RollupCjs, RollupIife, Aggregate, series, parallel } from 'gulp-pipeline'
+// ES2015 tip: import your list of classes from 'gulp-pipeline/src/index' so you can inspect source as you write your file.  The line above will otherwise use the commonjs rollup dist file.
+
+// Use a predefined preset
+let preset = Preset.nodeSrc()
+
+// Tell rollup _not_ to bundle our dependencies
+let jsOverrides = {debug: false, nodeResolve: {enabled: false}, commonjs: {enabled: false}}
+
+// NOTE: it's overkill to generate all of these, but what the hell, it's a fair example.
+
+// instantiate ordered array of recipes (for each instantiation the tasks will be created e.g. rollup:es and rollup:es:watch)
+let recipes = series(gulp,
+  new Clean(gulp, preset),
+  new EsLint(gulp, preset),
+  parallel(gulp,
+    new RollupEs(gulp, preset, {options: {dest: 'gulp-pipeline.es.js'}}, jsOverrides),
+    new RollupAmd(gulp, preset, {options: {dest: 'gulp-pipeline.amd.js'}}, jsOverrides),
+    new RollupCjs(gulp, preset, {options: {dest: 'gulp-pipeline.cjs.js'}}, jsOverrides),
+    new RollupUmd(gulp, preset, {options: {dest: 'gulp-pipeline.umd.js', moduleName: 'gulpPipeline'}}, jsOverrides),
+    new RollupIife(gulp, preset, {options: {dest: 'gulp-pipeline.iife.js', moduleName: 'gulpPipeline'}}, jsOverrides)
+  )
+)
+
+// Simple helper to create the `default` and `default:watch` tasks as sequence of the recipes already defined, aggregating watches
+new Aggregate(gulp, 'default', recipes, {debug: false})
+
+let buildControlConfig = {
+  debug: false,
+  options: {}
+}
+
+let prepublish = new Prepublish(gulp, preset, buildControlConfig)
+let publishBuild = new PublishBuild(gulp, preset, buildControlConfig)
+new Aggregate(gulp, 'publish', series(gulp, prepublish, recipes, publishBuild))
+```
+
+This configuration generates the following (call the `help` task) that is specific to the `Preset` used:
+
+![Help](help-demo.png) 
+
+
+### Rails sample
 Here's a `gulpfile.babel.js` that provides tasks to build and watch an ES2015/SCSS project.  It happens to use the Rails preset, but you can see that's a simple hash.  Simple enough?
  
 ```javascript
 // Assuming project named: acme
 
-import { Preset, Clean, CleanDigest, EsLint, Images, MinifyCss, Rev, ScssLint, Sass, RollupEs, RollupCjs, RollupIife, TaskSeries } from 'gulp-pipeline'
+import { Preset, Clean, CleanDigest, EsLint, Images, MinifyCss, Rev, Sass, ScssLint, RollupEs, RollupCjs, RollupIife, Aggregate, series, parallel } from 'gulp-pipeline'
 // ES2015 tip: import your list of classes from 'gulp-pipeline/src/index' so you can inspect source as you write your file.  The line above will otherwise use the commonjs rollup dist file.
 
 import gulp from 'gulp'
@@ -21,24 +71,24 @@ let preset = Preset.rails() // other pre-configured presets: nodeSrc, nodeLib - 
 
 // Instantiate ordered array of recipes (for each instantiation the tasks will be created e.g. sass and sass:watch)
 //  Note: these are run by the run-sequence, allowing series and parallel execution
-let recipes = [
+let recipes = series(gulp, 
   new Clean(gulp, preset),
-  [
+  parallel(gulp, 
     new EsLint(gulp, preset),
     new ScssLint(gulp, preset)
-  ],
-  [
+  ),
+  parallel(gulp, 
     new Images(gulp, preset),
     new Sass(gulp, preset),
     new RollupEs(gulp, preset, {options: {dest: 'acme.es.js'}}),                        // es
     new RollupCjs(gulp, preset, {options: {dest: 'acme.cjs.js'}}),                      // commonjs
     new RollupIife(gulp, preset, {options: {dest: 'acme.iife.js', moduleName: 'acme'}}) // iife self executing bundle for the browser
-  ]
-]
+  )
+)
 
 
 // Simple helper to create the `default` and `default:watch` tasks as a series of the recipes already defined
-new TaskSeries(gulp, 'default', recipes)
+new Aggregate(gulp, 'default', recipes)
 
 // Create the production digest assets
 let digest = [
@@ -46,12 +96,8 @@ let digest = [
   new Rev(gulp, preset),
   new MinifyCss(gulp, preset)
 ]
-new TaskSeries(gulp, 'digest', digest)
+new Aggregate(gulp, 'digest', digest)
 ```
-
-This configuration generates the following (call the `help` task) that is specific to the `Preset` used:
-
-![Help](help-demo.png) 
 
 ## Recipes
 - Autoprefixer
@@ -62,14 +108,14 @@ This configuration generates the following (call the `help` task) that is specif
 - ScssLint
 - Clean (subvariations include javascripts, stylesheets, images)
 
-## TaskSeries
-TaskSeries allows tasks to be run in a sequence or in a heterogeneous set of sequence/parallel executions (using the implementation from [run-sequence](https://github.com/OverZealous/run-sequence)).  A simple array will run in series, nested arrays will allow those tasks to run in parallel.  In the example above, the following are executed:
+## Aggregate
+Aggregate provides a helper to not only generate a basic task from a list of series/parallel tasks e.g. `default`, but also aggregate all the watches so that separate watches do not have to be defined separately e.g. `default:watch`.  In the npm package example above and as indicated by `gulp --tasks`, `gulp default:watch` will do the folowing:
 
-    1. clean
-    2. eslint && scsslint tasks in parallel
-    3. images, sass, && rollup* tasks in parallel
+```
+aggregates watches from [eslint, rollup:es, rollup:amd, rollup:cjs, rollup:umd, rollup:iife] and runs all tasks on any change
+```
     
-Note that unless `watch: false`, any `TaskSeries` instantiation will generate a `watch` variation as well.  For the above `TaskSeries`, both the `default` task as well as the `default:watch` task will be generated.  The watch variation is special in that it will aggregate all watched sources from _any watchable_ task in the series and upon a change, it will execute the full series.    
+Note that unless `watch: false`, any `Aggregate` instantiation will generate the `watch` variation as well.  If you do not need the watch variation, you can just skip declaring an `Aggregate` and use `gulp.task('default', recipes)` instead, because the Aggregate provides no other real value (unless you are extending it).    
   
 ## Help
 Generates a `help` task and dynamic help descriptions, making it easier to know the effects and if your config and presets are set properly. 

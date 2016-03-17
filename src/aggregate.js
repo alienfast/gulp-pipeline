@@ -55,13 +55,10 @@ const Aggregate = class extends BaseGulp {
       return
     }
 
-    let x = () => {}
-
-
     this.debug(`Registering task: ${Util.colors.green(taskName)}`)
 
     // on error ensure that we reset the flag so that it runs again
-    this.gulp.on('error', (error) => {
+    this.gulp.on('error', () => {
       this.debug(`Yay! listened for the error and am able to reset the running flag!`)
       this.recipes.running = false
     })
@@ -70,7 +67,7 @@ const Aggregate = class extends BaseGulp {
     let watchFn = () => {
       // watch the watchable recipes and make them #run the series
       for (let recipe of watchableRecipes) {
-        this.log(`[${Util.colors.green(taskName)}] watching ${recipe.taskName()} ${recipe.config.watch.glob}...`)
+        this.log(`[${Util.colors.green(taskName)}] watching for ${recipe.taskName()} ${recipe.config.watch.glob}...`)
 
         // declare this in here so we can use different display names in the log
         let runFn = (done) => {
@@ -85,23 +82,12 @@ const Aggregate = class extends BaseGulp {
             this.recipes.running = true
           }
 
-          // FIXME: this.recipes.running is never reset on error (as expected on something like eslint), our code is simply not called.  We need a way for this code to be signaled
-
-          try {
-            let finishFn = () => {
-              this.log(`[${Util.colors.green(taskName)}] finished`)
-              this.recipes.running = false
-            }
-
-            this.gulp.series(this.recipes, finishFn, done)()
-          }
-          catch (error) {
+          let finishFn = () => {
+            this.log(`[${Util.colors.green(taskName)}] finished`)
             this.recipes.running = false
-
-
-            this.debug('Marking finished - encountered error')
-            this.notifyError(error, done, true)
           }
+
+          this.gulp.series(this.recipes, finishFn, done)()
         }
         runFn.displayName = `${recipe.taskName()} watcher`
 

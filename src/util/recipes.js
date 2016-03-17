@@ -2,7 +2,7 @@ import Base from '../base'
 
 const Recipes = class extends Base {
 
-  constructor(config = {debug: true}) {
+  constructor(config = {debug: false}) {
     super(config)
   }
 

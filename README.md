@@ -5,6 +5,23 @@ This **is not** just for rails, it's agnostic and works for anything (node, angu
 
 With that said, did we mention that gulp-pipeline + [gulp-pipeline-rails](https://github.com/alienfast/gulp-pipeline-rails) enables you to remove sprockets and easily serve gulp assets with rails?
 
+## Recipes
+See the [src](src) directory for a full list.  Common recipes:
+- Autoprefixer
+- Clean - macro with sub-variations including digest, javascripts, stylesheets, images
+- Copy  - copy any source glob to destination
+- EsLint
+- Images - copy minified images to destination
+- Jekyll - build jekyll site
+- Mocha - test
+- Prepublish - using [build-control](https://github.com/alienfast/build-control), check to make sure all files are committed
+- PublishBuild - using [build-control](https://github.com/alienfast/build-control), bump version, build, tag, publish to git, publish to npm
+- PublishNpm - using [build-control](https://github.com/alienfast/build-control), publish to npm
+- Rollup (variations include amd, cjs, es, iife, umd)
+- Sass
+- ScssLint
+- Uglify - uglify source javascripts to destination
+
 ## Usage
 
 ### NPM ES2015 package sample 
@@ -98,22 +115,6 @@ let digest = [
 ]
 new Aggregate(gulp, 'digest', digest)
 ```
-
-## Recipes
-- Autoprefixer
-- Clean - macro with sub-variations including digest, javascripts, stylesheets, images
-- Copy  - copy any source glob to destination
-- EsLint
-- Images - copy minified images to destination
-- Jekyll - build jekyll site
-- Mocha - test
-- Prepublish - using [build-control](https://github.com/alienfast/build-control), check to make sure all files are committed
-- PublishBuild - using [build-control](https://github.com/alienfast/build-control), bump version, build, tag, publish to git, publish to npm
-- PublishNpm - using [build-control](https://github.com/alienfast/build-control), publish to npm
-- Rollup (variations include amd, cjs, es, iife, umd)
-- Sass
-- ScssLint
-- Uglify - uglify source javascripts to destination
 
 ## Aggregate
 Aggregate provides a helper to not only generate a basic task from a list of series/parallel tasks e.g. `default`, but also aggregate all the watches so that separate watches do not have to be defined separately e.g. `default:watch`.  In the npm package example above and as indicated by `gulp --tasks`, `gulp default:watch` will do the folowing:

@@ -65,7 +65,8 @@ let prepublish = new Prepublish(gulp, preset)
 let publishBuild = new PublishBuild(gulp, preset)
 
 // `publish`, gives us a `publish:watch` as well if we so desire to use it
-new Aggregate(gulp, 'publish', series(gulp, prepublish, recipes))```
+new Aggregate(gulp, 'publish', series(gulp, prepublish, recipes, publishBuild))
+```
 
 This configuration generates the following (call the `help` task) that is specific to the `Preset` used:
 

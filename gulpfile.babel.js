@@ -17,12 +17,11 @@ import Prepublish from './src/prepublish'
 // Let's eat our own dogfood and use our own recipes to generate our dist packages
 let preset = Preset.nodeSrc()
 
-// don't bundle our dependencies
+// Tell rollup _not_ to bundle our dependencies
 let jsOverrides = {debug: false, nodeResolve: {enabled: false}, commonjs: {enabled: false}}
 
 // NOTE: it's overkill to generate all of these, but what the hell, it's a fair example.
-
-// instantiate ordered array of recipes (for each instantiation the tasks will be created e.g. rollup:es and rollup:es:watch)
+// Create our `default` set of recipes as a combination of series tasks with as much parallelization as possible
 let recipes = series(gulp,
   new Clean(gulp, preset),
   new EsLint(gulp, preset),
@@ -35,63 +34,17 @@ let recipes = series(gulp,
   )
 )
 
-// Simple helper to create the `default` and `default:watch` tasks as sequence of the recipes already defined, aggregating watches
+// Simple helper to create the `default` and `default:watch` tasks based on the recipes already defined, aggregating watches
 new Aggregate(gulp, 'default', recipes, {debug: false})
 
-let buildControlConfig = {
-  debug: false,
-  options: {}
-}
+//---------------
+// Publish tasks
 
-let prepublish = new Prepublish(gulp, preset, buildControlConfig)
-let publishBuild = new PublishBuild(gulp, preset, buildControlConfig)
-new Aggregate(gulp, 'publish', series(gulp, prepublish, recipes, publishBuild))
+// prepublish gives us a quick exit, in case we didn't commit
+let prepublish = new Prepublish(gulp, preset)
 
+// publishBuild is where the deploy happens, lots of good stuff here.
+let publishBuild = new PublishBuild(gulp, preset)
 
-
-
-
-
-
-
-
-// sample
-//import Images from './src/images'
-//import Sass from './src/sass'
-//import ScssLint from './src/scssLint'
-//import CleanDigest from './src/cleanDigest'
-//import Rev from './src/rev'
-//import MinifyCss from './src/minifyCss'
-//
-//
-//// Utilize one of the common configs
-//let preset = Preset.rails() // other pre-configured presets: nodeSrc, nodeLib - see preset.js and submit PRs with other common configs
-//
-//// Instantiate ordered array of recipes (for each instantiation the tasks will be created e.g. sass and sass:watch)
-////  Note: these are run by the run-sequence, allowing series and parallel execution
-//let recipes = [
-//  new Clean(gulp, preset),
-//  [
-//    new EsLint(gulp, preset),
-//    new ScssLint(gulp, preset)
-//  ],
-//  [
-//    new Images(gulp, preset),
-//    new Sass(gulp, preset),
-//    new RollupEs(gulp, preset, {options: {dest: 'dist/acme.es.js'}}),                        // es
-//    new RollupCjs(gulp, preset, {options: {dest: 'dist/acme.cjs.js'}}),                      // commonjs
-//    new RollupIife(gulp, preset, {options: {dest: 'dist/acme.iife.js', moduleName: 'acme'}}) // iife self executing bundle for the browser
-//  ]
-//]
-//
-//
-//// Simple helper to create the `default` and `default:watch` tasks as a series of the recipes already defined
-//new Aggregate(gulp, 'default', recipes)
-//
-//// Create the production digest assets
-//let digest = [
-//  new CleanDigest(gulp, preset),
-//  new Rev(gulp, preset),
-//  new MinifyCss(gulp, preset)
-//]
-//new Aggregate(gulp, 'digest', digest)
+// `publish`, gives us a `publish:watch` as well if we so desire to use it
+new Aggregate(gulp, 'publish', series(gulp, prepublish, recipes))

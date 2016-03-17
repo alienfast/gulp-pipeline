@@ -1,5 +1,5 @@
 # gulp-pipeline
-Meta gulp plugin recipes modularized as ES2015 classes. Fully configurable. Fully extensible. Full pipeline in a few lines of code.
+Gulp 4 recipes modularized as ES2015 classes. Fully configurable. Fully extensible. Full pipeline in a few lines of code.
 
 This **is not** just for rails, it's agnostic and works for anything (node, angular, etc). 
 
@@ -22,8 +22,7 @@ let preset = Preset.nodeSrc()
 let jsOverrides = {debug: false, nodeResolve: {enabled: false}, commonjs: {enabled: false}}
 
 // NOTE: it's overkill to generate all of these, but what the hell, it's a fair example.
-
-// instantiate ordered array of recipes (for each instantiation the tasks will be created e.g. rollup:es and rollup:es:watch)
+// Create our `default` set of recipes as a combination of series tasks with as much parallelization as possible
 let recipes = series(gulp,
   new Clean(gulp, preset),
   new EsLint(gulp, preset),
@@ -36,18 +35,20 @@ let recipes = series(gulp,
   )
 )
 
-// Simple helper to create the `default` and `default:watch` tasks as sequence of the recipes already defined, aggregating watches
+// Simple helper to create the `default` and `default:watch` tasks based on the recipes already defined, aggregating watches
 new Aggregate(gulp, 'default', recipes, {debug: false})
 
-let buildControlConfig = {
-  debug: false,
-  options: {}
-}
+//---------------
+// Publish tasks
 
-let prepublish = new Prepublish(gulp, preset, buildControlConfig)
-let publishBuild = new PublishBuild(gulp, preset, buildControlConfig)
-new Aggregate(gulp, 'publish', series(gulp, prepublish, recipes, publishBuild))
-```
+// prepublish gives us a quick exit, in case we didn't commit
+let prepublish = new Prepublish(gulp, preset)
+
+// publishBuild is where the magic happens, lots of good stuff here.
+let publishBuild = new PublishBuild(gulp, preset)
+
+// `publish`, gives us a `publish:watch` as well if we so desire to use it
+new Aggregate(gulp, 'publish', series(gulp, prepublish, recipes))```
 
 This configuration generates the following (call the `help` task) that is specific to the `Preset` used:
 

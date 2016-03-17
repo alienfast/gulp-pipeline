@@ -26,10 +26,6 @@ const BaseRecipe = class extends BaseGulp {
 
     // in case someone needs to inspect it later i.e. buildControl
     this.preset = preset
-
-    if (this.createDescription !== undefined) {
-      this.config.task.description = this.createDescription()
-    }
     this.registerTask()
     this.registerWatchTask()
   }
@@ -59,20 +55,25 @@ const BaseRecipe = class extends BaseGulp {
   }
 
   registerTask() {
-    if (this.config.task) {
-      // generate primary task e.g. sass
-      let name = this.taskName()
-      this.debug(`Registering task: ${Util.colors.green(name)}`)
+    // generate primary task e.g. sass
 
-      // set a fn for use by the task, also used by aggregate/series/parallel
-      this.taskFn = (done) => {
-        //this.log(`Running task: ${Util.colors.green(name)}`)
+    // set a fn for use by the task, also used by aggregate/series/parallel
+    this.taskFn = (done) => {
+      //this.log(`Running task: ${Util.colors.green(name)}`)
 
-        if (this.config.debug) {
-          this.debugDump(`Executing ${Util.colors.green(name)} with options:`, this.config.options)
-        }
-        return this.run(done)
+      if (this.config.debug) {
+        this.debugDump(`Executing ${Util.colors.green(this.taskName())} with options:`, this.config.options)
       }
+      return this.run(done)
+    }
+
+    if (this.config.task && this.config.task.name) {
+      let name = this.taskName()
+      if (this.createDescription !== undefined) {
+        this.config.task.description = this.createDescription()
+      }
+
+      this.debug(`Registering task: ${Util.colors.green(name)}`)
 
       // set metadata on fn for discovery by gulp
       this.taskFn.displayName = name
@@ -80,22 +81,6 @@ const BaseRecipe = class extends BaseGulp {
 
       // register the task
       this.gulp.task(name, this.taskFn)
-    }
-  }
-
-  taskName() {
-    if (!this.config.task.name) {
-      this.notifyError(`Expected ${this.constructor.name} to have a task name in the configuration.`)
-    }
-    return `${this.config.task.prefix}${this.config.task.name}${this.config.task.suffix}`
-  }
-
-  watchTaskName() {
-    if (this.config.watch && this.config.watch.name) {
-      return this.config.watch.name
-    }
-    else {
-      return `${this.taskName()}:watch`
     }
   }
 

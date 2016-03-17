@@ -16,6 +16,11 @@ const Aggregate = class extends BaseGulp {
    */
   constructor(gulp, taskName, recipes, ...configs) {
     super(gulp, Default, {task: {name: taskName}}, ...configs)
+
+    if(Array.isArray(recipes)){
+      this.notifyError(`recipes must not be an array, but a function, series, or parallel, found: ${recipes}`)
+    }
+
     this.recipes = recipes
     this.registerTask(this.taskName())
 

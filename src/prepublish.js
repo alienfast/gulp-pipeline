@@ -5,7 +5,7 @@ import extend from 'extend'
 const Default = {
   task: {
     name: 'prepublish',
-    help: 'Checks tag name and ensures directory has all files committed.'
+    description: 'Checks tag name and ensures directory has all files committed.'
   },
   options: {
     tag: {
@@ -26,13 +26,15 @@ const Prepublish = class extends BasePublish {
    * @param gulp - gulp instance
    * @param config - customized overrides
    */
-  constructor(gulp, preset, config = {}) {
-    super(gulp, preset, extend(true, {}, Default, config))
+  constructor(gulp, preset, ...configs) {
+    super(gulp, preset, extend(true, {}, Default, ...configs))
   }
 
-  run() {
+  run(done) {
     let buildControl = new BuildControl(this.config.options)
     buildControl.prepublishCheck()
+
+    this.donezo(done)
   }
 }
 

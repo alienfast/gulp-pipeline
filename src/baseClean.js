@@ -14,18 +14,18 @@ const BaseClean = class extends BaseRecipe {
    *
    * @param gulp - gulp instance
    * @param preset - base preset configuration - either one from preset.js or a custom hash
-   * @param config - customized overrides for this recipe
+   * @param configs - customized overrides for this recipe
    */
   constructor(gulp, preset, config = {}) {
     super(gulp, preset, extend(true, {}, Default, config))
   }
 
-  createHelpText(){
+  createDescription(){
     // use the config to generate the dynamic help
     return `Cleans ${this.config.dest}`
   }
 
-  run(watching = false) {
+  run(done, watching = false) {
     if (this.config.sync) {
       let paths = del.sync(this.config.dest)
       this.logDeleted(paths)
@@ -40,6 +40,8 @@ const BaseClean = class extends BaseRecipe {
           this.notifyError(error, watching)
         })
     }
+
+    this.donezo(done)
   }
 
   logDeleted(paths) {

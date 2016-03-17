@@ -1,4 +1,4 @@
-import Base from './base'
+import BaseGulp from './baseGulp'
 import Preset from './preset'
 import extend from 'extend'
 import Util from 'gulp-util'
@@ -6,83 +6,88 @@ import stringify from 'stringify-object'
 
 export const Default = {
   watch: true,
-  debug: false,
-  task: {
-    help: ''
-  }
+  debug: false
 }
 
-const BaseRecipe = class extends Base {
+const BaseRecipe = class extends BaseGulp {
 
   /**
    *
    * @param gulp - gulp instance
    * @param preset - base preset configuration - either one from preset.js or a custom hash
-   * @param config - customized overrides for this recipe
+   * @param configs - customized overrides for this recipe
    */
-  constructor(gulp, preset, config) {
+  constructor(gulp, preset, ...configs) {
 
     super(gulp, extend(true, {},
       Default,
       {baseDirectories: preset.baseDirectories},
-      Preset.resolveConfig(preset, config)))
+      Preset.resolveConfig(preset, ...configs)))
 
     // in case someone needs to inspect it later i.e. buildControl
     this.preset = preset
 
-    if (this.createHelpText !== undefined) {
-      this.config.task.help = this.createHelpText()
+    if (this.createDescription !== undefined) {
+      this.config.task.description = this.createDescription()
     }
     this.registerTask()
     this.registerWatchTask()
   }
-
-
-  //createHelpText(){
-  //  // empty implementation that can dynamically create help text instead of the static config.task.help
-  //}
 
   registerWatchTask() {
     if (this.config.watch) {
       // generate watch task e.g. sass:watch
       let name = this.watchTaskName()
       this.debug(`Registering task: ${Util.colors.green(name)}`)
-      this.gulp.task(name, this.createWatchHelpText(), () => {
+      this.watchFn = () => {
         this.log(`[${Util.colors.green(name)}] watching ${this.config.watch.glob} ${stringify(this.config.watch.options)}...`)
 
         return this.gulp.watch(this.config.watch.glob, this.config.watch.options, (event) => {
           this.log(`File ${event.path} was ${event.type}, running ${this.taskName()}...`);
           return Promise
-            .resolve(this.run(true))
+            .resolve(this.run(null, true))
             .then(() => this.logFinish())
         })
-      })
+      }
+      this.watchFn.description = this.createWatchDescription()
+      this.gulp.task(name, this.watchFn)
     }
   }
 
-  createWatchHelpText() {
+  createWatchDescription() {
     return Util.colors.grey(`|___ watches ${this.config.watch.options.cwd}/${this.config.watch.glob}`)
   }
-
 
   registerTask() {
     if (this.config.task) {
       // generate primary task e.g. sass
       let name = this.taskName()
       this.debug(`Registering task: ${Util.colors.green(name)}`)
-      this.gulp.task(name, this.config.task.help, () => {
+
+      // set a fn for use by the task, also used by aggregate/series/parallel
+      this.taskFn = (done) => {
         //this.log(`Running task: ${Util.colors.green(name)}`)
 
         if (this.config.debug) {
           this.debugDump(`Executing ${Util.colors.green(name)} with options:`, this.config.options)
         }
-        return this.run()
-      })
+        return this.run(done)
+      }
+
+      // set metadata on fn for discovery by gulp
+      this.taskFn.displayName = name
+      this.taskFn.description = this.config.task.description
+
+      // register the task
+      this.gulp.task(name, this.taskFn)
     }
   }
 
   taskName() {
-    return this.config.task.name || this.constructor.name // guarantee something is present for error messages
+    if (!this.config.task.name) {
+      this.notifyError(`Expected ${this.constructor.name} to have a task name in the configuration.`)
+    }
+    return `${this.config.task.prefix}${this.config.task.name}${this.config.task.suffix}`
   }
 
   watchTaskName() {

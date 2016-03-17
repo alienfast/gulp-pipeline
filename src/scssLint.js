@@ -25,22 +25,22 @@ const ScssLint = class extends BaseRecipe {
    *
    * @param gulp - gulp instance
    * @param preset - base preset configuration - either one from preset.js or a custom hash
-   * @param config - customized overrides for this recipe
+   * @param configs - customized overrides for this recipe
    */
-  constructor(gulp, preset, config = {}) {
-    super(gulp, preset, extend(true, {}, Default, config))
+  constructor(gulp, preset, ...configs) {
+    super(gulp, preset, extend(true, {}, Default, ...configs))
   }
 
-  createHelpText(){
+  createDescription(){
     return `Lints ${this.config.source.options.cwd}/${this.config.source.glob}`
   }
 
-  run(watching = false) {
+  run(done, watching = false) {
     return this.gulp.src(this.config.source.glob, this.config.source.options)
       .pipe(gulpif(this.config.debug, debug(this.debugOptions())))
       .pipe(scssLint(this.config.options))
       .on('error', (error) => {
-        this.notifyError(error, watching)
+        this.notifyError(error, done, watching)
       })
   }
 }

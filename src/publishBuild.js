@@ -31,6 +31,10 @@ import glob from 'glob'
  */
 const Default = {
   //debug: true,
+  npm: {
+    bump: true,
+    publish: true
+  },
   readme: {
     enabled: true,
     name: 'README.md',
@@ -44,7 +48,7 @@ const Default = {
   },
   task: {
     name: 'publishBuild',
-    help: 'Assembles and pushes the build to a branch'
+    description: 'Assembles and pushes the build to a branch'
   }
 }
 
@@ -55,8 +59,44 @@ const PublishBuild = class extends BasePublish {
    * @param gulp - gulp instance
    * @param config - customized overrides
    */
-  constructor(gulp, preset, config = {}) {
-    super(gulp, preset, extend(true, {}, Default, config))
+  constructor(gulp, preset, ...configs) {
+    super(gulp, preset, extend(true, {}, Default, ...configs))
+  }
+
+  run(done) {
+    let buildControl = new BuildControl(this.config.options)
+
+    // bump the version and commit to git
+    if(this.config.npm.bump) {
+      buildControl.npm.bump()
+    }
+
+    this.prepareBuildFiles()
+
+    this.generateReadme(buildControl)
+
+    // run the commit/tagging/pushing
+    buildControl.run()
+
+    // publish to npm
+    if(this.config.npm.publish) {
+      buildControl.npm.publish()
+    }
+
+    done()
+  }
+
+  generateReadme(buildControl) {
+    // generate a readme on the branch if one is not copied in.
+    if (this.config.readme.enabled) {
+      let readme = path.join(this.config.dir, this.config.readme.name)
+      if (fs.existsSync(readme)) {
+        this.log(`Found readme at ${readme}.  Will not generate a new one from the template.  Turn this message off with { readme: {enabled: false} }`)
+      }
+      else {
+        fs.writeFileSync(readme, buildControl.interpolate(this.config.readme.template))
+      }
+    }
   }
 
   /**
@@ -90,32 +130,6 @@ const PublishBuild = class extends BasePublish {
         fs.copySync(from, to)
       }
     }
-  }
-
-  run() {
-    let buildControl = new BuildControl(this.config.options)
-
-    // bump the version and commit to git
-    buildControl.npm.bump()
-
-    this.prepareBuildFiles()
-
-    // generate a readme on the branch if one is not copied in.
-    if (this.config.readme.enabled) {
-      let readme = path.join(this.config.dir, this.config.readme.name)
-      if (fs.existsSync(readme)) {
-        this.log(`Found readme at ${readme}.  Will not generate a new one from the template.  Turn this message off with { readme: {enabled: false} }`)
-      }
-      else {
-        fs.writeFileSync(readme, buildControl.interpolate(this.config.readme.template))
-      }
-    }
-
-    // run the commit/tagging/pushing
-    buildControl.run()
-
-    // publish to npm
-    buildControl.npm.publish()
   }
 
   resolvePath(cwd, base = process.cwd()) {

@@ -34,18 +34,18 @@ const Sass = class extends BaseRecipe {
    *
    * @param gulp - gulp instance
    * @param preset - base preset configuration - either one from preset.js or a custom hash
-   * @param config - customized overrides for this recipe
+   * @param configs - customized overrides for this recipe
    */
-  constructor(gulp, preset, config = {}) {
-    super(gulp, preset, extend(true, {}, Default, config))
+  constructor(gulp, preset, ...configs) {
+    super(gulp, preset, extend(true, {}, Default, ...configs))
     this.browserSync = BrowserSync.create()
   }
 
-  createHelpText() {
+  createDescription() {
     return `Compiles ${this.config.source.options.cwd}/${this.config.source.glob}`
   }
 
-  run(watching = false) {
+  run(done, watching = false) {
     // add debug for importing problems (can be very helpful)
     if(this.config.debug && this.config.options.importer === undefined) {
       this.config.options.importer = (url, prev, done) => {
@@ -59,7 +59,7 @@ const Sass = class extends BaseRecipe {
       .pipe(sourcemaps.init())
       .pipe(sass(this.config.options))
       .on('error', (error) => {
-        this.notifyError(error, watching)
+        this.notifyError(error, done, watching)
       })
       .pipe(autoprefixer(this.config.autoprefixer.options))
       .pipe(sourcemaps.write())

@@ -76,9 +76,10 @@ const RollupEs = class extends BaseRecipe {
    *
    * @param gulp - gulp instance
    * @param preset - base preset configuration - either one from preset.js or a custom hash
-   * @param config - customized overrides for this recipe
+   * @param configs - customized overrides for this recipe
    */
-  constructor(gulp, preset, config = {}) {
+  constructor(gulp, preset, ...configs) {
+    let config = extend(true, {}, ...configs)
 
     if (!config.options.dest) {
       throw new Error(`options.dest filename must be specified.`)
@@ -129,11 +130,11 @@ const RollupEs = class extends BaseRecipe {
     return entry[0]
   }
 
-  createHelpText(){
+  createDescription(){
     return `Rollup ${this.config.source.options.cwd}/${this.config.source.glob} in the ${this.config.options.format} format to ${this.config.options.dest}`
   }
 
-  run(watching = false) {
+  run(done, watching = false) {
     let options = extend(true, {
         entry: this.resolveEntry(),
         onwarn: (message) => {
@@ -155,7 +156,7 @@ const RollupEs = class extends BaseRecipe {
       })
       .catch((error) => {
         error.plugin = 'rollup'
-        this.notifyError(error, watching)
+        this.notifyError(error, done, watching)
       })
   }
 }

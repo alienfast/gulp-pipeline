@@ -1,6 +1,5 @@
 import BaseRecipe from './baseRecipe'
 import autoprefixer from 'gulp-autoprefixer'
-import extend from 'extend'
 import gulpif from 'gulp-if'
 import debug from 'gulp-debug'
 
@@ -44,19 +43,19 @@ const Autoprefixer = class extends BaseRecipe {
    *
    * @param gulp - gulp instance
    * @param preset - base preset configuration - either one from preset.js or a custom hash
-   * @param config - customized overrides for this recipe
+   * @param configs - customized overrides for this recipe
    */
-  constructor(gulp, preset, config = {}) {
-    super(gulp, preset, extend(true, {}, Default, config))
+  constructor(gulp, preset, ...configs) {
+    super(gulp, preset, Default, ...configs)
   }
 
-  run(watching = false) {
+  run(done, watching = false) {
     // FIXME: is this right or wrong?  this class initially was extracted for reuse of Default options
     return this.gulp.src(this.config.source)
       .pipe(gulpif(this.config.debug, debug(this.debugOptions())))
       .pipe(autoprefixer(this.config.options))
       .on('error', (error) => {
-        this.notifyError(error, watching)
+        this.notifyError(error, done, watching)
       })
       .pipe(this.gulp.dest(this.config.dest))
   }

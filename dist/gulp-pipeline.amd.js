@@ -1,26 +1,27 @@
-define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'gulp-util', 'stringify-object', 'gulp-notify', 'gulp-help', 'console', 'gulp-autoprefixer', 'gulp-if', 'gulp-debug', 'gulp-eslint', 'browser-sync', 'gulp-changed', 'gulp-imagemin', 'merge-stream', 'gulp-sass', 'gulp-sourcemaps', 'findup-sync', 'gulp-scss-lint', 'gulp-scss-lint-stylish', 'rollup', 'rollup-plugin-node-resolve', 'rollup-plugin-commonjs', 'process', 'rollup-plugin-babel', 'del', 'gulp-rev', 'gulp-cssnano', 'gulp-mocha', 'build-control/src/buildControl', 'fs-extra', 'path-is-absolute'], function (exports, extend, path, glob, spawn, fs, jsonfile, Util, stringify, notify, gulpHelp, console, autoprefixer, gulpif, debug, eslint, BrowserSync, changed, imagemin, merge, sass, sourcemaps, findup, scssLint, scssLintStylish, rollup, nodeResolve, commonjs, process, babel, del, rev, cssnano, mocha, BuildControl, fs$1, pathIsAbsolute) { 'use strict';
+define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'gulp-util', 'stringify-object', 'gulp-notify', 'shelljs', 'gulp-eslint', 'gulp-debug', 'gulp-if', 'gulp-uglify', 'gulp-sourcemaps', 'gulp-concat', 'gulp-autoprefixer', 'browser-sync', 'gulp-changed', 'gulp-imagemin', 'merge-stream', 'gulp-sass', 'findup-sync', 'gulp-scss-lint', 'gulp-scss-lint-stylish', 'rollup', 'rollup-plugin-node-resolve', 'rollup-plugin-commonjs', 'process', 'rollup-plugin-babel', 'fs-extra', 'file-sync-cmp', 'iconv-lite', 'buffer', 'chalk', 'glob-all', 'del', 'gulp-rev', 'gulp-cssnano', 'gulp-mocha', 'build-control/src/buildControl', 'path-is-absolute', 'tmp'], function (exports, extend, path, fs, glob, spawn, jsonfile, Util, stringify, notify, shelljs, eslint, debug, gulpif, uglify, sourcemaps, concat, autoprefixer, BrowserSync, changed, imagemin, merge, sass, findup, scssLint, scssLintStylish, rollup, nodeResolve, commonjs, process, babel, fs$1, fileSyncCmp, iconv, buffer, chalk, globAll, del, rev, cssnano, mocha, BuildControl, pathIsAbsolute, tmp) { 'use strict';
 
   extend = 'default' in extend ? extend['default'] : extend;
   path = 'default' in path ? path['default'] : path;
+  fs = 'default' in fs ? fs['default'] : fs;
   glob = 'default' in glob ? glob['default'] : glob;
   spawn = 'default' in spawn ? spawn['default'] : spawn;
-  fs = 'default' in fs ? fs['default'] : fs;
   jsonfile = 'default' in jsonfile ? jsonfile['default'] : jsonfile;
   Util = 'default' in Util ? Util['default'] : Util;
   stringify = 'default' in stringify ? stringify['default'] : stringify;
   notify = 'default' in notify ? notify['default'] : notify;
-  gulpHelp = 'default' in gulpHelp ? gulpHelp['default'] : gulpHelp;
-  console = 'default' in console ? console['default'] : console;
-  autoprefixer = 'default' in autoprefixer ? autoprefixer['default'] : autoprefixer;
-  gulpif = 'default' in gulpif ? gulpif['default'] : gulpif;
-  debug = 'default' in debug ? debug['default'] : debug;
+  shelljs = 'default' in shelljs ? shelljs['default'] : shelljs;
   eslint = 'default' in eslint ? eslint['default'] : eslint;
+  debug = 'default' in debug ? debug['default'] : debug;
+  gulpif = 'default' in gulpif ? gulpif['default'] : gulpif;
+  uglify = 'default' in uglify ? uglify['default'] : uglify;
+  sourcemaps = 'default' in sourcemaps ? sourcemaps['default'] : sourcemaps;
+  concat = 'default' in concat ? concat['default'] : concat;
+  autoprefixer = 'default' in autoprefixer ? autoprefixer['default'] : autoprefixer;
   BrowserSync = 'default' in BrowserSync ? BrowserSync['default'] : BrowserSync;
   changed = 'default' in changed ? changed['default'] : changed;
   imagemin = 'default' in imagemin ? imagemin['default'] : imagemin;
   merge = 'default' in merge ? merge['default'] : merge;
   sass = 'default' in sass ? sass['default'] : sass;
-  sourcemaps = 'default' in sourcemaps ? sourcemaps['default'] : sourcemaps;
   findup = 'default' in findup ? findup['default'] : findup;
   scssLint = 'default' in scssLint ? scssLint['default'] : scssLint;
   scssLintStylish = 'default' in scssLintStylish ? scssLintStylish['default'] : scssLintStylish;
@@ -28,13 +29,18 @@ define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'g
   commonjs = 'default' in commonjs ? commonjs['default'] : commonjs;
   process = 'default' in process ? process['default'] : process;
   babel = 'default' in babel ? babel['default'] : babel;
+  fs$1 = 'default' in fs$1 ? fs$1['default'] : fs$1;
+  fileSyncCmp = 'default' in fileSyncCmp ? fileSyncCmp['default'] : fileSyncCmp;
+  iconv = 'default' in iconv ? iconv['default'] : iconv;
+  chalk = 'default' in chalk ? chalk['default'] : chalk;
+  globAll = 'default' in globAll ? globAll['default'] : globAll;
   del = 'default' in del ? del['default'] : del;
   rev = 'default' in rev ? rev['default'] : rev;
   cssnano = 'default' in cssnano ? cssnano['default'] : cssnano;
   mocha = 'default' in mocha ? mocha['default'] : mocha;
   BuildControl = 'default' in BuildControl ? BuildControl['default'] : BuildControl;
-  fs$1 = 'default' in fs$1 ? fs$1['default'] : fs$1;
   pathIsAbsolute = 'default' in pathIsAbsolute ? pathIsAbsolute['default'] : pathIsAbsolute;
+  tmp = 'default' in tmp ? tmp['default'] : tmp;
 
   var babelHelpers = {};
 
@@ -86,17 +92,33 @@ define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'g
     return call && (typeof call === "object" || typeof call === "function") ? call : self;
   };
 
-  babelHelpers.toConsumableArray = function (arr) {
-    if (Array.isArray(arr)) {
-      for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
-
-      return arr2;
-    } else {
-      return Array.from(arr);
-    }
-  };
-
   babelHelpers;
+
+  var Ruby = function () {
+    function Ruby() {
+      babelHelpers.classCallCheck(this, Ruby);
+    }
+
+    babelHelpers.createClass(Ruby, null, [{
+      key: 'localPath',
+      value: function localPath(name) {
+        var filename = '' + name;
+
+        // if using source dir
+        var filepath = path.join(__dirname, filename); // eslint-disable-line no-undef
+        try {
+          fs.statSync(filepath);
+        } catch (error) {
+          // if using dist dir
+          filepath = path.join(__dirname, '../../src', filename); // eslint-disable-line no-undef
+          fs.statSync(filepath);
+        }
+
+        return filepath;
+      }
+    }]);
+    return Ruby;
+  }();
 
   var BaseDirectoriesCache = '.gulp-pipeline-rails.json';
   var GemfileLock = 'Gemfile.lock';
@@ -110,7 +132,7 @@ define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'g
       key: 'enumerateEngines',
       value: function enumerateEngines() {
 
-        var results = spawn.sync(this.localPath('railsRunner.sh'), [this.localPath('enumerateEngines.rb')], {
+        var results = spawn.sync(Ruby.localPath('railsRunner.sh'), [Ruby.localPath('enumerateEngines.rb')], {
           sdtio: 'inherit',
           cwd: this.railsAppCwd()
         });
@@ -148,23 +170,6 @@ define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'g
           throw new Error('railsAppCwd() should only find one rails application but found ' + entries);
         }
         return path.join(entries[0], '../..');
-      }
-    }, {
-      key: 'localPath',
-      value: function localPath(name) {
-        var filename = 'rails/' + name;
-
-        // if using source dir
-        var filepath = filepath = path.join(__dirname, filename); // eslint-disable-line no-undef
-        try {
-          fs.statSync(filepath);
-        } catch (error) {
-          // if using dist dir
-          filepath = path.join(__dirname, '../src', filename); // eslint-disable-line no-undef
-          fs.statSync(filepath);
-        }
-
-        return filepath;
       }
 
       /**
@@ -299,10 +304,9 @@ define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'g
 
   var PresetNodeLib = {
     javascripts: {
-      source: {
-        options: { cwd: 'lib' }
-      },
+      source: { options: { cwd: 'lib' } },
       watch: { options: { cwd: 'lib' } }
+      //test: {options: {cwd: 'test'}}
     },
     stylesheets: {
       source: { options: { cwd: 'lib' } },
@@ -351,6 +355,13 @@ define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'g
     }
 
     babelHelpers.createClass(Preset, null, [{
+      key: 'baseline',
+      value: function baseline() {
+        var overrides = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+
+        return extend(true, {}, Baseline, overrides);
+      }
+    }, {
       key: 'nodeLib',
       value: function nodeLib() {
         var overrides = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
@@ -419,7 +430,7 @@ define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'g
     return Preset;
   }();
 
-  var Default$1 = {
+  var Default$3 = {
     watch: true,
     debug: false
   };
@@ -432,13 +443,14 @@ define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'g
      * @param config - customized overrides
      */
 
-    function Base(gulp, config) {
+    function Base() {
       babelHelpers.classCallCheck(this, Base);
 
-      this.gulp = gulpHelp(gulp, { afterPrintCallback: function afterPrintCallback() {
-          return console.log('For configuration help see https://github.com/alienfast/gulp-pipeline \n');
-        } }); // eslint-disable-line no-console
-      this.config = extend(true, {}, Default$1, config);
+      for (var _len = arguments.length, configs = Array(_len), _key = 0; _key < _len; _key++) {
+        configs[_key] = arguments[_key];
+      }
+
+      this.config = extend.apply(undefined, [true, {}, Default$3].concat(configs));
       this.debug('[' + this.constructor.name + '] using resolved config: ' + stringify(this.config));
     }
 
@@ -447,6 +459,13 @@ define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'g
 
 
     babelHelpers.createClass(Base, [{
+      key: 'requireValue',
+      value: function requireValue(value, name) {
+        if (value === undefined || value == null) {
+          this.notifyError(name + ' must be defined, found: ' + value);
+        }
+      }
+    }, {
       key: 'log',
       value: function log(msg) {
         Util.log(msg);
@@ -465,33 +484,9 @@ define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'g
       }
     }, {
       key: 'notifyError',
-      value: function notifyError(error) {
-        var watching = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
-
-        var lineNumber = error.lineNumber ? 'Line ' + error.lineNumber + ' -- ' : '';
-        var taskName = error.task || this.taskName();
-
-        notify({
-          title: 'Task [' + taskName + '] Failed in [' + error.plugin + ']',
-          message: lineNumber + 'See console.',
-          sound: 'Sosumi' // See: https://github.com/mikaelbr/node-notifier#all-notification-options-with-their-defaults
-        }).write(error);
-
-        var tag = Util.colors.black.bgRed;
-        var report = '\n\n' + tag('    Task:') + ' [' + Util.colors.cyan(taskName) + ']\n' + tag('  Plugin:') + ' [' + error.plugin + ']\n' + tag('   Error:') + '\n' + error.message;
-
-        if (error.lineNumber) {
-          report += tag('    Line:') + ' ' + error.lineNumber + '\n';
-        }
-        if (error.fileName) {
-          report += tag('    File:') + ' ' + error.fileName + '\n';
-        }
-        this.log(report);
-
-        // Prevent the 'watch' task from stopping
-        if (!watching) {
-          this.gulp.emit('end');
-        }
+      value: function notifyError(error, e) {
+        this.log(error);
+        throw e;
       }
     }, {
       key: 'debugOptions',
@@ -502,46 +497,251 @@ define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'g
     return Base;
   }();
 
-  var Default = {
-    watch: true,
+  var Default$2 = {
     debug: false,
+    watch: true,
     task: {
-      help: ''
+      name: undefined,
+      description: '',
+      prefix: '', // task name prefix
+      suffix: '' // task name suffix
     }
   };
 
-  var BaseRecipe = function (_Base) {
-    babelHelpers.inherits(BaseRecipe, _Base);
+  var BaseGulp = function (_Base) {
+    babelHelpers.inherits(BaseGulp, _Base);
+
+
+    /**
+     *
+     * @param gulp - gulp instance
+     * @param config - customized overrides
+     */
+
+    function BaseGulp(gulp) {
+      var _Object$getPrototypeO;
+
+      babelHelpers.classCallCheck(this, BaseGulp);
+
+      for (var _len = arguments.length, configs = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+        configs[_key - 1] = arguments[_key];
+      }
+
+      var _this = babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(BaseGulp)).call.apply(_Object$getPrototypeO, [this, Default$2].concat(configs)));
+
+      _this.gulp = gulp;
+      return _this;
+    }
+
+    babelHelpers.createClass(BaseGulp, [{
+      key: 'taskName',
+      value: function taskName() {
+        if (!this.config.task.name) {
+          this.notifyError('Expected ' + this.constructor.name + ' to have a task name in the configuration.');
+        }
+        return '' + this.config.task.prefix + this.config.task.name + this.config.task.suffix;
+      }
+    }, {
+      key: 'watchTaskName',
+      value: function watchTaskName() {
+        if (this.config.watch && this.config.watch.name) {
+          return this.config.watch.name;
+        } else {
+          return this.taskName() + ':watch';
+        }
+      }
+    }, {
+      key: 'notifyError',
+      value: function notifyError(error, done) {
+        var watching = arguments.length <= 2 || arguments[2] === undefined ? false : arguments[2];
+
+
+        //this.debugDump('notifyError', error)
+
+        var lineNumber = error.lineNumber ? 'Line ' + error.lineNumber + ' -- ' : '';
+        var taskName = error.task || this.taskName();
+
+        var title = 'Task [' + taskName + '] failed';
+        if (error.plugin) {
+          title += ' in [' + error.plugin + ']';
+        }
+
+        notify({
+          title: title,
+          message: lineNumber + 'See console.',
+          sound: 'Sosumi' // See: https://github.com/mikaelbr/node-notifier#all-notification-options-with-their-defaults
+        }).write(error);
+
+        var tag = Util.colors.black.bgRed;
+        var report = '\n' + tag('    Task:') + ' [' + Util.colors.cyan(taskName) + ']\n';
+
+        if (error.plugin) {
+          report += tag('  Plugin:') + ' [' + error.plugin + ']\n';
+        }
+
+        report += tag('   Error:') + ' ';
+
+        if (error.message) {
+          report += error.message + '\n';
+        } else {
+          report += error + '\n';
+        }
+
+        if (error.lineNumber) {
+          report += tag('    Line:') + ' ' + error.lineNumber + '\n';
+        }
+
+        if (error.fileName) {
+          report += tag('    File:') + ' ' + error.fileName + '\n';
+        }
+        this.log(report);
+
+        this.log('watching? ' + watching);
+        this.log('done was provided? ' + done);
+
+        // Prevent the 'watch' task from stopping
+        //if (!watching && this.gulp) {
+        if (this.gulp) {
+          // if this is not used, we see "Did you forget to signal async completion?", it also unfortunately logs more distracting information below.  But we need to exec the callback with an error to halt execution.
+
+          this.donezo(done, error);
+        } else {
+          throw error;
+        }
+      }
+
+      /**
+       * if done is provided, run it
+       *
+       * @param done
+       */
+
+    }, {
+      key: 'donezo',
+      value: function donezo(done) {
+        var error = arguments.length <= 1 || arguments[1] === undefined ? null : arguments[1];
+
+        if (done) {
+          if (error) {
+            this.debug('executing callback with error');
+            done(error);
+          } else {
+            this.debug('executing callback without error');
+            done();
+          }
+        } else {
+          this.debug('done callback was not provided');
+        }
+      }
+
+      /**
+       * Wraps shellJs calls that act on the file structure to give better output and error handling
+       * @param command
+       * @param logResult - return output from the execution, defaults to true. If false, will return code instead
+       * @param returnCode - defaults to false which will throw Error on error, true will return result code
+       */
+
+    }, {
+      key: 'exec',
+      value: function exec(command) {
+        var logResult = arguments.length <= 1 || arguments[1] === undefined ? true : arguments[1];
+        var returnCode = arguments.length <= 2 || arguments[2] === undefined ? false : arguments[2];
+
+        var options = { silent: true };
+        if (this.config.cwd) {
+          options['cwd'] = this.config.cwd;
+        } else {
+          this.notifyError('cwd is required');
+        }
+
+        if (command.includes('undefined')) {
+          this.notifyError('Invalid command: ' + command);
+        }
+
+        this.debug('Executing `' + command + '` with cwd: ' + options['cwd']);
+        var shellResult = shelljs.exec(command, options);
+        var output = this.logShellOutput(shellResult, logResult);
+
+        if (shellResult.code === 0 || shellResult.code === 1) {
+
+          // ---
+          // determine the return value
+          if (returnCode) {
+            return shellResult.code;
+          } else {
+            return output;
+          }
+        } else {
+          if (returnCode) {
+            return shellResult.code;
+          } else {
+            this.notifyError('Command failed `' + command + '`, cwd: ' + options.cwd + ': ' + shellResult.stderr + '.');
+          }
+        }
+      }
+    }, {
+      key: 'logShellOutput',
+      value: function logShellOutput(shellResult, logResult) {
+        //this.debug(`[exit code] ${shellResult.code}`)
+
+        // ---
+        // Log the result
+        // strangely enough, sometimes useful messages from git are an stderr even when it is a successful command with a 0 result code
+        var output = shellResult.stdout;
+        if (output == '') {
+          output = shellResult.stderr;
+        }
+
+        //this.log(stringify(shellResult))
+        if (output != '') {
+          if (logResult) {
+            this.log(output);
+          } else {
+            this.debug('[output] \n' + output);
+          }
+        }
+        return output;
+      }
+    }]);
+    return BaseGulp;
+  }(Base);
+
+  var Default$1 = {
+    watch: true,
+    debug: false
+  };
+
+  var BaseRecipe = function (_BaseGulp) {
+    babelHelpers.inherits(BaseRecipe, _BaseGulp);
 
 
     /**
      *
      * @param gulp - gulp instance
      * @param preset - base preset configuration - either one from preset.js or a custom hash
-     * @param config - customized overrides for this recipe
+     * @param configs - customized overrides for this recipe
      */
 
-    function BaseRecipe(gulp, preset, config) {
+    function BaseRecipe(gulp, preset) {
       babelHelpers.classCallCheck(this, BaseRecipe);
 
+      for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+        configs[_key - 2] = arguments[_key];
+      }
 
       // in case someone needs to inspect it later i.e. buildControl
 
-      var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(BaseRecipe).call(this, gulp, extend(true, {}, Default, { baseDirectories: preset.baseDirectories }, Preset.resolveConfig(preset, config))));
+      var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(BaseRecipe).call(this, gulp, extend(true, {}, Default$1, { baseDirectories: preset.baseDirectories }, Preset.resolveConfig.apply(Preset, [preset].concat(configs)))));
 
       _this.preset = preset;
 
-      if (_this.createHelpText !== undefined) {
-        _this.config.task.help = _this.createHelpText();
+      if (_this.createDescription !== undefined) {
+        _this.config.task.description = _this.createDescription();
       }
       _this.registerTask();
       _this.registerWatchTask();
       return _this;
     }
-
-    //createHelpText(){
-    //  // empty implementation that can dynamically create help text instead of the static config.task.help
-    //}
 
     babelHelpers.createClass(BaseRecipe, [{
       key: 'registerWatchTask',
@@ -553,22 +753,24 @@ define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'g
             // generate watch task e.g. sass:watch
             var name = _this2.watchTaskName();
             _this2.debug('Registering task: ' + Util.colors.green(name));
-            _this2.gulp.task(name, _this2.createWatchHelpText(), function () {
+            _this2.watchFn = function () {
               _this2.log('[' + Util.colors.green(name) + '] watching ' + _this2.config.watch.glob + ' ' + stringify(_this2.config.watch.options) + '...');
 
               return _this2.gulp.watch(_this2.config.watch.glob, _this2.config.watch.options, function (event) {
                 _this2.log('File ' + event.path + ' was ' + event.type + ', running ' + _this2.taskName() + '...');
-                return Promise.resolve(_this2.run(true)).then(function () {
+                return Promise.resolve(_this2.run(null, true)).then(function () {
                   return _this2.logFinish();
                 });
               });
-            });
+            };
+            _this2.watchFn.description = _this2.createWatchDescription();
+            _this2.gulp.task(name, _this2.watchFn);
           })();
         }
       }
     }, {
-      key: 'createWatchHelpText',
-      value: function createWatchHelpText() {
+      key: 'createWatchDescription',
+      value: function createWatchDescription() {
         return Util.colors.grey('|___ watches ' + this.config.watch.options.cwd + '/' + this.config.watch.glob);
       }
     }, {
@@ -581,21 +783,33 @@ define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'g
             // generate primary task e.g. sass
             var name = _this3.taskName();
             _this3.debug('Registering task: ' + Util.colors.green(name));
-            _this3.gulp.task(name, _this3.config.task.help, function () {
+
+            // set a fn for use by the task, also used by aggregate/series/parallel
+            _this3.taskFn = function (done) {
               //this.log(`Running task: ${Util.colors.green(name)}`)
 
               if (_this3.config.debug) {
                 _this3.debugDump('Executing ' + Util.colors.green(name) + ' with options:', _this3.config.options);
               }
-              return _this3.run();
-            });
+              return _this3.run(done);
+            };
+
+            // set metadata on fn for discovery by gulp
+            _this3.taskFn.displayName = name;
+            _this3.taskFn.description = _this3.config.task.description;
+
+            // register the task
+            _this3.gulp.task(name, _this3.taskFn);
           })();
         }
       }
     }, {
       key: 'taskName',
       value: function taskName() {
-        return this.config.task.name || this.constructor.name; // guarantee something is present for error messages
+        if (!this.config.task.name) {
+          this.notifyError('Expected ' + this.constructor.name + ' to have a task name in the configuration.');
+        }
+        return '' + this.config.task.prefix + this.config.task.name + this.config.task.suffix;
       }
     }, {
       key: 'watchTaskName',
@@ -615,7 +829,130 @@ define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'g
       }
     }]);
     return BaseRecipe;
-  }(Base);
+  }(BaseGulp);
+
+  var Default = {
+    debug: false,
+    presetType: 'javascripts',
+    task: {
+      name: 'eslint'
+    },
+    source: {
+      glob: '**/*.js'
+    },
+    options: {}
+  };
+
+  var EsLint = function (_BaseRecipe) {
+    babelHelpers.inherits(EsLint, _BaseRecipe);
+
+
+    /**
+     *
+     * @param gulp - gulp instance
+     * @param preset - base preset configuration - either one from preset.js or a custom hash
+     * @param configs - customized overrides for this recipe
+     */
+
+    function EsLint(gulp, preset) {
+      babelHelpers.classCallCheck(this, EsLint);
+
+      for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+        configs[_key - 2] = arguments[_key];
+      }
+
+      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(EsLint).call(this, gulp, preset, extend.apply(undefined, [true, {}, Default].concat(configs))));
+    }
+
+    babelHelpers.createClass(EsLint, [{
+      key: 'createDescription',
+      value: function createDescription() {
+        return 'Lints ' + this.config.source.options.cwd + '/' + this.config.source.glob;
+      }
+    }, {
+      key: 'run',
+      value: function run(done) {
+        var _this2 = this;
+
+        var watching = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
+
+        // eslint() attaches the lint output to the "eslint" property of the file object so it can be used by other modules.
+        return this.gulp.src(this.config.source.glob, this.config.source.options).pipe(gulpif(this.config.debug, debug(this.debugOptions()))).pipe(eslint(this.config.options)).pipe(eslint.format()) // outputs the lint results to the console. Alternatively use eslint.formatEach() (see Docs).
+        .pipe(gulpif(!watching, eslint.failAfterError())) // To have the process exit with an error code (1) on lint error, return the stream and pipe to failAfterError last.
+        .on('error', function (error) {
+          _this2.notifyError(error, done, watching);
+        });
+
+        // FIXME: even including any remnant of JSCS at this point broke everything through the unfound requirement of babel 5.x through babel-jscs.  I can't tell where this occurred, but omitting gulp-jscs for now gets me past this issue.  Revisit this when there are clear updates to use babel 6
+        //.pipe(jscs())      // enforce style guide
+        //.pipe(stylish())  // log style errors
+        //.pipe(jscs.reporter('fail')) // fail on error
+      }
+    }]);
+    return EsLint;
+  }(BaseRecipe);
+
+  var Default$4 = {
+    debug: false,
+    presetType: 'javascripts',
+    task: {
+      name: 'uglify'
+    },
+    source: {
+      glob: '**/*.js'
+    },
+    options: {
+      compress: {
+        warnings: true
+      },
+      mangle: false,
+      preserveComments: /^!|@preserve|@license|@cc_on/i
+    }
+  };
+
+  var Uglify = function (_BaseRecipe) {
+    babelHelpers.inherits(Uglify, _BaseRecipe);
+
+
+    /**
+     *
+     * @param gulp - gulp instance
+     * @param preset - base preset configuration - either one from preset.js or a custom hash
+     * @param configs - customized overrides for this recipe
+     */
+
+    function Uglify(gulp, preset) {
+      babelHelpers.classCallCheck(this, Uglify);
+
+      for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+        configs[_key - 2] = arguments[_key];
+      }
+
+      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Uglify).call(this, gulp, preset, extend.apply(undefined, [true, {}, Default$4].concat(configs))));
+    }
+
+    babelHelpers.createClass(Uglify, [{
+      key: 'createDescription',
+      value: function createDescription() {
+        return 'Uglifies ' + this.config.source.options.cwd + '/' + this.config.source.glob + ' to ' + this.config.dest + '/' + this.config.options.dest;
+      }
+    }, {
+      key: 'run',
+      value: function run(done) {
+        var _this2 = this;
+
+        var watching = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
+
+        // eslint() attaches the lint output to the "eslint" property of the file object so it can be used by other modules.
+        var bundle = this.gulp.src(this.config.source.glob, this.config.source.options).pipe(gulpif(this.config.debug, debug(this.debugOptions()))).pipe(sourcemaps.init()).pipe(concat(this.config.options.dest)).pipe(uglify(this.config.options)).on('error', function (error) {
+          _this2.notifyError(error, done, watching);
+        }).pipe(this.gulp.dest(this.config.dest));
+
+        return bundle;
+      }
+    }]);
+    return Uglify;
+  }(BaseRecipe);
 
   var AutoprefixerDefault = {
     options: { // from bootstrap
@@ -654,178 +991,38 @@ define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'g
      *
      * @param gulp - gulp instance
      * @param preset - base preset configuration - either one from preset.js or a custom hash
-     * @param config - customized overrides for this recipe
+     * @param configs - customized overrides for this recipe
      */
 
     function Autoprefixer(gulp, preset) {
-      var config = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
+      var _Object$getPrototypeO;
+
       babelHelpers.classCallCheck(this, Autoprefixer);
-      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Autoprefixer).call(this, gulp, preset, extend(true, {}, AutoprefixerDefault, config)));
+
+      for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+        configs[_key - 2] = arguments[_key];
+      }
+
+      return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(Autoprefixer)).call.apply(_Object$getPrototypeO, [this, gulp, preset, AutoprefixerDefault].concat(configs)));
     }
 
     babelHelpers.createClass(Autoprefixer, [{
       key: 'run',
-      value: function run() {
+      value: function run(done) {
         var _this2 = this;
 
-        var watching = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
+        var watching = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
 
         // FIXME: is this right or wrong?  this class initially was extracted for reuse of Default options
         return this.gulp.src(this.config.source).pipe(gulpif(this.config.debug, debug(this.debugOptions()))).pipe(autoprefixer(this.config.options)).on('error', function (error) {
-          _this2.notifyError(error, watching);
+          _this2.notifyError(error, done, watching);
         }).pipe(this.gulp.dest(this.config.dest));
       }
     }]);
     return Autoprefixer;
   }(BaseRecipe);
 
-  var Default$2 = {
-    debug: false,
-    presetType: 'javascripts',
-    task: {
-      name: 'eslint'
-    },
-    source: {
-      glob: '**/*.js'
-    },
-    options: {}
-  };
-
-  var EsLint = function (_BaseRecipe) {
-    babelHelpers.inherits(EsLint, _BaseRecipe);
-
-
-    /**
-     *
-     * @param gulp - gulp instance
-     * @param preset - base preset configuration - either one from preset.js or a custom hash
-     * @param config - customized overrides for this recipe
-     */
-
-    function EsLint(gulp, preset) {
-      var config = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
-      babelHelpers.classCallCheck(this, EsLint);
-      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(EsLint).call(this, gulp, preset, extend(true, {}, Default$2, config)));
-    }
-
-    babelHelpers.createClass(EsLint, [{
-      key: 'createHelpText',
-      value: function createHelpText() {
-        return 'Lints ' + this.config.source.options.cwd + '/' + this.config.source.glob;
-      }
-    }, {
-      key: 'run',
-      value: function run() {
-        var _this2 = this;
-
-        var watching = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
-
-        // eslint() attaches the lint output to the "eslint" property of the file object so it can be used by other modules.
-        var bundle = this.gulp.src(this.config.source.glob, this.config.source.options).pipe(gulpif(this.config.debug, debug(this.debugOptions()))).pipe(eslint(this.config.options)).pipe(eslint.format()) // outputs the lint results to the console. Alternatively use eslint.formatEach() (see Docs).
-
-        //1. HACK solution that works with first error, but is very ugly
-        // this should emit the error, but we aren't notified
-        .pipe(gulpif(!watching, eslint.failAfterError())) // To have the process exit with an error code (1) on lint error, return the stream and pipe to failAfterError last.
-
-        // make sure we are notified of any error (this really should be happening in eslint.failAfterError(), but not sure where it is lost)
-        .pipe(eslint.result(function (results) {
-          // this is single file #result not #results, we don't get notified on #results
-          var count = results.errorCount;
-          if (count > 0) {
-            throw new Util.PluginError('gulp-eslint', {
-              message: 'Failed with' + (count === 1 ? ' error' : ' errors')
-            });
-          }
-        })).on('error', function (error) {
-          _this2.notifyError(error, watching);
-        });
-
-        // 2. Attempt now that returns are in place with the gulpif
-        // this should emit the error, but we aren't notified
-        //.pipe(gulpif(!watching, eslint.failAfterError())) // To have the process exit with an error code (1) on lint error, return the stream and pipe to failAfterError last.
-        //.on('error', (error) => {
-        //  this.notifyError(error, watching)
-        //})
-
-        //// 3. Attempt now that returns are in place WITHOUT gulpif
-        //// this should emit the error, but we aren't notified
-        //.pipe( eslint.failAfterError()) // To have the process exit with an error code (1) on lint error, return the stream and pipe to failAfterError last.
-        //.on('error', (error) => {
-        //  this.notifyError(error, watching)
-        //})
-
-        // 4. https://github.com/adametry/gulp-eslint/issues/135#issuecomment-180555978
-        //.pipe(eslint.results(function (results) {
-        //  var count = results.errorCount;
-        //  console.log('Total ESLint Error Count: ' + count);
-        //  if (count > 0) {
-        //    throw new Error('Failed with Errors');
-        //  }
-        //}))
-        //.on('error', function (error) {
-        //  console.log('Total ESLint Error Count: ' + error);
-        //})
-        //.on('finish', function () {
-        //  console.log('eslint.results finished');
-        //})
-        //.on('end', function () {
-        //  console.log('eslint.results ended');
-        //})
-
-        //// 5. notification is emitted
-        //.pipe(eslint.results(function (results) {
-        //  var count = results.errorCount;
-        //  console.log('*****Error Count: ' + count);
-        //  if (count > 0) {
-        //    throw new Error('******My custom error');
-        //  }
-        //}))
-        //.on('error', (error) => {
-        //  this.notifyError(error, watching)
-        //})
-
-        //// 6. notification is emitted
-        //.pipe(eslint.results(function (results) {
-        //  var count = results.errorCount;
-        //  console.log('*****Error Count: ' + count);
-        //  if (count > 0) {
-        //    throw new PluginError('******My custom error');
-        //  }
-        //}))
-        //.on('error', (error) => {
-        //  this.notifyError(error, watching)
-        //})
-
-        //// 7. notification is emitted, except when watching
-        //.pipe(eslint.results(function (results) {
-        //  let count = results.errorCount;
-        //  console.error('****************in results handler')
-        //  if (count > 0) {
-        //    throw new PluginError('gulp-eslint', { message: 'Failed with ' + count + (count === 1 ? ' error' : ' errors') })
-        //  }
-        //}))
-        //.on('error', (error) => {
-        //  console.error('****************in error handler')
-        //  this.notifyError(error, watching)
-        //})
-
-        //.pipe( eslint.failAfterError())
-        //.on('error', (error) => {
-        //  this.notifyError(error, watching)
-        //})
-
-        // FIXME: even including any remnant of JSCS at this point broke everything through the unfound requirement of babel 5.x through babel-jscs.  I can't tell where this occurred, but omitting gulp-jscs for now gets me past this issue.  Revisit this when there are clear updates to use babel 6
-        //.pipe(jscs())      // enforce style guide
-        //.pipe(stylish())  // log style errors
-        //.pipe(jscs.reporter('fail')) // fail on error
-
-        return bundle;
-      }
-    }]);
-    return EsLint;
-  }(BaseRecipe);
-
-  var Default$3 = {
+  var Default$5 = {
     debug: false,
     presetType: 'images',
     task: {
@@ -855,41 +1052,44 @@ define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'g
      *
      * @param gulp - gulp instance
      * @param preset - base preset configuration - either one from preset.js or a custom hash
-     * @param config - customized overrides for this recipe
+     * @param configs - customized overrides for this recipe
      */
 
     function Images(gulp, preset) {
-      var config = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
       babelHelpers.classCallCheck(this, Images);
 
-      var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Images).call(this, gulp, preset, extend(true, {}, Default$3, config)));
+      for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+        configs[_key - 2] = arguments[_key];
+      }
+
+      var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Images).call(this, gulp, preset, extend.apply(undefined, [true, {}, Default$5].concat(configs))));
 
       _this.browserSync = BrowserSync.create();
       return _this;
     }
 
     babelHelpers.createClass(Images, [{
-      key: 'createHelpText',
-      value: function createHelpText() {
+      key: 'createDescription',
+      value: function createDescription() {
         return 'Minifies change images from ' + this.config.source.options.cwd + '/' + this.config.source.glob;
       }
     }, {
       key: 'run',
-      value: function run() {
+      value: function run(done) {
         var _this2 = this;
 
-        var watching = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
+        var watching = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
 
 
         var tasks = this.config.baseDirectories.map(function (baseDirectory) {
           // join the base dir with the relative cwd
-          return _this2.runOne(path.join(baseDirectory, _this2.config.source.options.cwd), watching);
+          return _this2.runOne(done, path.join(baseDirectory, _this2.config.source.options.cwd), watching);
         });
         return merge(tasks);
       }
     }, {
       key: 'runOne',
-      value: function runOne(cwd, watching) {
+      value: function runOne(done, cwd, watching) {
         var _this3 = this;
 
         // setup a run with a single cwd a.k.a base directory FIXME: perhaps this could be in the base recipe? or not?
@@ -899,7 +1099,7 @@ define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'g
 
         return this.gulp.src(this.config.source.glob, options).pipe(changed(this.config.dest)) // ignore unchanged files
         .pipe(gulpif(this.config.debug, debug(this.debugOptions()))).pipe(imagemin(this.config.options)).on('error', function (error) {
-          _this3.notifyError(error, watching);
+          _this3.notifyError(error, done, watching);
         }).pipe(this.gulp.dest(this.config.dest)).pipe(this.browserSync.stream());
       }
     }]);
@@ -908,7 +1108,7 @@ define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'g
 
   var node_modules = findup('node_modules');
 
-  var Default$4 = {
+  var Default$6 = {
     debug: false,
     presetType: 'stylesheets',
     task: {
@@ -933,30 +1133,33 @@ define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'g
      *
      * @param gulp - gulp instance
      * @param preset - base preset configuration - either one from preset.js or a custom hash
-     * @param config - customized overrides for this recipe
+     * @param configs - customized overrides for this recipe
      */
 
     function Sass(gulp, preset) {
-      var config = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
       babelHelpers.classCallCheck(this, Sass);
 
-      var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Sass).call(this, gulp, preset, extend(true, {}, Default$4, config)));
+      for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+        configs[_key - 2] = arguments[_key];
+      }
+
+      var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Sass).call(this, gulp, preset, extend.apply(undefined, [true, {}, Default$6].concat(configs))));
 
       _this.browserSync = BrowserSync.create();
       return _this;
     }
 
     babelHelpers.createClass(Sass, [{
-      key: 'createHelpText',
-      value: function createHelpText() {
+      key: 'createDescription',
+      value: function createDescription() {
         return 'Compiles ' + this.config.source.options.cwd + '/' + this.config.source.glob;
       }
     }, {
       key: 'run',
-      value: function run() {
+      value: function run(done) {
         var _this2 = this;
 
-        var watching = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
+        var watching = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
 
         // add debug for importing problems (can be very helpful)
         if (this.config.debug && this.config.options.importer === undefined) {
@@ -967,14 +1170,14 @@ define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'g
         }
 
         return this.gulp.src(this.config.source.glob, this.config.source.options).pipe(gulpif(this.config.debug, debug(this.debugOptions()))).pipe(sourcemaps.init()).pipe(sass(this.config.options)).on('error', function (error) {
-          _this2.notifyError(error, watching);
+          _this2.notifyError(error, done, watching);
         }).pipe(autoprefixer(this.config.autoprefixer.options)).pipe(sourcemaps.write()).pipe(this.gulp.dest(this.config.dest)).pipe(this.browserSync.stream());
       }
     }]);
     return Sass;
   }(BaseRecipe);
 
-  var Default$5 = {
+  var Default$7 = {
     debug: false,
     presetType: 'stylesheets',
     task: {
@@ -996,74 +1199,82 @@ define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'g
      *
      * @param gulp - gulp instance
      * @param preset - base preset configuration - either one from preset.js or a custom hash
-     * @param config - customized overrides for this recipe
+     * @param configs - customized overrides for this recipe
      */
 
     function ScssLint(gulp, preset) {
-      var config = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
       babelHelpers.classCallCheck(this, ScssLint);
-      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(ScssLint).call(this, gulp, preset, extend(true, {}, Default$5, config)));
+
+      for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+        configs[_key - 2] = arguments[_key];
+      }
+
+      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(ScssLint).call(this, gulp, preset, extend.apply(undefined, [true, {}, Default$7].concat(configs))));
     }
 
     babelHelpers.createClass(ScssLint, [{
-      key: 'createHelpText',
-      value: function createHelpText() {
+      key: 'createDescription',
+      value: function createDescription() {
         return 'Lints ' + this.config.source.options.cwd + '/' + this.config.source.glob;
       }
     }, {
       key: 'run',
-      value: function run() {
+      value: function run(done) {
         var _this2 = this;
 
-        var watching = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
+        var watching = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
 
         return this.gulp.src(this.config.source.glob, this.config.source.options).pipe(gulpif(this.config.debug, debug(this.debugOptions()))).pipe(scssLint(this.config.options)).on('error', function (error) {
-          _this2.notifyError(error, watching);
+          _this2.notifyError(error, done, watching);
         });
       }
     }]);
     return ScssLint;
   }(BaseRecipe);
 
-  var Default$6 = {
+  var Default$8 = {
     debug: false,
     watch: true // register a watch task that aggregates all watches and runs the full sequence
   };
 
-  var TaskSeries = function (_Base) {
-    babelHelpers.inherits(TaskSeries, _Base);
+  var Aggregate = function (_BaseGulp) {
+    babelHelpers.inherits(Aggregate, _BaseGulp);
 
 
     /**
      *
      * @param gulp - gulp instance
-     * @param config - customized overrides
+     * @param configs - customized overrides
      */
 
-    function TaskSeries(gulp, taskName, recipes) {
-      var config = arguments.length <= 3 || arguments[3] === undefined ? {} : arguments[3];
-      babelHelpers.classCallCheck(this, TaskSeries);
+    function Aggregate(gulp, taskName, recipes) {
+      var _Object$getPrototypeO;
 
-      var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(TaskSeries).call(this, gulp, extend(true, {}, Default$6, config)));
+      babelHelpers.classCallCheck(this, Aggregate);
+
+      for (var _len = arguments.length, configs = Array(_len > 3 ? _len - 3 : 0), _key = 3; _key < _len; _key++) {
+        configs[_key - 3] = arguments[_key];
+      }
+
+      var _this = babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(Aggregate)).call.apply(_Object$getPrototypeO, [this, gulp, Default$8, { task: { name: taskName } }].concat(configs)));
 
       _this.recipes = recipes;
-      _this.registerTask(taskName, recipes);
+      _this.registerTask(_this.taskName());
 
       if (_this.config.watch) {
-        _this.registerWatchTask(taskName + ':watch', recipes);
+        _this.registerWatchTask(_this.watchTaskName());
       }
       return _this;
     }
 
-    babelHelpers.createClass(TaskSeries, [{
+    babelHelpers.createClass(Aggregate, [{
       key: 'createHelpText',
       value: function createHelpText() {
-        var taskNames = this.flattenedRecipes().reduce(function (a, b) {
-          return a.concat(b.taskName());
-        }, []);
-
-        // use the config to generate the dynamic help
-        return 'Runs series [' + taskNames.join(', ') + ']';
+        //let taskNames = new Recipes().toTasks(this.recipes)
+        //
+        //// use the config to generate the dynamic help
+        //return `Runs [${taskNames.join(', ')}]`
+        return '';
       }
     }, {
       key: 'createWatchHelpText',
@@ -1072,70 +1283,20 @@ define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'g
           return a.concat(b.taskName());
         }, []);
 
-        return Util.colors.grey('|___ aggregates watches from [' + taskNames.join(', ') + '] and runs full series');
+        return Util.colors.grey('|___ aggregates watches from [' + taskNames.join(', ') + '] and runs all tasks on any change');
       }
     }, {
       key: 'registerTask',
       value: function registerTask(taskName) {
-        var _this2 = this;
-
-        var tasks = this.toTaskNames(this.recipes);
-
-        this.debugDump('this.recipes', this.recipes);
-        this.debugDump('tasks', tasks);
-
-        this.debug('Registering task: ' + Util.colors.green(taskName) + ' for ' + stringify(tasks));
-        this.gulp.task(taskName, this.createHelpText(), function () {
-          return _this2.run(tasks);
-        });
-      }
-    }, {
-      key: 'flattenedRecipes',
-      value: function flattenedRecipes() {
-        var _ref;
-
-        var recipes = (_ref = []).concat.apply(_ref, babelHelpers.toConsumableArray(this.recipes));
-        //this.debugDump(`flattenedRecipes`, recipes)
-        return recipes;
-      }
-    }, {
-      key: 'watchableRecipes',
-      value: function watchableRecipes() {
-        // create an array of watchable recipes
-        var watchableRecipes = [];
-        var _iteratorNormalCompletion = true;
-        var _didIteratorError = false;
-        var _iteratorError = undefined;
-
-        try {
-          for (var _iterator = this.flattenedRecipes()[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-            var recipe = _step.value;
-
-            if (recipe.config.watch) {
-              watchableRecipes.push(recipe);
-            }
-          }
-        } catch (err) {
-          _didIteratorError = true;
-          _iteratorError = err;
-        } finally {
-          try {
-            if (!_iteratorNormalCompletion && _iterator.return) {
-              _iterator.return();
-            }
-          } finally {
-            if (_didIteratorError) {
-              throw _iteratorError;
-            }
-          }
-        }
-
-        return watchableRecipes;
+        //let tasks = this.toTasks(this.recipes)
+        //this.debug(`Registering task: ${Util.colors.green(taskName)} for ${stringify(tasks)}`)
+        this.gulp.task(taskName, this.recipes);
+        this.recipes.description = this.createHelpText();
       }
     }, {
       key: 'registerWatchTask',
-      value: function registerWatchTask(taskName, recipes) {
-        var _this3 = this;
+      value: function registerWatchTask(taskName) {
+        var _this2 = this;
 
         // generate watch task
         var watchableRecipes = this.watchableRecipes();
@@ -1145,249 +1306,148 @@ define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'g
         }
 
         this.debug('Registering task: ' + Util.colors.green(taskName));
-        this.gulp.task(taskName, this.createWatchHelpText(), function () {
 
+        // on error ensure that we reset the flag so that it runs again
+        this.gulp.on('error', function () {
+          _this2.debug('Yay! listened for the error and am able to reset the running flag!');
+          _this2.recipes.running = false;
+        });
+
+        var watchFn = function watchFn() {
           // watch the watchable recipes and make them #run the series
-          var _iteratorNormalCompletion2 = true;
-          var _didIteratorError2 = false;
-          var _iteratorError2 = undefined;
+          var _iteratorNormalCompletion = true;
+          var _didIteratorError = false;
+          var _iteratorError = undefined;
 
           try {
-            for (var _iterator2 = watchableRecipes[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-              var recipe = _step2.value;
+            var _loop = function _loop() {
+              var recipe = _step.value;
 
-              _this3.log('[' + Util.colors.green(taskName) + '] watching ' + recipe.taskName() + ' ' + recipe.config.watch.glob + '...');
-              _this3.gulp.watch(recipe.config.watch.glob, recipe.config.watch.options, function (event) {
-                _this3.log('[' + Util.colors.green(taskName) + '] ' + event.path + ' was ' + event.type + ', running series...');
-                return Promise.resolve(_this3.run(recipes)).then(function () {
-                  return _this3.log('[' + Util.colors.green(taskName) + '] finished');
-                });
+              _this2.log('[' + Util.colors.green(taskName) + '] watching for ' + recipe.taskName() + ' ' + recipe.config.watch.glob + '...');
+
+              // declare this in here so we can use different display names in the log
+              var runFn = function runFn(done) {
+                // ensure that multiple watches do not run the entire set of recipes multiple times on a single change
+                if (_this2.recipes.running) {
+                  _this2.debug('Multiple matching watchers, skipping this one...');
+                  done();
+                  return;
+                } else {
+                  _this2.debug('Allowing it to run....');
+                  _this2.recipes.running = true;
+                }
+
+                var finishFn = function finishFn() {
+                  _this2.log('[' + Util.colors.green(taskName) + '] finished');
+                  _this2.recipes.running = false;
+                };
+
+                _this2.gulp.series(_this2.recipes, finishFn, done)();
+              };
+              runFn.displayName = recipe.taskName() + ' watcher';
+
+              var watcher = _this2.gulp.watch(recipe.config.watch.glob, recipe.config.watch.options, runFn);
+              var recipeName = Util.colors.grey('(' + recipe.taskName() + ')');
+              // add watchers for logging/information
+              watcher.on('add', function (path) {
+                if (!_this2.recipes.running) {
+                  _this2.log('[' + Util.colors.green(taskName) + ' ' + recipeName + '] ' + path + ' was added, running...');
+                }
               });
+              watcher.on('change', function (path) {
+                if (!_this2.recipes.running) {
+                  _this2.log('[' + Util.colors.green(taskName) + ' ' + recipeName + '] ' + path + ' was changed, running...');
+                }
+              });
+              watcher.on('unlink', function (path) {
+                if (!_this2.recipes.running) {
+                  _this2.log('[' + Util.colors.green(taskName) + ' ' + recipeName + '] ' + path + ' was deleted, running...');
+                }
+              });
+            };
+
+            for (var _iterator = watchableRecipes[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+              _loop();
             }
           } catch (err) {
-            _didIteratorError2 = true;
-            _iteratorError2 = err;
+            _didIteratorError = true;
+            _iteratorError = err;
           } finally {
             try {
-              if (!_iteratorNormalCompletion2 && _iterator2.return) {
-                _iterator2.return();
+              if (!_iteratorNormalCompletion && _iterator.return) {
+                _iterator.return();
               }
             } finally {
-              if (_didIteratorError2) {
-                throw _iteratorError2;
+              if (_didIteratorError) {
+                throw _iteratorError;
               }
             }
           }
-        });
-      }
-    }, {
-      key: 'run',
-      value: function run(tasks) {
-        // generate the task sequence
-        return this.runSequence.apply(this, babelHelpers.toConsumableArray(tasks));
-      }
-    }, {
-      key: 'toTaskNames',
-      value: function toTaskNames(recipes) {
-        var tasks = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1];
+        };
 
-        //this.debugDump(`toTaskNames`, recipes)
-        var _iteratorNormalCompletion3 = true;
-        var _didIteratorError3 = false;
-        var _iteratorError3 = undefined;
+        watchFn.description = this.createWatchHelpText();
+        this.gulp.task(taskName, watchFn);
+      }
+    }, {
+      key: 'flatten',
+      value: function flatten(list) {
+        var _this3 = this;
+
+        return list.reduce(function (a, b) {
+          return(
+            // parallel and series set `.recipes` on the function as metadata
+            a.concat(typeof b === "function" && b.recipes ? _this3.flatten(b.recipes) : b)
+          );
+        }, []);
+      }
+    }, {
+      key: 'flattenedRecipes',
+      value: function flattenedRecipes() {
+        var recipes = this.flatten([this.recipes]);
+        this.debugDump('flattenedRecipes', recipes);
+        return recipes;
+      }
+    }, {
+      key: 'watchableRecipes',
+      value: function watchableRecipes() {
+        // create an array of watchable recipes
+        var watchableRecipes = [];
+        var _iteratorNormalCompletion2 = true;
+        var _didIteratorError2 = false;
+        var _iteratorError2 = undefined;
 
         try {
-          for (var _iterator3 = recipes[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-            var recipe = _step3.value;
+          for (var _iterator2 = this.flattenedRecipes()[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+            var recipe = _step2.value;
 
-            //this.debugDump(`recipe taskName[${recipe.taskName? recipe.taskName() : ''}] isArray[${Array.isArray(recipe)}]`, recipe)
-            if (Array.isArray(recipe)) {
-              tasks.push(this.toTaskNames(recipe, []));
-            } else {
-              this.debug('Adding to list ' + recipe.taskName());
-              tasks.push(recipe.taskName());
+            if (typeof recipe !== "string" && recipe.config.watch) {
+              watchableRecipes.push(recipe);
             }
           }
         } catch (err) {
-          _didIteratorError3 = true;
-          _iteratorError3 = err;
+          _didIteratorError2 = true;
+          _iteratorError2 = err;
         } finally {
           try {
-            if (!_iteratorNormalCompletion3 && _iterator3.return) {
-              _iterator3.return();
+            if (!_iteratorNormalCompletion2 && _iterator2.return) {
+              _iterator2.return();
             }
           } finally {
-            if (_didIteratorError3) {
-              throw _iteratorError3;
+            if (_didIteratorError2) {
+              throw _iteratorError2;
             }
           }
         }
 
-        return tasks;
-      }
-
-      // -----------------------------------
-      // originally run-sequence code https://github.com/OverZealous/run-sequence
-      // Copyright (c) 2014 [Phil DeJarnett](http://overzealous.com)
-      // - Will be unnecessary with gulp 4.0
-      // - Forced to include this/modify it as the #use(gulp) binding of the gulp instance didn't work with es class approach
-
-    }, {
-      key: 'runSequence',
-      value: function runSequence() {
-        var _this4 = this;
-
-        for (var _len = arguments.length, taskSets = Array(_len), _key = 0; _key < _len; _key++) {
-          taskSets[_key] = arguments[_key];
-        }
-
-        this.callBack = typeof taskSets[taskSets.length - 1] === 'function' ? taskSets.pop() : false;
-        this.debug('currentTaskSet = null');
-        this.currentTaskSet = null;
-        this.verifyTaskSets(taskSets);
-        this.taskSets = taskSets;
-
-        this.onEnd = function (e) {
-          return _this4.onTaskEnd(e);
-        };
-        this.onErr = function (e) {
-          return _this4.onError(e);
-        };
-
-        this.gulp.on('task_stop', this.onEnd);
-        this.gulp.on('task_err', this.onErr);
-
-        this.runNextSet();
-      }
-    }, {
-      key: 'finish',
-      value: function finish(e) {
-        this.debugDump('finish', e);
-        this.gulp.removeListener('task_stop', this.onEnd);
-        this.gulp.removeListener('task_err', this.onErr);
-
-        var error = null;
-        if (e && e.err) {
-          this.debugDump('finish e', e);
-          //error = new Util.PluginError('run-sequence', {
-          //  message: `An error occured in task [${e.task}].`
-          //})
-          error = {
-            task: e.task,
-            message: e.err,
-            plugin: e.plugin || ''
-          };
-        }
-
-        if (this.callback) {
-          this.callback(error);
-        } else if (error) {
-          //this.log(Util.colors.red(error.toString()))
-          this.notifyError(error);
-        }
-      }
-    }, {
-      key: 'onError',
-      value: function onError(err) {
-        this.debugDump('onError', err);
-        this.finish(err);
-      }
-    }, {
-      key: 'onTaskEnd',
-      value: function onTaskEnd(event) {
-        this.debugDump('onTaskEnd', event);
-        //this.debugDump(`this.currentTaskSet`, this.currentTaskSet)
-
-        var i = this.currentTaskSet.indexOf(event.task);
-        if (i > -1) {
-          this.currentTaskSet.splice(i, 1);
-        }
-        if (this.currentTaskSet.length === 0) {
-          this.runNextSet();
-        }
-      }
-    }, {
-      key: 'runNextSet',
-      value: function runNextSet() {
-        if (this.taskSets.length) {
-          var command = this.taskSets.shift();
-          if (!Array.isArray(command)) {
-            command = [command];
-          }
-          this.debug('currentTaskSet = ' + command);
-          this.currentTaskSet = command;
-          this.gulp.start(command);
-        } else {
-          this.finish();
-        }
-      }
-    }, {
-      key: 'verifyTaskSets',
-      value: function verifyTaskSets(taskSets, skipArrays) {
-        var foundTasks = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
-
-
-        this.debug('verifyTaskSets: ' + stringify(taskSets));
-
-        if (taskSets.length === 0) {
-          throw new Error('No tasks were provided to run-sequence');
-        }
-
-        var _iteratorNormalCompletion4 = true;
-        var _didIteratorError4 = false;
-        var _iteratorError4 = undefined;
-
-        try {
-          for (var _iterator4 = taskSets[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-            var t = _step4.value;
-
-            var isTask = typeof t === "string";
-            var isArray = !skipArrays && Array.isArray(t);
-
-            if (!isTask && !isArray) {
-              throw new Error('Task ' + t + ' is not a valid task string.');
-            }
-
-            if (isTask && !this.gulp.hasTask(t)) {
-              throw new Error('Task ' + t + ' is not configured as a task on gulp.');
-            }
-
-            if (skipArrays && isTask) {
-              if (foundTasks[t]) {
-                throw new Error('Task ' + t + ' is listed more than once. This is probably a typo.');
-              }
-              foundTasks[t] = true;
-            }
-
-            if (isArray) {
-              if (t.length === 0) {
-                throw new Error('An empty array was provided as a task set');
-              }
-              this.verifyTaskSets(t, true, foundTasks);
-            }
-          }
-        } catch (err) {
-          _didIteratorError4 = true;
-          _iteratorError4 = err;
-        } finally {
-          try {
-            if (!_iteratorNormalCompletion4 && _iterator4.return) {
-              _iterator4.return();
-            }
-          } finally {
-            if (_didIteratorError4) {
-              throw _iteratorError4;
-            }
-          }
-        }
+        return watchableRecipes;
       }
     }]);
-    return TaskSeries;
-  }(Base);
+    return Aggregate;
+  }(BaseGulp);
 
   var node_modules$1 = findup('node_modules');
 
-  var Default$7 = {
+  var Default$9 = {
     debug: false,
     presetType: 'javascripts',
     task: {
@@ -1454,13 +1514,17 @@ define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'g
      *
      * @param gulp - gulp instance
      * @param preset - base preset configuration - either one from preset.js or a custom hash
-     * @param config - customized overrides for this recipe
+     * @param configs - customized overrides for this recipe
      */
 
     function RollupEs(gulp, preset) {
-      var config = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
       babelHelpers.classCallCheck(this, RollupEs);
 
+      for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+        configs[_key - 2] = arguments[_key];
+      }
+
+      var config = extend.apply(undefined, [true, {}].concat(configs));
 
       if (!config.options.dest) {
         throw new Error('options.dest filename must be specified.');
@@ -1468,7 +1532,7 @@ define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'g
 
       // Utilize the presets to get the dest cwd/base directory, then add the remaining passed-in file path/name
 
-      var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(RollupEs).call(this, gulp, preset, extend(true, {}, Default$7, NodeResolve, CommonJs, config)));
+      var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(RollupEs).call(this, gulp, preset, extend(true, {}, Default$9, NodeResolve, CommonJs, config)));
 
       _this.config.options.dest = _this.config.dest + '/' + _this.config.options.dest;
 
@@ -1515,16 +1579,16 @@ define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'g
         return entry[0];
       }
     }, {
-      key: 'createHelpText',
-      value: function createHelpText() {
+      key: 'createDescription',
+      value: function createDescription() {
         return 'Rollup ' + this.config.source.options.cwd + '/' + this.config.source.glob + ' in the ' + this.config.options.format + ' format to ' + this.config.options.dest;
       }
     }, {
       key: 'run',
-      value: function run() {
+      value: function run(done) {
         var _this2 = this;
 
-        var watching = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
+        var watching = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
 
         var options = extend(true, {
           entry: this.resolveEntry(),
@@ -1544,14 +1608,14 @@ define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'g
           return bundle.write(options);
         }).catch(function (error) {
           error.plugin = 'rollup';
-          _this2.notifyError(error, watching);
+          _this2.notifyError(error, done, watching);
         });
       }
     }]);
     return RollupEs;
   }(BaseRecipe);
 
-  var Default$8 = {
+  var Default$10 = {
     task: {
       name: 'rollup:cjs'
     },
@@ -1584,19 +1648,23 @@ define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'g
      *
      * @param gulp - gulp instance
      * @param preset - base preset configuration - either one from preset.js or a custom hash
-     * @param config - customized overrides for this recipe
+     * @param configs - customized overrides for this recipe
      */
 
     function RollupCjs(gulp, preset) {
-      var config = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
       babelHelpers.classCallCheck(this, RollupCjs);
-      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(RollupCjs).call(this, gulp, preset, extend(true, {}, Default$8, config)));
+
+      for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+        configs[_key - 2] = arguments[_key];
+      }
+
+      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(RollupCjs).call(this, gulp, preset, extend.apply(undefined, [true, {}, Default$10].concat(configs))));
     }
 
     return RollupCjs;
   }(RollupEs);
 
-  var Default$9 = {
+  var Default$11 = {
     task: {
       name: 'rollup:iife'
     },
@@ -1622,19 +1690,23 @@ define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'g
      *
      * @param gulp - gulp instance
      * @param preset - base preset configuration - either one from preset.js or a custom hash
-     * @param config - customized overrides for this recipe
+     * @param configs - customized overrides for this recipe
      */
 
     function RollupIife(gulp, preset) {
-      var config = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
       babelHelpers.classCallCheck(this, RollupIife);
-      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(RollupIife).call(this, gulp, preset, extend(true, {}, Default$9, config)));
+
+      for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+        configs[_key - 2] = arguments[_key];
+      }
+
+      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(RollupIife).call(this, gulp, preset, extend.apply(undefined, [true, {}, Default$11].concat(configs))));
     }
 
     return RollupIife;
   }(RollupCjs);
 
-  var Default$10 = {
+  var Default$12 = {
     task: {
       name: 'rollup:amd'
     },
@@ -1657,19 +1729,23 @@ define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'g
      *
      * @param gulp - gulp instance
      * @param preset - base preset configuration - either one from preset.js or a custom hash
-     * @param config - customized overrides for this recipe
+     * @param configs - customized overrides for this recipe
      */
 
     function RollupAmd(gulp, preset) {
-      var config = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
       babelHelpers.classCallCheck(this, RollupAmd);
-      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(RollupAmd).call(this, gulp, preset, extend(true, {}, Default$10, config)));
+
+      for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+        configs[_key - 2] = arguments[_key];
+      }
+
+      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(RollupAmd).call(this, gulp, preset, extend.apply(undefined, [true, {}, Default$12].concat(configs))));
     }
 
     return RollupAmd;
   }(RollupCjs);
 
-  var Default$11 = {
+  var Default$13 = {
     task: {
       name: 'rollup:umd'
     },
@@ -1692,19 +1768,441 @@ define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'g
      *
      * @param gulp - gulp instance
      * @param preset - base preset configuration - either one from preset.js or a custom hash
-     * @param config - customized overrides for this recipe
+     * @param configs - customized overrides for this recipe
      */
 
     function RollupUmd(gulp, preset) {
-      var config = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
       babelHelpers.classCallCheck(this, RollupUmd);
-      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(RollupUmd).call(this, gulp, preset, extend(true, {}, Default$11, config)));
+
+      for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+        configs[_key - 2] = arguments[_key];
+      }
+
+      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(RollupUmd).call(this, gulp, preset, extend.apply(undefined, [true, {}, Default$13].concat(configs))));
     }
 
     return RollupUmd;
   }(RollupCjs);
 
-  var Default$13 = {
+  var isWindows = process.platform === 'win32';
+  var pathSeparatorRe = /[\/\\]/g;
+
+  /**
+   * Implementation can use our base class, but is exposed as static methods in the exported File class
+   *
+   * TODO: reducing the amount of code by using other maintained libraries would be fantastic.  Worst case, break most of this into it's own library?
+   *
+   *  @credit to grunt for the grunt.file implementation. See license for attribution.
+   */
+  var FileImplementation = function (_Base) {
+    babelHelpers.inherits(FileImplementation, _Base);
+
+    function FileImplementation() {
+      var config = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+      babelHelpers.classCallCheck(this, FileImplementation);
+      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(FileImplementation).call(this, { encoding: "utf8" }, config));
+    }
+
+    // Read a file, optionally processing its content, then write the output.
+
+
+    babelHelpers.createClass(FileImplementation, [{
+      key: 'copy',
+      value: function copy(srcpath, destpath, options) {
+        if (!options) {
+          options = {};
+        }
+        // If a process function was specified, process the file's source.
+
+        // If the file will be processed, use the encoding as-specified. Otherwise, use an encoding of null to force the file to be read/written as a Buffer.
+        var readWriteOptions = options.process ? options : { encoding: null };
+
+        var contents = this.read(srcpath, readWriteOptions);
+        if (options.process) {
+          this.debug('Processing source...');
+          try {
+            contents = options.process(contents, srcpath);
+          } catch (e) {
+            this.notifyError('Error while executing process function on ' + srcpath + '.', e);
+          }
+        }
+        // Abort copy if the process function returns false.
+        if (contents === false) {
+          this.debug('Write aborted, no contents.');
+        } else {
+          this.write(destpath, contents, readWriteOptions);
+        }
+      }
+    }, {
+      key: 'syncTimestamp',
+      value: function syncTimestamp(src, dest) {
+        var stat = fs$1.lstatSync(src);
+        if (path.basename(src) !== path.basename(dest)) {
+          return;
+        }
+
+        if (stat.isFile() && !fileSyncCmp.equalFiles(src, dest)) {
+          return;
+        }
+
+        var fd = fs$1.openSync(dest, isWindows ? 'r+' : 'r');
+        fs$1.futimesSync(fd, stat.atime, stat.mtime);
+        fs$1.closeSync(fd);
+      }
+    }, {
+      key: 'write',
+      value: function write(filepath, contents, options) {
+        if (!options) {
+          options = {};
+        }
+        // Create path, if necessary.
+        this.mkdir(path.dirname(filepath));
+        try {
+          // If contents is already a Buffer, don't try to encode it. If no encoding was specified, use the default.
+          if (!buffer.Buffer.isBuffer(contents)) {
+            contents = iconv.encode(contents, options.encoding || this.config.encoding);
+          }
+          // Actually write this.
+          fs$1.writeFileSync(filepath, contents);
+
+          return true;
+        } catch (e) {
+          this.notifyError('Unable to write ' + filepath + ' file (Error code: ' + e.code + ').', e);
+        }
+      }
+
+      // Read a file, return its contents.
+
+    }, {
+      key: 'read',
+      value: function read(filepath, options) {
+        if (!options) {
+          options = {};
+        }
+        var contents = void 0;
+        this.debug('Reading ' + filepath + '...');
+        try {
+          contents = fs$1.readFileSync(String(filepath));
+          // If encoding is not explicitly null, convert from encoded buffer to a
+          // string. If no encoding was specified, use the default.
+          if (options.encoding !== null) {
+            contents = iconv.decode(contents, options.encoding || this.config.encoding);
+            // Strip any BOM that might exist.
+            if (!this.config.preserveBOM && contents.charCodeAt(0) === 0xFEFF) {
+              contents = contents.substring(1);
+            }
+          }
+
+          return contents;
+        } catch (e) {
+          this.notifyError('Unable to read "' + filepath + '" file (Error code: ' + e.code + ').', e);
+        }
+      }
+
+      /**
+       * Like mkdir -p. Create a directory and any intermediary directories.
+       * @param dirpath
+       * @param mode
+       */
+
+    }, {
+      key: 'mkdir',
+      value: function mkdir(dirpath, mode) {
+        var _this2 = this;
+
+        // Set directory mode in a strict-mode-friendly way.
+        if (mode == null) {
+          mode = parseInt('0777', 8) & ~process.umask();
+        }
+        dirpath.split(pathSeparatorRe).reduce(function (parts, part) {
+          parts += part + '/';
+          var subpath = path.resolve(parts);
+          if (!_this2.exists(subpath)) {
+            try {
+              fs$1.mkdirSync(subpath, mode);
+            } catch (e) {
+              _this2.notifyError('Unable to create directory ' + subpath + ' (Error code: ' + e.code + ').', e);
+            }
+          }
+          return parts;
+        }, '');
+      }
+
+      /**
+       * Match a filepath or filepaths against one or more wildcard patterns.
+       * @returns true if any of the patterns match.
+       */
+
+    }, {
+      key: 'isMatch',
+      value: function isMatch() {
+        return this.match.apply(this, arguments).length > 0;
+      }
+    }, {
+      key: 'exists',
+      value: function exists() {
+        var filepath = path.join.apply(path, arguments);
+        return fs$1.existsSync(filepath);
+      }
+    }, {
+      key: 'isDir',
+      value: function isDir() {
+        var filepath = path.join.apply(path, arguments);
+        return this.exists(filepath) && fs$1.statSync(filepath).isDirectory();
+      }
+    }, {
+      key: 'detectDestType',
+      value: function detectDestType(dest) {
+        if (dest.endsWith('/')) {
+          return 'directory';
+        } else {
+          return 'file';
+        }
+      }
+    }]);
+    return FileImplementation;
+  }(Base);
+
+  var File = function () {
+    function File() {
+      babelHelpers.classCallCheck(this, File);
+    }
+
+    babelHelpers.createClass(File, null, [{
+      key: 'copy',
+      value: function copy(srcpath, destpath, options) {
+        return instance.copy(srcpath, destpath, options);
+      }
+    }, {
+      key: 'syncTimestamp',
+      value: function syncTimestamp(src, dest) {
+        return instance.syncTimestamp(src, dest);
+      }
+    }, {
+      key: 'write',
+      value: function write(filepath, contents, options) {
+        return instance.write(filepath, contents, options);
+      }
+    }, {
+      key: 'read',
+      value: function read(filepath, options) {
+        return instance.read(filepath, options);
+      }
+    }, {
+      key: 'isDir',
+      value: function isDir() {
+        return instance.isDir.apply(instance, arguments);
+      }
+    }, {
+      key: 'mkdir',
+      value: function mkdir(dirpath, mode) {
+        return instance.mkdir(dirpath, mode);
+      }
+    }, {
+      key: 'isMatch',
+      value: function isMatch() {
+        return instance.isMatch.apply(instance, arguments);
+      }
+    }, {
+      key: 'exists',
+      value: function exists() {
+        return instance.exists.apply(instance, arguments);
+      }
+    }, {
+      key: 'detectDestType',
+      value: function detectDestType(dest) {
+        return instance.detectDestType(dest);
+      }
+    }]);
+    return File;
+  }();
+
+  //  singleton
+  var instance = new FileImplementation();
+
+  var Default$14 = {
+    debug: false,
+    watch: false,
+    presetType: 'macro',
+    task: {
+      name: 'copy'
+    },
+    process: function process(content, srcpath) {
+      // eslint-disable-line no-unused-vars
+      return content;
+    }, // allows modification of the file content before writing to destination
+    encoding: 'utf8',
+    mode: false, // True will copy the existing file/directory permissions, otherwise set the mode e.g. 0644
+    timestamp: false, // Preserve the timestamp attributes(atime and mtime) when copying files. Timestamp will not be preserved
+    //                        //    when the file contents or name are changed during copying.
+    //preserveBOM: false,     // Whether to preserve the BOM on this.read rather than strip it.
+
+    source: {
+      glob: undefined, // [] or string glob pattern https://github.com/isaacs/node-glob#glob-primer
+      options: { // https://github.com/isaacs/node-glob#options
+        cwd: process.cwd() // base path
+      }
+    },
+    dest: undefined, // base path
+    options: {}
+  };
+
+  /**
+   *  Copy files to a destination with permissions and processing options.
+   *
+   *  TODO: reducing the amount of code by using other maintained libraries would be fantastic.  Worst case, break most of this into it's own library?
+   *
+   *  @credit to grunt and grunt-contrib-copy for the implementation. See license for attribution.
+   */
+  var Copy = function (_BaseRecipe) {
+    babelHelpers.inherits(Copy, _BaseRecipe);
+
+
+    /**
+     *
+     * @param gulp - gulp instance
+     * @param config - customized overrides
+     */
+
+    function Copy(gulp, preset) {
+      babelHelpers.classCallCheck(this, Copy);
+
+      for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+        configs[_key - 2] = arguments[_key];
+      }
+
+      var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Copy).call(this, gulp, preset, extend.apply(undefined, [true, {}, Default$14].concat(configs))));
+
+      _this.requireValue(_this.config.source.glob, 'source.glob');
+      _this.requireValue(_this.config.source.options.cwd, 'source.options.cwd');
+      _this.requireValue(_this.config.dest, 'dest');
+
+      // ensure array
+      if (!Array.isArray(_this.config.source.glob)) {
+        _this.config.source.glob = [_this.config.source.glob];
+      }
+      return _this;
+    }
+
+    babelHelpers.createClass(Copy, [{
+      key: 'createDescription',
+      value: function createDescription() {
+        return 'Copies ' + this.config.source.options.cwd + '/' + this.config.source.glob + ' to ' + this.config.dest;
+      }
+    }, {
+      key: 'chmod',
+      value: function chmod(from, to) {
+        if (this.config.mode !== false) {
+          fs$1.chmodSync(to, this.config.mode === true ? fs$1.lstatSync(from).mode : this.config.mode);
+        }
+      }
+    }, {
+      key: 'run',
+      value: function run(done) {
+        try {
+          var dirs = {};
+          var tally = {
+            dirs: 0,
+            files: 0
+          };
+          var copyOptions = {
+            encoding: this.config.encoding,
+            process: this.config.process
+          };
+
+          var options = extend(true, {}, this.config.source.options, { realpath: true });
+          var pattern = this.config.source.glob;
+          this.log('Copying ' + options.cwd + '/' + pattern + '...');
+          var _iteratorNormalCompletion = true;
+          var _didIteratorError = false;
+          var _iteratorError = undefined;
+
+          try {
+            for (var _iterator = globAll.sync(pattern, options)[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+              var fromFullPath = _step.value;
+
+              var _from = path.relative(process.cwd(), fromFullPath);
+              var toRelative = path.relative(options.cwd, _from); // grab the path of the file relative to the cwd of the source cwd - allows nesting
+              var to = path.join(this.config.dest, toRelative);
+
+              if (File.isDir(_from)) {
+                this.log('\t' + chalk.cyan(to));
+                File.mkdir(to);
+                this.chmod(_from, to);
+                dirs[_from] = to;
+                tally.dirs++;
+              } else {
+                this.log('\t-> ' + chalk.cyan(to));
+                File.copy(_from, to, copyOptions);
+                if (this.config.timestamp) {
+                  File.syncTimestamp(_from, to);
+                }
+                this.chmod(_from, to);
+                tally.files++;
+              }
+            }
+          } catch (err) {
+            _didIteratorError = true;
+            _iteratorError = err;
+          } finally {
+            try {
+              if (!_iteratorNormalCompletion && _iterator.return) {
+                _iterator.return();
+              }
+            } finally {
+              if (_didIteratorError) {
+                throw _iteratorError;
+              }
+            }
+          }
+
+          if (this.config.timestamp) {
+            var _iteratorNormalCompletion2 = true;
+            var _didIteratorError2 = false;
+            var _iteratorError2 = undefined;
+
+            try {
+              for (var _iterator2 = Object.keys(dirs)[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+                var from = _step2.value;
+
+                File.syncTimestamp(from, dirs[from]);
+              }
+            } catch (err) {
+              _didIteratorError2 = true;
+              _iteratorError2 = err;
+            } finally {
+              try {
+                if (!_iteratorNormalCompletion2 && _iterator2.return) {
+                  _iterator2.return();
+                }
+              } finally {
+                if (_didIteratorError2) {
+                  throw _iteratorError2;
+                }
+              }
+            }
+          }
+
+          var msg = '';
+          if (tally.dirs) {
+            msg += 'Created ' + (chalk.cyan(tally.dirs.toString()) + (tally.dirs === 1 ? ' directory' : ' directories'));
+          }
+
+          if (tally.files) {
+            msg += (tally.dirs ? ', copied ' : 'Copied ') + chalk.cyan(tally.files.toString()) + (tally.files === 1 ? ' file' : ' files');
+          }
+
+          this.log(msg);
+          this.donezo(done);
+        } catch (error) {
+          this.notifyError(error, done);
+        }
+      }
+    }]);
+    return Copy;
+  }(BaseRecipe);
+
+  var Default$16 = {
     debug: false,
     watch: false,
     sync: true // necessary so that tasks can be run in a series, can be overriden for other purposes
@@ -1718,27 +2216,27 @@ define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'g
      *
      * @param gulp - gulp instance
      * @param preset - base preset configuration - either one from preset.js or a custom hash
-     * @param config - customized overrides for this recipe
+     * @param configs - customized overrides for this recipe
      */
 
     function BaseClean(gulp, preset) {
       var config = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
       babelHelpers.classCallCheck(this, BaseClean);
-      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(BaseClean).call(this, gulp, preset, extend(true, {}, Default$13, config)));
+      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(BaseClean).call(this, gulp, preset, extend(true, {}, Default$16, config)));
     }
 
     babelHelpers.createClass(BaseClean, [{
-      key: 'createHelpText',
-      value: function createHelpText() {
+      key: 'createDescription',
+      value: function createDescription() {
         // use the config to generate the dynamic help
         return 'Cleans ' + this.config.dest;
       }
     }, {
       key: 'run',
-      value: function run() {
+      value: function run(done) {
         var _this2 = this;
 
-        var watching = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
+        var watching = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
 
         if (this.config.sync) {
           var paths = del.sync(this.config.dest);
@@ -1751,6 +2249,8 @@ define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'g
             _this2.notifyError(error, watching);
           });
         }
+
+        this.donezo(done);
       }
     }, {
       key: 'logDeleted',
@@ -1787,7 +2287,7 @@ define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'g
     return BaseClean;
   }(BaseRecipe);
 
-  var Default$12 = {
+  var Default$15 = {
     presetType: 'images',
     task: {
       name: 'clean:images'
@@ -1802,19 +2302,23 @@ define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'g
      *
      * @param gulp - gulp instance
      * @param preset - base preset configuration - either one from preset.js or a custom hash
-     * @param config - customized overrides for this recipe
+     * @param configs - customized overrides for this recipe
      */
 
     function CleanImages(gulp, preset) {
-      var config = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
       babelHelpers.classCallCheck(this, CleanImages);
-      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(CleanImages).call(this, gulp, preset, extend(true, {}, Default$12, config)));
+
+      for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+        configs[_key - 2] = arguments[_key];
+      }
+
+      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(CleanImages).call(this, gulp, preset, extend.apply(undefined, [true, {}, Default$15].concat(configs))));
     }
 
     return CleanImages;
   }(BaseClean);
 
-  var Default$14 = {
+  var Default$17 = {
     presetType: 'stylesheets',
     task: {
       name: 'clean:stylesheets'
@@ -1829,19 +2333,23 @@ define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'g
      *
      * @param gulp - gulp instance
      * @param preset - base preset configuration - either one from preset.js or a custom hash
-     * @param config - customized overrides for this recipe
+     * @param configs - customized overrides for this recipe
      */
 
     function CleanStylesheets(gulp, preset) {
-      var config = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
       babelHelpers.classCallCheck(this, CleanStylesheets);
-      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(CleanStylesheets).call(this, gulp, preset, extend(true, {}, Default$14, config)));
+
+      for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+        configs[_key - 2] = arguments[_key];
+      }
+
+      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(CleanStylesheets).call(this, gulp, preset, extend.apply(undefined, [true, {}, Default$17].concat(configs))));
     }
 
     return CleanStylesheets;
   }(BaseClean);
 
-  var Default$15 = {
+  var Default$18 = {
     presetType: 'javascripts',
     task: {
       name: 'clean:javascripts'
@@ -1856,19 +2364,23 @@ define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'g
      *
      * @param gulp - gulp instance
      * @param preset - base preset configuration - either one from preset.js or a custom hash
-     * @param config - customized overrides for this recipe
+     * @param configs - customized overrides for this recipe
      */
 
     function CleanJavascripts(gulp, preset) {
-      var config = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
       babelHelpers.classCallCheck(this, CleanJavascripts);
-      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(CleanJavascripts).call(this, gulp, preset, extend(true, {}, Default$15, config)));
+
+      for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+        configs[_key - 2] = arguments[_key];
+      }
+
+      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(CleanJavascripts).call(this, gulp, preset, extend.apply(undefined, [true, {}, Default$18].concat(configs))));
     }
 
     return CleanJavascripts;
   }(BaseClean);
 
-  var Default$16 = {
+  var Default$19 = {
     presetType: 'digest',
     task: {
       name: 'clean:digest'
@@ -1883,25 +2395,29 @@ define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'g
      *
      * @param gulp - gulp instance
      * @param preset - base preset configuration - either one from preset.js or a custom hash
-     * @param config - customized overrides for this recipe
+     * @param configs - customized overrides for this recipe
      */
 
     function CleanDigest(gulp, preset) {
-      var config = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
       babelHelpers.classCallCheck(this, CleanDigest);
-      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(CleanDigest).call(this, gulp, preset, extend(true, {}, Default$16, config)));
+
+      for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+        configs[_key - 2] = arguments[_key];
+      }
+
+      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(CleanDigest).call(this, gulp, preset, extend.apply(undefined, [true, {}, Default$19].concat(configs))));
     }
 
     return CleanDigest;
   }(BaseClean);
 
-  var Default$17 = {
+  var Default$20 = {
     debug: false,
     watch: false,
     presetType: 'macro',
     task: {
       name: 'clean',
-      help: 'Cleans images, stylesheets, and javascripts.'
+      description: 'Cleans images, stylesheets, and javascripts.'
     }
   };
 
@@ -1916,31 +2432,38 @@ define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'g
      */
 
     function Clean(gulp, preset) {
-      var config = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
+      var _Object$getPrototypeO;
+
       babelHelpers.classCallCheck(this, Clean);
 
-      var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Clean).call(this, gulp, preset, extend(true, {}, Default$17, config)));
+      for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+        configs[_key - 2] = arguments[_key];
+      }
 
-      _this.cleanImages = new CleanImages(gulp, preset);
-      _this.cleanStylesheets = new CleanStylesheets(gulp, preset);
-      _this.cleanJavascripts = new CleanJavascripts(gulp, preset);
-      _this.cleanDigest = new CleanDigest(gulp, preset);
+      var _this = babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(Clean)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$20].concat(configs)));
+
+      _this.cleanImages = new (Function.prototype.bind.apply(CleanImages, [null].concat([gulp, preset], configs)))();
+      _this.cleanStylesheets = new (Function.prototype.bind.apply(CleanStylesheets, [null].concat([gulp, preset], configs)))();
+      _this.cleanJavascripts = new (Function.prototype.bind.apply(CleanJavascripts, [null].concat([gulp, preset], configs)))();
+      _this.cleanDigest = new (Function.prototype.bind.apply(CleanDigest, [null].concat([gulp, preset], configs)))();
       return _this;
     }
 
     babelHelpers.createClass(Clean, [{
       key: 'run',
-      value: function run() {
+      value: function run(done) {
         this.cleanImages.run();
         this.cleanStylesheets.run();
         this.cleanJavascripts.run();
         this.cleanDigest.run();
+
+        this.donezo(done);
       }
     }]);
     return Clean;
   }(BaseRecipe);
 
-  var Default$18 = {
+  var Default$21 = {
     debug: false,
     presetType: 'digest',
     task: {
@@ -1969,30 +2492,33 @@ define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'g
      *
      * @param gulp - gulp instance
      * @param preset - base preset configuration - either one from preset.js or a custom hash
-     * @param config - customized overrides for this recipe
+     * @param configs - customized overrides for this recipe
      */
 
     function Rev(gulp, preset) {
-      var config = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
       babelHelpers.classCallCheck(this, Rev);
 
-      var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Rev).call(this, gulp, preset, extend(true, {}, Default$18, config)));
+      for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+        configs[_key - 2] = arguments[_key];
+      }
+
+      var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Rev).call(this, gulp, preset, extend.apply(undefined, [true, {}, Default$21].concat(configs))));
 
       _this.browserSync = BrowserSync.create();
       return _this;
     }
 
     babelHelpers.createClass(Rev, [{
-      key: 'createHelpText',
-      value: function createHelpText() {
+      key: 'createDescription',
+      value: function createDescription() {
         return 'Adds revision digest to assets from ' + this.config.source.options.cwd + '/' + this.config.source.glob;
       }
     }, {
       key: 'run',
-      value: function run() {
+      value: function run(done) {
         var _this2 = this;
 
-        var watching = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
+        var watching = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
 
 
         // FIXME merge in the clean as a task
@@ -2000,14 +2526,14 @@ define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'g
         return this.gulp.src(this.config.source.glob, this.config.source.options)
         //.pipe(changed(this.config.dest)) // ignore unchanged files
         .pipe(gulpif(this.config.debug, debug(this.debugOptions()))).pipe(rev(this.config.options)).pipe(this.gulp.dest(this.config.dest)).pipe(rev.manifest()).pipe(this.gulp.dest(this.config.dest)).on('error', function (error) {
-          _this2.notifyError(error, watching);
+          _this2.notifyError(error, done, watching);
         }).pipe(this.browserSync.stream());
       }
     }]);
     return Rev;
   }(BaseRecipe);
 
-  var Default$19 = {
+  var Default$22 = {
     debug: false,
     presetType: 'digest',
     task: {
@@ -2039,43 +2565,46 @@ define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'g
      *
      * @param gulp - gulp instance
      * @param preset - base preset configuration - either one from preset.js or a custom hash
-     * @param config - customized overrides for this recipe
+     * @param configs - customized overrides for this recipe
      */
 
     function MinifyCss(gulp, preset) {
-      var config = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
       babelHelpers.classCallCheck(this, MinifyCss);
 
-      var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(MinifyCss).call(this, gulp, preset, extend(true, {}, Default$19, config)));
+      for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+        configs[_key - 2] = arguments[_key];
+      }
+
+      var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(MinifyCss).call(this, gulp, preset, extend.apply(undefined, [true, {}, Default$22].concat(configs))));
 
       _this.browserSync = BrowserSync.create();
       return _this;
     }
 
     babelHelpers.createClass(MinifyCss, [{
-      key: 'createHelpText',
-      value: function createHelpText() {
+      key: 'createDescription',
+      value: function createDescription() {
         return 'Minifies digest css from ' + this.config.source.options.cwd + '/' + this.config.source.glob;
       }
     }, {
       key: 'run',
-      value: function run() {
+      value: function run(done) {
         var _this2 = this;
 
-        var watching = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
+        var watching = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
 
 
         // FIXME merge in the clean as a task
 
         return this.gulp.src(this.config.source.glob, this.config.source.options).pipe(gulpif(this.config.debug, debug(this.debugOptions()))).pipe(cssnano(this.config.options)).pipe(this.gulp.dest(this.config.dest)).on('error', function (error) {
-          _this2.notifyError(error, watching);
+          _this2.notifyError(error, done, watching);
         }).pipe(this.browserSync.stream());
       }
     }]);
     return MinifyCss;
   }(BaseRecipe);
 
-  var Default$20 = {
+  var Default$23 = {
     debug: false,
     presetType: 'javascripts',
     task: {
@@ -2092,32 +2621,35 @@ define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'g
      *
      * @param gulp - gulp instance
      * @param preset - base preset configuration - either one from preset.js or a custom hash
-     * @param config - customized overrides for this recipe
+     * @param configs - customized overrides for this recipe
      */
 
     function Mocha(gulp, preset) {
-      var config = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
       babelHelpers.classCallCheck(this, Mocha);
 
+      for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+        configs[_key - 2] = arguments[_key];
+      }
+
       // resolve watch cwd based on test cwd
-      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Mocha).call(this, gulp, preset, extend(true, {}, Default$20, { watch: { options: { cwd: Preset.resolveConfig(preset, Default$20, config).test.options.cwd } } }, config)));
+      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Mocha).call(this, gulp, preset, extend.apply(undefined, [true, {}, Default$23, { watch: { options: { cwd: Preset.resolveConfig.apply(Preset, [preset, Default$23].concat(configs)).test.options.cwd } } }].concat(configs))));
     }
 
     babelHelpers.createClass(Mocha, [{
-      key: 'createHelpText',
-      value: function createHelpText() {
+      key: 'createDescription',
+      value: function createDescription() {
         return 'Tests ' + this.config.test.options.cwd + '/' + this.config.test.glob;
       }
     }, {
       key: 'run',
-      value: function run() {
+      value: function run(done) {
         var _this2 = this;
 
-        var watching = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
+        var watching = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
 
         var bundle = this.gulp.src(this.config.test.glob, this.config.test.options).pipe(gulpif(this.config.debug, debug(this.debugOptions()))).pipe(mocha({ reporter: 'nyan' })) // gulp-mocha needs filepaths so you can't have any plugins before it
         .on('error', function (error) {
-          _this2.notifyError(error, watching);
+          _this2.notifyError(error, done, watching);
         });
 
         return bundle;
@@ -2129,7 +2661,7 @@ define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'g
   /**
    *  This is the base for publish recipes using BuildControl
    */
-  var Default$22 = {
+  var Default$25 = {
 
     dir: 'build', // directory to assemble the files - make sure to add this to your .gitignore so you don't publish this to your source branch
     source: {
@@ -2168,7 +2700,7 @@ define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'g
 
       // use the dir as the cwd to the BuildControl class
 
-      var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(BasePublish).call(this, gulp, preset, extend(true, {}, Default$22, config)));
+      var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(BasePublish).call(this, gulp, preset, extend(true, {}, Default$25, config)));
 
       _this.config.options = extend(true, { debug: _this.config.debug, cwd: _this.config.dir }, _this.config.options);
       return _this;
@@ -2177,10 +2709,10 @@ define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'g
     return BasePublish;
   }(BaseRecipe);
 
-  var Default$21 = {
+  var Default$24 = {
     task: {
       name: 'prepublish',
-      help: 'Checks tag name and ensures directory has all files committed.'
+      description: 'Checks tag name and ensures directory has all files committed.'
     },
     options: {
       tag: {
@@ -2205,16 +2737,22 @@ define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'g
      */
 
     function Prepublish(gulp, preset) {
-      var config = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
       babelHelpers.classCallCheck(this, Prepublish);
-      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Prepublish).call(this, gulp, preset, extend(true, {}, Default$21, config)));
+
+      for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+        configs[_key - 2] = arguments[_key];
+      }
+
+      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Prepublish).call(this, gulp, preset, extend.apply(undefined, [true, {}, Default$24].concat(configs))));
     }
 
     babelHelpers.createClass(Prepublish, [{
       key: 'run',
-      value: function run() {
+      value: function run(done) {
         var buildControl = new BuildControl(this.config.options);
         buildControl.prepublishCheck();
+
+        this.donezo(done);
       }
     }]);
     return Prepublish;
@@ -2241,8 +2779,12 @@ define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'g
    *
    *  Have long running maintenance on an old version?  Publish to a different dist branch like { options: {branch: 'dist-v3'} }
    */
-  var Default$23 = {
+  var Default$26 = {
     //debug: true,
+    npm: {
+      bump: true,
+      publish: true
+    },
     readme: {
       enabled: true,
       name: 'README.md',
@@ -2250,7 +2792,7 @@ define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'g
     },
     task: {
       name: 'publishBuild',
-      help: 'Assembles and pushes the build to a branch'
+      description: 'Assembles and pushes the build to a branch'
     }
   };
 
@@ -2265,17 +2807,58 @@ define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'g
      */
 
     function PublishBuild(gulp, preset) {
-      var config = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
       babelHelpers.classCallCheck(this, PublishBuild);
-      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(PublishBuild).call(this, gulp, preset, extend(true, {}, Default$23, config)));
+
+      for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+        configs[_key - 2] = arguments[_key];
+      }
+
+      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(PublishBuild).call(this, gulp, preset, extend.apply(undefined, [true, {}, Default$26].concat(configs))));
     }
 
-    /**
-     * Copy all the configured sources to the config.dir directory
-     */
-
-
     babelHelpers.createClass(PublishBuild, [{
+      key: 'run',
+      value: function run(done) {
+        var buildControl = new BuildControl(this.config.options);
+
+        // bump the version and commit to git
+        if (this.config.npm.bump) {
+          buildControl.npm.bump();
+        }
+
+        this.prepareBuildFiles();
+
+        this.generateReadme(buildControl);
+
+        // run the commit/tagging/pushing
+        buildControl.run();
+
+        // publish to npm
+        if (this.config.npm.publish) {
+          buildControl.npm.publish();
+        }
+
+        done();
+      }
+    }, {
+      key: 'generateReadme',
+      value: function generateReadme(buildControl) {
+        // generate a readme on the branch if one is not copied in.
+        if (this.config.readme.enabled) {
+          var readme = path.join(this.config.dir, this.config.readme.name);
+          if (fs$1.existsSync(readme)) {
+            this.log('Found readme at ' + readme + '.  Will not generate a new one from the template.  Turn this message off with { readme: {enabled: false} }');
+          } else {
+            fs$1.writeFileSync(readme, buildControl.interpolate(this.config.readme.template));
+          }
+        }
+      }
+
+      /**
+       * Copy all the configured sources to the config.dir directory
+       */
+
+    }, {
       key: 'prepareBuildFiles',
       value: function prepareBuildFiles() {
         var buildDir = this.config.dir;
@@ -2356,10 +2939,10 @@ define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'g
               for (var _iterator4 = glob.sync(fileGlob, { realpath: true })[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
                 var fromFullPath = _step4.value;
 
-                var from = path.relative(process.cwd(), fromFullPath);
-                var to = path.join(buildDir, from);
-                this.log('\t...to ' + to);
-                fs$1.copySync(from, to);
+                var _from = path.relative(process.cwd(), fromFullPath);
+                var _to = path.join(buildDir, _from);
+                this.log('\t...to ' + _to);
+                fs$1.copySync(_from, _to);
               }
             } catch (err) {
               _didIteratorError4 = true;
@@ -2392,32 +2975,6 @@ define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'g
         }
       }
     }, {
-      key: 'run',
-      value: function run() {
-        var buildControl = new BuildControl(this.config.options);
-
-        // bump the version and commit to git
-        buildControl.npm.bump();
-
-        this.prepareBuildFiles();
-
-        // generate a readme on the branch if one is not copied in.
-        if (this.config.readme.enabled) {
-          var readme = path.join(this.config.dir, this.config.readme.name);
-          if (fs$1.existsSync(readme)) {
-            this.log('Found readme at ' + readme + '.  Will not generate a new one from the template.  Turn this message off with { readme: {enabled: false} }');
-          } else {
-            fs$1.writeFileSync(readme, buildControl.interpolate(this.config.readme.template));
-          }
-        }
-
-        // run the commit/tagging/pushing
-        buildControl.run();
-
-        // publish to npm
-        buildControl.npm.publish();
-      }
-    }, {
       key: 'resolvePath',
       value: function resolvePath(cwd) {
         var base = arguments.length <= 1 || arguments[1] === undefined ? process.cwd() : arguments[1];
@@ -2432,19 +2989,219 @@ define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'g
     return PublishBuild;
   }(BasePublish);
 
+  var Default$27 = {
+    watch: false,
+    presetType: 'macro',
+    task: {
+      name: 'jekyll',
+      description: 'Builds a jekyll site'
+    },
+    cwd: process.cwd(),
+    options: {
+      baseCommand: 'bundle exec',
+      config: '_config.yml',
+      incremental: false,
+      raw: undefined // 'baseurl: "/bootstrap-material-design"'
+    }
+  };
+
+  var Jekyll = function (_BaseRecipe) {
+    babelHelpers.inherits(Jekyll, _BaseRecipe);
+
+
+    /**
+     *
+     * @param gulp - gulp instance
+     * @param config - customized overrides
+     */
+
+    function Jekyll(gulp, preset) {
+      var _Object$getPrototypeO;
+
+      babelHelpers.classCallCheck(this, Jekyll);
+
+      for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+        configs[_key - 2] = arguments[_key];
+      }
+
+      return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(Jekyll)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$27].concat(configs)));
+    }
+
+    babelHelpers.createClass(Jekyll, [{
+      key: 'run',
+      value: function run(done) {
+        var config = '--config ' + this.config.options.config;
+
+        var rawConfigFile = this.rawConfig();
+
+        // If raw is specified, add the temporary config file to the list of configs passed into the jekyll command
+        if (rawConfigFile) {
+          config += ',' + rawConfigFile;
+        }
+
+        this.exec(Ruby.localPath('rubyRunner.sh') + ' ' + this.config.options.baseCommand + ' jekyll build ' + config);
+
+        this.donezo(done);
+      }
+
+      // Create temporary config file if needed
+
+    }, {
+      key: 'rawConfig',
+      value: function rawConfig() {
+        if (this.config.options.raw) {
+          // Tmp file is only available within the context of this function
+          var tmpFile = tmp.fileSync({ prefix: '_config.', postfix: '.yml' });
+
+          // Write raw to file
+          fs$1.writeFileSync(tmpFile.name, this.config.options.raw);
+
+          // return the file path
+          return tmpFile.name;
+        } else {
+          return null;
+        }
+      }
+    }]);
+    return Jekyll;
+  }(BaseRecipe);
+
+  var Recipes = function (_Base) {
+    babelHelpers.inherits(Recipes, _Base);
+
+    function Recipes() {
+      var config = arguments.length <= 0 || arguments[0] === undefined ? { debug: false } : arguments[0];
+      babelHelpers.classCallCheck(this, Recipes);
+      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Recipes).call(this, config));
+    }
+
+    /**
+     * Prefer to return the taskFn instead of a string, but return the string if that's all that is given to us.
+     *
+     * @param recipe
+     * @returns {*}
+     */
+
+
+    babelHelpers.createClass(Recipes, [{
+      key: "toTask",
+      value: function toTask(recipe) {
+        var taskName = null;
+        if (typeof recipe === "string") {
+          // any given task name should be returned as-is
+          taskName = recipe;
+          this.debug("toTask(): " + taskName);
+        } else {
+          if (typeof recipe === "function") {
+            // any given fn should be return as-is i.e. series/parallel
+            taskName = recipe;
+          } else {
+            // any recipe should be converted to string task name
+            taskName = recipe.taskFn;
+          }
+          this.debug("toTask(): " + (taskName.name || taskName.displayName));
+        }
+        return taskName;
+      }
+
+      /**
+       * Yield the nearest set of task names - return nested series/parallel fn - do not follow them and flatten them (they will do that themselves if using the helper methods)
+       *
+       * @param recipes
+       * @returns {Array}
+       */
+
+    }, {
+      key: "toTasks",
+      value: function toTasks(recipes) {
+        var tasks = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1];
+
+        this.debugDump('toTasks: recipes', recipes);
+
+        var _iteratorNormalCompletion = true;
+        var _didIteratorError = false;
+        var _iteratorError = undefined;
+
+        try {
+          for (var _iterator = recipes[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+            var recipe = _step.value;
+
+            //this.debugDump(`recipe taskName[${recipe.taskName? recipe.taskName() : ''}] isArray[${Array.isArray(recipe)}]`, recipe)
+            if (Array.isArray(recipe)) {
+              tasks.push(this.toTasks(recipe, []));
+            } else {
+              var taskName = this.toTask(recipe);
+              tasks.push(taskName);
+            }
+          }
+        } catch (err) {
+          _didIteratorError = true;
+          _iteratorError = err;
+        } finally {
+          try {
+            if (!_iteratorNormalCompletion && _iterator.return) {
+              _iterator.return();
+            }
+          } finally {
+            if (_didIteratorError) {
+              throw _iteratorError;
+            }
+          }
+        }
+
+        return tasks;
+      }
+    }]);
+    return Recipes;
+  }(Base);
+
+  /**
+   *
+   * @param recipes - (recipes or task fns, or task names)
+   */
+  var series = function series(gulp) {
+    for (var _len = arguments.length, recipes = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+      recipes[_key - 1] = arguments[_key];
+    }
+
+    var series = gulp.series(new Recipes().toTasks(recipes));
+
+    // hack to attach the recipes for inspection by aggregate
+    series.recipes = recipes;
+    return series;
+  };
+
+  /**
+   *
+   * @param recipes - (recipes or task fns, or task names)
+   */
+  var parallel = function parallel(gulp) {
+    for (var _len = arguments.length, recipes = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+      recipes[_key - 1] = arguments[_key];
+    }
+
+    var parallel = gulp.parallel(new Recipes().toTasks(recipes));
+
+    // hack to attach the recipes for inspection by aggregate
+    parallel.recipes = recipes;
+    return parallel;
+  };
+
   exports.Preset = Preset;
   exports.Rails = Rails;
-  exports.Autoprefixer = Autoprefixer;
   exports.EsLint = EsLint;
+  exports.Uglify = Uglify;
+  exports.Autoprefixer = Autoprefixer;
   exports.Images = Images;
   exports.Sass = Sass;
   exports.ScssLint = ScssLint;
-  exports.TaskSeries = TaskSeries;
+  exports.Aggregate = Aggregate;
   exports.RollupEs = RollupEs;
   exports.RollupCjs = RollupCjs;
   exports.RollupIife = RollupIife;
   exports.RollupAmd = RollupAmd;
   exports.RollupUmd = RollupUmd;
+  exports.Copy = Copy;
   exports.CleanImages = CleanImages;
   exports.CleanStylesheets = CleanStylesheets;
   exports.CleanJavascripts = CleanJavascripts;
@@ -2455,6 +3212,9 @@ define(['exports', 'extend', 'path', 'glob', 'cross-spawn', 'fs', 'jsonfile', 'g
   exports.Mocha = Mocha;
   exports.Prepublish = Prepublish;
   exports.PublishBuild = PublishBuild;
+  exports.Jekyll = Jekyll;
+  exports.series = series;
+  exports.parallel = parallel;
 
 });
 //# sourceMappingURL=gulp-pipeline.amd.js.map

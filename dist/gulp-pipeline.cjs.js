@@ -18,6 +18,7 @@ var gulpif = _interopDefault(require('gulp-if'));
 var uglify = _interopDefault(require('gulp-uglify'));
 var sourcemaps = _interopDefault(require('gulp-sourcemaps'));
 var concat = _interopDefault(require('gulp-concat'));
+var extReplace = _interopDefault(require('gulp-ext-replace'));
 var autoprefixer = _interopDefault(require('gulp-autoprefixer'));
 var BrowserSync = _interopDefault(require('browser-sync'));
 var changed = _interopDefault(require('gulp-changed'));
@@ -41,7 +42,6 @@ var globAll = _interopDefault(require('glob-all'));
 var del = _interopDefault(require('del'));
 var rev = _interopDefault(require('gulp-rev'));
 var cssnano = _interopDefault(require('gulp-cssnano'));
-var extReplace = _interopDefault(require('gulp-ext-replace'));
 var mocha = _interopDefault(require('gulp-mocha'));
 var BuildControl = _interopDefault(require('build-control/src/buildControl'));
 var pathIsAbsolute = _interopDefault(require('path-is-absolute'));
@@ -886,7 +886,7 @@ var EsLint = function (_BaseRecipe) {
 
 var Default$4 = {
   debug: false,
-  presetType: 'javascripts',
+  presetType: 'postProcessor',
   task: {
     name: 'uglify'
   },
@@ -899,9 +899,17 @@ var Default$4 = {
     },
     mangle: false,
     preserveComments: /^!|@preserve|@license|@cc_on/i
+  },
+
+  concat: {
+    dest: undefined // if specified, will use concat to this dest filename, OTHERWISE, it will just assume one file and rename to .min.js
   }
 };
 
+/**
+ * By default, assumes ONE source glob file match, OTHERWISE specify {concat: { dest: 'out.min.js' } }
+ *
+ */
 var Uglify = function (_BaseRecipe) {
   babelHelpers.inherits(Uglify, _BaseRecipe);
 
@@ -914,19 +922,25 @@ var Uglify = function (_BaseRecipe) {
    */
 
   function Uglify(gulp, preset) {
+    var _Object$getPrototypeO;
+
     babelHelpers.classCallCheck(this, Uglify);
 
     for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
       configs[_key - 2] = arguments[_key];
     }
 
-    return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Uglify).call(this, gulp, preset, extend.apply(undefined, [true, {}, Default$4].concat(configs))));
+    return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(Uglify)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$4].concat(configs)));
   }
 
   babelHelpers.createClass(Uglify, [{
     key: 'createDescription',
     value: function createDescription() {
-      return 'Uglifies ' + this.config.source.options.cwd + '/' + this.config.source.glob + ' to ' + this.config.dest + '/' + this.config.options.dest;
+      var msg = 'Uglifies ' + this.config.source.options.cwd + '/' + this.config.source.glob + ' to ' + this.config.dest;
+      if (this.config.concat.dest) {
+        msg += '/' + this.config.concat.dest;
+      }
+      return msg;
     }
   }, {
     key: 'run',
@@ -935,12 +949,39 @@ var Uglify = function (_BaseRecipe) {
 
       var watching = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
 
-      // eslint() attaches the lint output to the "eslint" property of the file object so it can be used by other modules.
-      var bundle = this.gulp.src(this.config.source.glob, this.config.source.options).pipe(gulpif(this.config.debug, debug(this.debugOptions()))).pipe(sourcemaps.init()).pipe(concat(this.config.options.dest)).pipe(uglify(this.config.options)).on('error', function (error) {
-        _this2.notifyError(error, done, watching);
-      }).pipe(this.gulp.dest(this.config.dest));
 
-      return bundle;
+      // helpful log message if files not found
+      var files = glob.sync(this.config.source.glob, this.config.source.options);
+      if (!files || files.length <= 0) {
+        this.log('No sources found to uglify in: ' + this.dump(this.config.source));
+      }
+
+      if (this.config.concat.dest) {
+
+        // run the concat scenario
+        this.debug('concat dest: ' + this.config.concat.dest);
+        return this.gulp.src(this.config.source.glob, this.config.source.options).pipe(gulpif(this.config.debug, debug(this.debugOptions()))).pipe(concat(this.config.concat.dest))
+
+        // identical to below
+        .pipe(sourcemaps.init()).pipe(uglify(this.config.options)).on('error', function (error) {
+          _this2.notifyError(error, done, watching);
+        }).pipe(this.gulp.dest(this.config.dest));
+      } else {
+
+        // run the single file scenario
+        this.debug('single file with no dest');
+
+        if (files.length > 1) {
+          throw new Error('Should only find one file but found ' + files.length + ' for source: ' + this.dump(this.config.source) + '.  Use the concat: {dest: \'output.min.js\' } configuration for multiple files concatenated with uglify.');
+        }
+
+        return this.gulp.src(this.config.source.glob, this.config.source.options).pipe(gulpif(this.config.debug, debug(this.debugOptions()))).pipe(extReplace('.min.js'))
+
+        // identical to above
+        .pipe(sourcemaps.init()).pipe(uglify(this.config.options)).on('error', function (error) {
+          _this2.notifyError(error, done, watching);
+        }).pipe(this.gulp.dest(this.config.dest));
+      }
     }
   }]);
   return Uglify;
@@ -2904,13 +2945,15 @@ var PublishBuild = function (_BasePublish) {
    */
 
   function PublishBuild(gulp, preset) {
+    var _Object$getPrototypeO;
+
     babelHelpers.classCallCheck(this, PublishBuild);
 
     for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
       configs[_key - 2] = arguments[_key];
     }
 
-    return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(PublishBuild).call(this, gulp, preset, extend.apply(undefined, [true, {}, Default$26].concat(configs))));
+    return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(PublishBuild)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$26].concat(configs)));
   }
 
   babelHelpers.createClass(PublishBuild, [{
@@ -2969,7 +3012,7 @@ var PublishBuild = function (_BasePublish) {
       try {
         for (var _iterator = this.config.source.types[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
           var type = _step.value;
-
+          // defaulted in BasePublish
           var typePreset = this.preset[type];
 
           this.log('Copying ' + typePreset.source.options.cwd + '/' + typePreset.source.all + '...');
@@ -3025,7 +3068,7 @@ var PublishBuild = function (_BasePublish) {
       try {
         for (var _iterator2 = this.config.source.files[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
           var fileGlob = _step2.value;
-
+          // defaulted in BasePublish
 
           this.log('Copying ' + fileGlob + '...');
           var _iteratorNormalCompletion4 = true;
@@ -3086,7 +3129,64 @@ var PublishBuild = function (_BasePublish) {
   return PublishBuild;
 }(BasePublish);
 
+/**
+ *  This recipe will keep your source branch clean but allow you to easily push your
+ *  _gh_pages files to the gh-pages branch.
+ */
 var Default$27 = {
+  //debug: true,
+  task: {
+    name: 'publishGhPages',
+    description: 'Publishes a _gh_pages directory to gh-pages branch'
+  },
+  options: {
+    cwd: '_gh_pages',
+    branch: 'gh-pages',
+    tag: false, // no tagging on gh-pages push
+    clean: { // no cleaning of cwd, it is built externally
+      before: false,
+      after: false
+    }
+  }
+};
+
+var PublishGhPages = function (_BasePublish) {
+  babelHelpers.inherits(PublishGhPages, _BasePublish);
+
+
+  /**
+   *
+   * @param gulp - gulp instance
+   * @param config - customized overrides
+   */
+
+  function PublishGhPages(gulp, preset) {
+    var _Object$getPrototypeO;
+
+    babelHelpers.classCallCheck(this, PublishGhPages);
+
+    for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+      configs[_key - 2] = arguments[_key];
+    }
+
+    return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(PublishGhPages)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$27].concat(configs)));
+  }
+
+  babelHelpers.createClass(PublishGhPages, [{
+    key: 'run',
+    value: function run(done) {
+      var buildControl = new BuildControl(this.config.options);
+
+      // run the commit/tagging/pushing
+      buildControl.run();
+
+      done();
+    }
+  }]);
+  return PublishGhPages;
+}(BasePublish);
+
+var Default$28 = {
   watch: false,
   presetType: 'macro',
   task: {
@@ -3121,7 +3221,7 @@ var Jekyll = function (_BaseRecipe) {
       configs[_key - 2] = arguments[_key];
     }
 
-    return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(Jekyll)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$27].concat(configs)));
+    return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(Jekyll)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$28].concat(configs)));
   }
 
   babelHelpers.createClass(Jekyll, [{
@@ -3179,7 +3279,7 @@ var series = function series(gulp) {
   return series;
 };
 
-var Default$28 = {
+var Default$29 = {
   debug: false,
   watch: false,
   presetType: 'macro',
@@ -3201,7 +3301,7 @@ var Sleep = function (_BaseRecipe) {
 
   function Sleep(gulp, preset, sleep) {
     babelHelpers.classCallCheck(this, Sleep);
-    return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Sleep).call(this, gulp, preset, Default$28, { sleep: sleep }));
+    return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Sleep).call(this, gulp, preset, Default$29, { sleep: sleep }));
   }
 
   babelHelpers.createClass(Sleep, [{
@@ -3248,6 +3348,7 @@ exports.CssNano = CssNano;
 exports.Mocha = Mocha;
 exports.Prepublish = Prepublish;
 exports.PublishBuild = PublishBuild;
+exports.PublishGhPages = PublishGhPages;
 exports.Jekyll = Jekyll;
 exports.series = series;
 exports.parallel = parallel;

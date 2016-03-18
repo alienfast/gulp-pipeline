@@ -1,6 +1,5 @@
 import BasePublish from './basePublish'
 import BuildControl from 'build-control/src/buildControl'
-import extend from 'extend'
 import fs from 'fs-extra'
 import path from 'path'
 import process from 'process'
@@ -60,7 +59,7 @@ const PublishBuild = class extends BasePublish {
    * @param config - customized overrides
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, extend(true, {}, Default, ...configs))
+    super(gulp, preset, Default, ...configs)
   }
 
   run(done) {
@@ -107,7 +106,7 @@ const PublishBuild = class extends BasePublish {
     this.debug(`Using build directory: ${buildDir}`)
 
     // copy preset type files
-    for (let type of this.config.source.types) {
+    for (let type of this.config.source.types) {  // defaulted in BasePublish
       let typePreset = this.preset[type]
 
       this.log(`Copying ${typePreset.source.options.cwd}/${typePreset.source.all}...`)
@@ -120,7 +119,7 @@ const PublishBuild = class extends BasePublish {
     }
 
     // copy any additional configured files
-    for (let fileGlob of this.config.source.files) {
+    for (let fileGlob of this.config.source.files) { // defaulted in BasePublish
 
       this.log(`Copying ${fileGlob}...`)
       for (let fromFullPath of glob.sync(fileGlob, {realpath: true})) {

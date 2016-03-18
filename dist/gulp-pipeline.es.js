@@ -14,6 +14,7 @@ import gulpif from 'gulp-if';
 import uglify from 'gulp-uglify';
 import sourcemaps from 'gulp-sourcemaps';
 import concat from 'gulp-concat';
+import extReplace from 'gulp-ext-replace';
 import autoprefixer from 'gulp-autoprefixer';
 import BrowserSync from 'browser-sync';
 import changed from 'gulp-changed';
@@ -37,7 +38,6 @@ import globAll from 'glob-all';
 import del from 'del';
 import rev from 'gulp-rev';
 import cssnano from 'gulp-cssnano';
-import extReplace from 'gulp-ext-replace';
 import mocha from 'gulp-mocha';
 import BuildControl from 'build-control/src/buildControl';
 import pathIsAbsolute from 'path-is-absolute';
@@ -688,7 +688,7 @@ const EsLint = class extends BaseRecipe {
 
 const Default$4 = {
   debug: false,
-  presetType: 'javascripts',
+  presetType: 'postProcessor',
   task: {
     name: 'uglify'
   },
@@ -701,9 +701,17 @@ const Default$4 = {
     },
     mangle: false,
     preserveComments: /^!|@preserve|@license|@cc_on/i
+  },
+
+  concat: {
+    dest: undefined // if specified, will use concat to this dest filename, OTHERWISE, it will just assume one file and rename to .min.js
   }
 }
 
+/**
+ * By default, assumes ONE source glob file match, OTHERWISE specify {concat: { dest: 'out.min.js' } }
+ *
+ */
 const Uglify = class extends BaseRecipe {
 
   /**
@@ -713,26 +721,62 @@ const Uglify = class extends BaseRecipe {
    * @param configs - customized overrides for this recipe
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, extend(true, {}, Default$4, ...configs))
+    super(gulp, preset, Default$4, ...configs)
   }
 
-  createDescription(){
-    return `Uglifies ${this.config.source.options.cwd}/${this.config.source.glob} to ${this.config.dest}/${this.config.options.dest}`
+  createDescription() {
+    let msg = `Uglifies ${this.config.source.options.cwd}/${this.config.source.glob} to ${this.config.dest}`
+    if (this.config.concat.dest) {
+      msg += `/${this.config.concat.dest}`
+    }
+    return msg
   }
 
   run(done, watching = false) {
-    // eslint() attaches the lint output to the "eslint" property of the file object so it can be used by other modules.
-    let bundle = this.gulp.src(this.config.source.glob, this.config.source.options)
-      .pipe(gulpif(this.config.debug, debug(this.debugOptions())))
-      .pipe(sourcemaps.init())
-      .pipe(concat(this.config.options.dest))
-      .pipe(uglify(this.config.options))
-      .on('error', (error) => {
-        this.notifyError(error, done, watching)
-      })
-      .pipe(this.gulp.dest(this.config.dest))
 
-    return bundle
+    // helpful log message if files not found
+    let files = glob.sync(this.config.source.glob, this.config.source.options)
+    if (!files || files.length <= 0) {
+      this.log(`No sources found to uglify in: ${this.dump(this.config.source)}`)
+    }
+
+    if (this.config.concat.dest) {
+
+      // run the concat scenario
+      this.debug(`concat dest: ${this.config.concat.dest}`)
+      return this.gulp.src(this.config.source.glob, this.config.source.options)
+        .pipe(gulpif(this.config.debug, debug(this.debugOptions())))
+        .pipe(concat(this.config.concat.dest))
+
+        // identical to below
+        .pipe(sourcemaps.init())
+        .pipe(uglify(this.config.options))
+        .on('error', (error) => {
+          this.notifyError(error, done, watching)
+        })
+        .pipe(this.gulp.dest(this.config.dest))
+    }
+    else {
+
+      // run the single file scenario
+      this.debug('single file with no dest')
+
+      if (files.length > 1) {
+        throw new Error(`Should only find one file but found ${files.length} for source: ${this.dump(this.config.source)}.  Use the concat: {dest: 'output.min.js' } configuration for multiple files concatenated with uglify.`)
+      }
+
+      return this.gulp.src(this.config.source.glob, this.config.source.options)
+        .pipe(gulpif(this.config.debug, debug(this.debugOptions())))
+        .pipe(extReplace('.min.js'))
+
+        // identical to above
+        .pipe(sourcemaps.init())
+        .pipe(uglify(this.config.options))
+        .on('error', (error) => {
+          this.notifyError(error, done, watching)
+        })
+        .pipe(this.gulp.dest(this.config.dest))
+    }
   }
 }
 
@@ -2235,7 +2279,7 @@ const PublishBuild = class extends BasePublish {
    * @param config - customized overrides
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, extend(true, {}, Default$26, ...configs))
+    super(gulp, preset, Default$26, ...configs)
   }
 
   run(done) {
@@ -2282,7 +2326,7 @@ const PublishBuild = class extends BasePublish {
     this.debug(`Using build directory: ${buildDir}`)
 
     // copy preset type files
-    for (let type of this.config.source.types) {
+    for (let type of this.config.source.types) {  // defaulted in BasePublish
       let typePreset = this.preset[type]
 
       this.log(`Copying ${typePreset.source.options.cwd}/${typePreset.source.all}...`)
@@ -2295,7 +2339,7 @@ const PublishBuild = class extends BasePublish {
     }
 
     // copy any additional configured files
-    for (let fileGlob of this.config.source.files) {
+    for (let fileGlob of this.config.source.files) { // defaulted in BasePublish
 
       this.log(`Copying ${fileGlob}...`)
       for (let fromFullPath of glob.sync(fileGlob, {realpath: true})) {
@@ -2317,7 +2361,49 @@ const PublishBuild = class extends BasePublish {
   }
 }
 
+/**
+ *  This recipe will keep your source branch clean but allow you to easily push your
+ *  _gh_pages files to the gh-pages branch.
+ */
 const Default$27 = {
+  //debug: true,
+  task: {
+    name: 'publishGhPages',
+    description: 'Publishes a _gh_pages directory to gh-pages branch'
+  },
+  options: {
+    cwd: '_gh_pages',
+    branch: 'gh-pages',
+    tag: false, // no tagging on gh-pages push
+    clean: { // no cleaning of cwd, it is built externally
+      before: false,
+      after: false
+    }
+  }
+}
+
+const PublishGhPages = class extends BasePublish {
+
+  /**
+   *
+   * @param gulp - gulp instance
+   * @param config - customized overrides
+   */
+  constructor(gulp, preset, ...configs) {
+    super(gulp, preset, Default$27, ...configs)
+  }
+
+  run(done) {
+    let buildControl = new BuildControl(this.config.options)
+
+    // run the commit/tagging/pushing
+    buildControl.run()
+
+    done()
+  }
+}
+
+const Default$28 = {
   watch: false,
   presetType: 'macro',
   task: {
@@ -2341,7 +2427,7 @@ const Jekyll = class extends BaseRecipe {
    * @param config - customized overrides
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, Default$27, ...configs)
+    super(gulp, preset, Default$28, ...configs)
   }
 
   run(done) {
@@ -2389,7 +2475,7 @@ const series = (gulp, ...recipes) => {
   return series
 }
 
-const Default$28 = {
+const Default$29 = {
   debug: false,
   watch: false,
   presetType: 'macro',
@@ -2407,7 +2493,7 @@ const Sleep = class extends BaseRecipe {
    * @param config - customized overrides
    */
   constructor(gulp, preset, sleep) {
-    super(gulp, preset, Default$28, {sleep: sleep})
+    super(gulp, preset, Default$29, {sleep: sleep})
   }
 
   createDescription(){
@@ -2421,5 +2507,5 @@ const Sleep = class extends BaseRecipe {
   }
 }
 
-export { Preset, Rails, EsLint, Uglify, Autoprefixer, Images, Sass, ScssLint, Aggregate, RollupEs, RollupCjs, RollupIife, RollupAmd, RollupUmd, Copy, CleanImages, CleanStylesheets, CleanJavascripts, CleanDigest, Clean, Rev, CssNano, Mocha, Prepublish, PublishBuild, Jekyll, series, parallel, Sleep };
+export { Preset, Rails, EsLint, Uglify, Autoprefixer, Images, Sass, ScssLint, Aggregate, RollupEs, RollupCjs, RollupIife, RollupAmd, RollupUmd, Copy, CleanImages, CleanStylesheets, CleanJavascripts, CleanDigest, Clean, Rev, CssNano, Mocha, Prepublish, PublishBuild, PublishGhPages, Jekyll, series, parallel, Sleep };
 //# sourceMappingURL=gulp-pipeline.es.js.map

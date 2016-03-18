@@ -1,5 +1,5 @@
 import BasePublish from './basePublish'
-import BuildControl from 'build-control/src/buildControl'
+import BuildControl from 'build-control'
 
 
 /**

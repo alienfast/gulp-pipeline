@@ -17,6 +17,7 @@ See the [src](src) directory for a full list.  Common recipes:
 - Prepublish - using [build-control](https://github.com/alienfast/build-control), check to make sure all files are committed
 - PublishBuild - using [build-control](https://github.com/alienfast/build-control), bump version, build, tag, publish to git, publish to npm
 - PublishNpm - using [build-control](https://github.com/alienfast/build-control), publish to npm
+- PublishGhPages - using [build-control](https://github.com/alienfast/build-control), publish built gh-pages
 - Rollup (variations include amd, cjs, es, iife, umd)
 - Sass
 - ScssLint

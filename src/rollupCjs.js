@@ -14,10 +14,10 @@ export const Default = {
     })]
   },
   nodeResolve: {
-    enabled: true // bundle a full package with dependencies?
+    enabled: false // bundle a full package with dependencies?
   },
   commonjs: {
-    enabled: true // convert dependencies to commonjs modules for rollup
+    enabled: false // convert dependencies to commonjs modules for rollup
   }
 }
 

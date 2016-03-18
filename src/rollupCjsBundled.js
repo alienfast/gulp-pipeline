@@ -1,12 +1,14 @@
-import RollupCjsBundled from './rollupCjsBundled'
+import RollupCjs from './rollupCjs'
 
 export const Default = {
   task: {
-    name: 'rollup:iife'
+    name: 'rollup:cjs-bundled'
   },
-  options: {
-    //dest: '', // required
-    format: 'iife'
+  nodeResolve: {
+    enabled: true // bundle a full package with dependencies? (if not use RollupCjs itself)
+  },
+  commonjs: {
+    enabled: true // convert dependencies to commonjs modules for rollup
   }
 }
 
@@ -15,7 +17,7 @@ export const Default = {
  * Class Definition
  * ----------------------------------------------
  */
-const RollupIife = class extends RollupCjsBundled {
+const RollupCjsBundled = class extends RollupCjs {
 
   /**
    *
@@ -28,4 +30,4 @@ const RollupIife = class extends RollupCjsBundled {
   }
 }
 
-export default RollupIife
+export default RollupCjsBundled

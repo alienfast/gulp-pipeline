@@ -12,6 +12,7 @@ export { default as Aggregate } from './aggregate'
 
 export { default as RollupEs } from './rollupEs'
 export { default as RollupCjs } from './rollupCjs'
+export { default as RollupCjsBundled } from './rollupCjsBundled'
 export { default as RollupIife } from './rollupIife'
 export { default as RollupAmd } from './rollupAmd'
 export { default as RollupUmd } from './rollupUmd'

@@ -34,3 +34,5 @@ export { default as Jekyll } from './jekyll'
 
 export { default as series } from './util/series'
 export { default as parallel } from './util/parallel'
+
+export { default as Sleep } from './sleep'

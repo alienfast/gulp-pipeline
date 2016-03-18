@@ -37,6 +37,7 @@ import globAll from 'glob-all';
 import del from 'del';
 import rev from 'gulp-rev';
 import cssnano from 'gulp-cssnano';
+import extReplace from 'gulp-ext-replace';
 import mocha from 'gulp-mocha';
 import BuildControl from 'build-control/src/buildControl';
 import pathIsAbsolute from 'path-is-absolute';
@@ -201,7 +202,7 @@ const Baseline = {
     watch: {options: {cwd: 'images'}},
     dest: 'dist'
   },
-  digest: {
+  postProcessor: {
     source: {options: {cwd: 'dist'}},
     watch: {options: {cwd: 'dist'}},
     dest: 'dist/digest'
@@ -250,7 +251,7 @@ const PresetRails = {
     watch: {options: {cwd: railsImages}},
     dest: railsDest
   },
-  digest: {
+  postProcessor: {
     source: {options: {cwd: railsDest}},
     watch: {options: {cwd: railsDest}},
     dest: 'public/assets/digest'
@@ -386,11 +387,14 @@ const BaseGulp = class extends Base {
     this.gulp = gulp
   }
 
-
   taskName() {
-    if (!this.config.task.name) {
-      this.notifyError(`Expected ${this.constructor.name} to have a task name in the configuration.`)
+    if (!this.config.task || !this.config.task.name) {
+      return ''
     }
+
+    //if (!this.config.task.name) {
+    //  this.notifyError(`Expected ${this.constructor.name} to have a task name in the configuration.`)
+    //}
     return `${this.config.task.prefix}${this.config.task.name}${this.config.task.suffix}`
   }
 
@@ -403,12 +407,12 @@ const BaseGulp = class extends Base {
     }
   }
 
-  notifyError(error, done, watching = false) {
+  notifyError(error, done) { //, watching = false) {
 
     //this.debugDump('notifyError', error)
 
     let lineNumber = (error.lineNumber) ? `Line ${error.lineNumber} -- ` : ''
-    let taskName = error.task || this.taskName()
+    let taskName = error.task || ((this.config.task && this.config.task.name) ? this.taskName() : this.constructor.name)
 
     let title = `Task [${taskName}] failed`
     if (error.plugin) {
@@ -445,11 +449,6 @@ const BaseGulp = class extends Base {
       report += `${tag('    File:')} ${error.fileName}\n`
     }
     this.log(report)
-
-
-
-this.log(`watching? ${watching}`)
-this.log(`done was provided? ${done}`)
 
     // Prevent the 'watch' task from stopping
     //if (!watching && this.gulp) {
@@ -574,10 +573,6 @@ const BaseRecipe = class extends BaseGulp {
 
     // in case someone needs to inspect it later i.e. buildControl
     this.preset = preset
-
-    if (this.createDescription !== undefined) {
-      this.config.task.description = this.createDescription()
-    }
     this.registerTask()
     this.registerWatchTask()
   }
@@ -607,20 +602,25 @@ const BaseRecipe = class extends BaseGulp {
   }
 
   registerTask() {
-    if (this.config.task) {
-      // generate primary task e.g. sass
-      let name = this.taskName()
-      this.debug(`Registering task: ${Util.colors.green(name)}`)
+    // generate primary task e.g. sass
 
-      // set a fn for use by the task, also used by aggregate/series/parallel
-      this.taskFn = (done) => {
-        //this.log(`Running task: ${Util.colors.green(name)}`)
+    // set a fn for use by the task, also used by aggregate/series/parallel
+    this.taskFn = (done) => {
+      //this.log(`Running task: ${Util.colors.green(name)}`)
 
-        if (this.config.debug) {
-          this.debugDump(`Executing ${Util.colors.green(name)} with options:`, this.config.options)
-        }
-        return this.run(done)
+      if (this.config.debug) {
+        this.debugDump(`Executing ${Util.colors.green(this.taskName())} with options:`, this.config.options)
       }
+      return this.run(done)
+    }
+
+    if (this.config.task && this.config.task.name) {
+      let name = this.taskName()
+      if (this.createDescription !== undefined) {
+        this.config.task.description = this.createDescription()
+      }
+
+      this.debug(`Registering task: ${Util.colors.green(name)}`)
 
       // set metadata on fn for discovery by gulp
       this.taskFn.displayName = name
@@ -628,22 +628,6 @@ const BaseRecipe = class extends BaseGulp {
 
       // register the task
       this.gulp.task(name, this.taskFn)
-    }
-  }
-
-  taskName() {
-    if (!this.config.task.name) {
-      this.notifyError(`Expected ${this.constructor.name} to have a task name in the configuration.`)
-    }
-    return `${this.config.task.prefix}${this.config.task.name}${this.config.task.suffix}`
-  }
-
-  watchTaskName() {
-    if (this.config.watch && this.config.watch.name) {
-      return this.config.watch.name
-    }
-    else {
-      return `${this.taskName()}:watch`
     }
   }
 
@@ -986,7 +970,13 @@ const Aggregate = class extends BaseGulp {
    */
   constructor(gulp, taskName, recipes, ...configs) {
     super(gulp, Default$8, {task: {name: taskName}}, ...configs)
-    this.recipes = recipes
+
+    if(Array.isArray(recipes)){
+      this.notifyError(`recipes must not be an array, but a function, series, or parallel, found: ${recipes}`)
+    }
+
+    // track recipes as taskFn so that aggregates can be included and resolved as part of other aggregates just like recipes
+    this.taskFn = recipes
     this.registerTask(this.taskName())
 
     if (this.config.watch) {
@@ -995,7 +985,7 @@ const Aggregate = class extends BaseGulp {
   }
 
   createHelpText() {
-    //let taskNames = new Recipes().toTasks(this.recipes)
+    //let taskNames = new Recipes().toTasks(this.taskFn)
     //
     //// use the config to generate the dynamic help
     //return `Runs [${taskNames.join(', ')}]`
@@ -1011,10 +1001,10 @@ const Aggregate = class extends BaseGulp {
   }
 
   registerTask(taskName) {
-    //let tasks = this.toTasks(this.recipes)
+    //let tasks = this.toTasks(this.taskFn)
     //this.debug(`Registering task: ${Util.colors.green(taskName)} for ${stringify(tasks)}`)
-    this.gulp.task(taskName, this.recipes)
-    this.recipes.description = this.createHelpText()
+    this.gulp.task(taskName, this.taskFn)
+    this.taskFn.description = this.createHelpText()
   }
 
   registerWatchTask(taskName) {
@@ -1030,7 +1020,7 @@ const Aggregate = class extends BaseGulp {
     // on error ensure that we reset the flag so that it runs again
     this.gulp.on('error', () => {
       this.debug(`Yay! listened for the error and am able to reset the running flag!`)
-      this.recipes.running = false
+      this.taskFn.running = false
     })
 
 
@@ -1042,22 +1032,22 @@ const Aggregate = class extends BaseGulp {
         // declare this in here so we can use different display names in the log
         let runFn = (done) => {
           // ensure that multiple watches do not run the entire set of recipes multiple times on a single change
-          if (this.recipes.running) {
+          if (this.taskFn.running) {
             this.debug('Multiple matching watchers, skipping this one...')
             done()
             return
           }
           else {
             this.debug('Allowing it to run....')
-            this.recipes.running = true
+            this.taskFn.running = true
           }
 
           let finishFn = () => {
             this.log(`[${Util.colors.green(taskName)}] finished`)
-            this.recipes.running = false
+            this.taskFn.running = false
           }
 
-          this.gulp.series(this.recipes, finishFn, done)()
+          this.gulp.series(this.taskFn, finishFn, done)()
         }
         runFn.displayName = `${recipe.taskName()} watcher`
 
@@ -1065,17 +1055,17 @@ const Aggregate = class extends BaseGulp {
         let recipeName = Util.colors.grey(`(${recipe.taskName()})`)
         // add watchers for logging/information
         watcher.on('add', (path) => {
-          if (!this.recipes.running) {
+          if (!this.taskFn.running) {
             this.log(`[${Util.colors.green(taskName)} ${recipeName}] ${path} was added, running...`)
           }
         })
         watcher.on('change', (path) => {
-          if (!this.recipes.running) {
+          if (!this.taskFn.running) {
             this.log(`[${Util.colors.green(taskName)} ${recipeName}] ${path} was changed, running...`)
           }
         })
         watcher.on('unlink', (path) => {
-          if (!this.recipes.running) {
+          if (!this.taskFn.running) {
             this.log(`[${Util.colors.green(taskName)} ${recipeName}] ${path} was deleted, running...`)
           }
         })
@@ -1094,7 +1084,7 @@ const Aggregate = class extends BaseGulp {
   }
 
   flattenedRecipes() {
-    let recipes = this.flatten([this.recipes])
+    let recipes = this.flatten([this.taskFn])
     this.debugDump(`flattenedRecipes`, recipes)
     return recipes
   }
@@ -1828,7 +1818,7 @@ const CleanJavascripts = class extends BaseClean {
 }
 
 const Default$19 = {
-  presetType: 'digest',
+  presetType: 'postProcessor',
   task: {
     name: 'clean:digest'
   }
@@ -1847,6 +1837,75 @@ const CleanDigest = class extends BaseClean {
   }
 }
 
+const Recipes = class extends Base {
+
+  constructor(config = {debug: false}) {
+    super(config)
+  }
+
+  /**
+   * Prefer to return the taskFn instead of a string, but return the string if that's all that is given to us.
+   *
+   * @param recipe
+   * @returns {*}
+   */
+  toTask(recipe) {
+    let taskName = null
+    if (typeof recipe === "string") {
+      // any given task name should be returned as-is
+      taskName = recipe
+      this.debug(`toTask(): ${taskName}`)
+    }
+    else {
+      if (typeof recipe === "function") {
+        // any given fn should be return as-is i.e. series/parallel
+        taskName = recipe
+      }
+      else {
+        // any recipe should be converted to string task name
+        taskName = recipe.taskFn
+      }
+      this.debug(`toTask(): ${taskName.name || taskName.displayName}`)
+    }
+    return taskName
+  }
+
+  /**
+   * Yield the nearest set of task names - return nested series/parallel fn - do not follow them and flatten them (they will do that themselves if using the helper methods)
+   *
+   * @param recipes
+   * @returns {Array}
+   */
+  toTasks(recipes, tasks = []) {
+    this.debugDump('toTasks: recipes', recipes)
+
+    for (let recipe of recipes) {
+      //this.debugDump(`recipe taskName[${recipe.taskName? recipe.taskName() : ''}] isArray[${Array.isArray(recipe)}]`, recipe)
+      if (Array.isArray(recipe)) {
+        tasks.push(this.toTasks(recipe, []))
+      }
+      else {
+        let taskName = this.toTask(recipe)
+        tasks.push(taskName)
+      }
+    }
+
+    return tasks
+  }
+}
+
+/**
+ *
+ * @param recipes - (recipes or task fns, or task names)
+ */
+const parallel = (gulp, ...recipes) => {
+   let parallel = gulp.parallel(new Recipes().toTasks(recipes))
+
+  // hack to attach the recipes for inspection by aggregate
+  parallel.recipes = recipes
+  return parallel
+}
+
 const Default$20 = {
   debug: false,
   watch: false,
@@ -1857,7 +1916,7 @@ const Default$20 = {
   }
 }
 
-const Clean = class extends BaseRecipe {
+const Clean = class extends Aggregate {
 
   /**
    *
@@ -1865,27 +1924,21 @@ const Clean = class extends BaseRecipe {
    * @param config - customized overrides
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, Default$20, ...configs)
+    let config = Preset.resolveConfig(preset, Default$20, ...configs)
+    let recipes = parallel(gulp,
+      new CleanImages(gulp, preset, ...configs),
+      new CleanStylesheets(gulp, preset, ...configs),
+      new CleanJavascripts(gulp, preset, ...configs),
+      new CleanDigest(gulp, preset, ...configs)
+    )
 
-    this.cleanImages = new CleanImages(gulp, preset, ...configs)
-    this.cleanStylesheets = new CleanStylesheets(gulp, preset, ...configs)
-    this.cleanJavascripts = new CleanJavascripts(gulp, preset, ...configs)
-    this.cleanDigest = new CleanDigest(gulp, preset, ...configs)
-  }
-
-  run(done) {
-    this.cleanImages.run()
-    this.cleanStylesheets.run()
-    this.cleanJavascripts.run()
-    this.cleanDigest.run()
-
-    this.donezo(done)
+    super(gulp, config.task.name, recipes, config)
   }
 }
 
 const Default$21 = {
   debug: false,
-  presetType: 'digest',
+  presetType: 'postProcessor',
   task: {
     name: 'rev'
   },
@@ -1943,29 +1996,31 @@ const Rev = class extends BaseRecipe {
 
 const Default$22 = {
   debug: false,
-  presetType: 'digest',
+  presetType: 'postProcessor',
   task: {
-    name: 'minifyCss'
+    name: 'cssNano'
   },
   watch: {
-    glob: ['digest/**.css'],
+    glob: ['**/*.css'],
     options: {
       //cwd: ** resolved from preset **
     }
   },
   source: {
-    glob: ['digest/**.css'],
+    glob: ['**/*.css', '!**/*.min.css'],
     options: {
       //cwd: ** resolved from preset **
     }
   },
-  options: {}
+  options: {
+    //autoprefixer: false // assume this is done with Sass recipe
+  }
 }
 
 /**
  * Recipe to be run after Rev or any other that places final assets in the digest destination directory
  */
-const MinifyCss = class extends BaseRecipe {
+const CssNano = class extends BaseRecipe {
 
   /**
    *
@@ -1984,18 +2039,15 @@ const MinifyCss = class extends BaseRecipe {
 
   run(done, watching = false) {
 
-    // FIXME merge in the clean as a task
-
-
     return this.gulp.src(this.config.source.glob, this.config.source.options)
       .pipe(gulpif(this.config.debug, debug(this.debugOptions())))
+      .pipe(extReplace('.min.css'))
       .pipe(cssnano(this.config.options))
       .pipe(this.gulp.dest(this.config.dest))
       .on('error', (error) => {
         this.notifyError(error, done, watching)
       })
       .pipe(this.browserSync.stream())
-
   }
 }
 
@@ -2310,63 +2362,6 @@ const Jekyll = class extends BaseRecipe {
   }
 }
 
-const Recipes = class extends Base {
-
-  constructor(config = {debug: false}) {
-    super(config)
-  }
-
-  /**
-   * Prefer to return the taskFn instead of a string, but return the string if that's all that is given to us.
-   *
-   * @param recipe
-   * @returns {*}
-   */
-  toTask(recipe) {
-    let taskName = null
-    if (typeof recipe === "string") {
-      // any given task name should be returned as-is
-      taskName = recipe
-      this.debug(`toTask(): ${taskName}`)
-    }
-    else {
-      if (typeof recipe === "function") {
-        // any given fn should be return as-is i.e. series/parallel
-        taskName = recipe
-      }
-      else {
-        // any recipe should be converted to string task name
-        taskName = recipe.taskFn
-      }
-      this.debug(`toTask(): ${taskName.name || taskName.displayName}`)
-    }
-    return taskName
-  }
-
-  /**
-   * Yield the nearest set of task names - return nested series/parallel fn - do not follow them and flatten them (they will do that themselves if using the helper methods)
-   *
-   * @param recipes
-   * @returns {Array}
-   */
-  toTasks(recipes, tasks = []) {
-    this.debugDump('toTasks: recipes', recipes)
-
-    for (let recipe of recipes) {
-      //this.debugDump(`recipe taskName[${recipe.taskName? recipe.taskName() : ''}] isArray[${Array.isArray(recipe)}]`, recipe)
-      if (Array.isArray(recipe)) {
-        tasks.push(this.toTasks(recipe, []))
-      }
-      else {
-        let taskName = this.toTask(recipe)
-        tasks.push(taskName)
-      }
-    }
-
-    return tasks
-  }
-}
-
 /**
  *
  * @param recipes - (recipes or task fns, or task names)
@@ -2379,17 +2374,37 @@ const series = (gulp, ...recipes) => {
   return series
 }
 
-/**
- *
- * @param recipes - (recipes or task fns, or task names)
- */
-const parallel = (gulp, ...recipes) => {
-   let parallel = gulp.parallel(new Recipes().toTasks(recipes))
-
-  // hack to attach the recipes for inspection by aggregate
-  parallel.recipes = recipes
-  return parallel
+const Default$28 = {
+  debug: false,
+  watch: false,
+  presetType: 'macro',
+  task: false
 }
 
-export { Preset, Rails, EsLint, Uglify, Autoprefixer, Images, Sass, ScssLint, Aggregate, RollupEs, RollupCjs, RollupIife, RollupAmd, RollupUmd, Copy, CleanImages, CleanStylesheets, CleanJavascripts, CleanDigest, Clean, Rev, MinifyCss, Mocha, Prepublish, PublishBuild, Jekyll, series, parallel };
+/**
+ * Sleep the given ms value.
+ */
+const Sleep = class extends BaseRecipe {
+
+  /**
+   *
+   * @param gulp - gulp instance
+   * @param config - customized overrides
+   */
+  constructor(gulp, preset, sleep) {
+    super(gulp, preset, Default$28, {sleep: sleep})
+  }
+
+  createDescription(){
+    return `Sleeps for ${this.config.sleep} milliseconds.`
+  }
+
+  run(done) {
+    setTimeout(() => { // eslint-disable-line no-undef
+      this.donezo(done)
+    }, this.config.sleep)
+  }
+}
+
+export { Preset, Rails, EsLint, Uglify, Autoprefixer, Images, Sass, ScssLint, Aggregate, RollupEs, RollupCjs, RollupIife, RollupAmd, RollupUmd, Copy, CleanImages, CleanStylesheets, CleanJavascripts, CleanDigest, Clean, Rev, CssNano, Mocha, Prepublish, PublishBuild, Jekyll, series, parallel, Sleep };
 //# sourceMappingURL=gulp-pipeline.es.js.map

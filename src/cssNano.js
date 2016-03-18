@@ -4,32 +4,35 @@ import debug from 'gulp-debug'
 import extend from 'extend'
 import gulpif from 'gulp-if'
 import cssnano from 'gulp-cssnano'
+import extReplace from 'gulp-ext-replace'
 
 export const Default = {
   debug: false,
-  presetType: 'digest',
+  presetType: 'postProcessor',
   task: {
-    name: 'minifyCss'
+    name: 'cssNano'
   },
   watch: {
-    glob: ['digest/**.css'],
+    glob: ['**/*.css'],
     options: {
       //cwd: ** resolved from preset **
     }
   },
   source: {
-    glob: ['digest/**.css'],
+    glob: ['**/*.css', '!**/*.min.css'],
     options: {
       //cwd: ** resolved from preset **
     }
   },
-  options: {}
+  options: {
+    //autoprefixer: false // assume this is done with Sass recipe
+  }
 }
 
 /**
  * Recipe to be run after Rev or any other that places final assets in the digest destination directory
  */
-const MinifyCss = class extends BaseRecipe {
+const CssNano = class extends BaseRecipe {
 
   /**
    *
@@ -48,19 +51,16 @@ const MinifyCss = class extends BaseRecipe {
 
   run(done, watching = false) {
 
-    // FIXME merge in the clean as a task
-
-
     return this.gulp.src(this.config.source.glob, this.config.source.options)
       .pipe(gulpif(this.config.debug, debug(this.debugOptions())))
+      .pipe(extReplace('.min.css'))
       .pipe(cssnano(this.config.options))
       .pipe(this.gulp.dest(this.config.dest))
       .on('error', (error) => {
         this.notifyError(error, done, watching)
       })
       .pipe(this.browserSync.stream())
-
   }
 }
 
-export default MinifyCss
+export default CssNano

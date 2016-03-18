@@ -41,6 +41,7 @@ var globAll = _interopDefault(require('glob-all'));
 var del = _interopDefault(require('del'));
 var rev = _interopDefault(require('gulp-rev'));
 var cssnano = _interopDefault(require('gulp-cssnano'));
+var extReplace = _interopDefault(require('gulp-ext-replace'));
 var mocha = _interopDefault(require('gulp-mocha'));
 var BuildControl = _interopDefault(require('build-control/src/buildControl'));
 var pathIsAbsolute = _interopDefault(require('path-is-absolute'));
@@ -297,7 +298,7 @@ var Baseline = {
     watch: { options: { cwd: 'images' } },
     dest: 'dist'
   },
-  digest: {
+  postProcessor: {
     source: { options: { cwd: 'dist' } },
     watch: { options: { cwd: 'dist' } },
     dest: 'dist/digest'
@@ -346,7 +347,7 @@ var PresetRails = {
     watch: { options: { cwd: railsImages } },
     dest: railsDest
   },
-  digest: {
+  postProcessor: {
     source: { options: { cwd: railsDest } },
     watch: { options: { cwd: railsDest } },
     dest: 'public/assets/digest'
@@ -540,9 +541,13 @@ var BaseGulp = function (_Base) {
   babelHelpers.createClass(BaseGulp, [{
     key: 'taskName',
     value: function taskName() {
-      if (!this.config.task.name) {
-        this.notifyError('Expected ' + this.constructor.name + ' to have a task name in the configuration.');
+      if (!this.config.task || !this.config.task.name) {
+        return '';
       }
+
+      //if (!this.config.task.name) {
+      //  this.notifyError(`Expected ${this.constructor.name} to have a task name in the configuration.`)
+      //}
       return '' + this.config.task.prefix + this.config.task.name + this.config.task.suffix;
     }
   }, {
@@ -557,13 +562,12 @@ var BaseGulp = function (_Base) {
   }, {
     key: 'notifyError',
     value: function notifyError(error, done) {
-      var watching = arguments.length <= 2 || arguments[2] === undefined ? false : arguments[2];
-
+      //, watching = false) {
 
       //this.debugDump('notifyError', error)
 
       var lineNumber = error.lineNumber ? 'Line ' + error.lineNumber + ' -- ' : '';
-      var taskName = error.task || this.taskName();
+      var taskName = error.task || (this.config.task && this.config.task.name ? this.taskName() : this.constructor.name);
 
       var title = 'Task [' + taskName + '] failed';
       if (error.plugin) {
@@ -599,9 +603,6 @@ var BaseGulp = function (_Base) {
         report += tag('    File:') + ' ' + error.fileName + '\n';
       }
       this.log(report);
-
-      this.log('watching? ' + watching);
-      this.log('done was provided? ' + done);
 
       // Prevent the 'watch' task from stopping
       //if (!watching && this.gulp) {
@@ -738,10 +739,6 @@ var BaseRecipe = function (_BaseGulp) {
     var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(BaseRecipe).call(this, gulp, extend(true, {}, Default$1, { baseDirectories: preset.baseDirectories }, Preset.resolveConfig.apply(Preset, [preset].concat(configs)))));
 
     _this.preset = preset;
-
-    if (_this.createDescription !== undefined) {
-      _this.config.task.description = _this.createDescription();
-    }
     _this.registerTask();
     _this.registerWatchTask();
     return _this;
@@ -782,46 +779,32 @@ var BaseRecipe = function (_BaseGulp) {
     value: function registerTask() {
       var _this3 = this;
 
-      if (this.config.task) {
-        (function () {
-          // generate primary task e.g. sass
-          var name = _this3.taskName();
-          _this3.debug('Registering task: ' + Util.colors.green(name));
+      // generate primary task e.g. sass
 
-          // set a fn for use by the task, also used by aggregate/series/parallel
-          _this3.taskFn = function (done) {
-            //this.log(`Running task: ${Util.colors.green(name)}`)
+      // set a fn for use by the task, also used by aggregate/series/parallel
+      this.taskFn = function (done) {
+        //this.log(`Running task: ${Util.colors.green(name)}`)
 
-            if (_this3.config.debug) {
-              _this3.debugDump('Executing ' + Util.colors.green(name) + ' with options:', _this3.config.options);
-            }
-            return _this3.run(done);
-          };
+        if (_this3.config.debug) {
+          _this3.debugDump('Executing ' + Util.colors.green(_this3.taskName()) + ' with options:', _this3.config.options);
+        }
+        return _this3.run(done);
+      };
 
-          // set metadata on fn for discovery by gulp
-          _this3.taskFn.displayName = name;
-          _this3.taskFn.description = _this3.config.task.description;
+      if (this.config.task && this.config.task.name) {
+        var name = this.taskName();
+        if (this.createDescription !== undefined) {
+          this.config.task.description = this.createDescription();
+        }
 
-          // register the task
-          _this3.gulp.task(name, _this3.taskFn);
-        })();
-      }
-    }
-  }, {
-    key: 'taskName',
-    value: function taskName() {
-      if (!this.config.task.name) {
-        this.notifyError('Expected ' + this.constructor.name + ' to have a task name in the configuration.');
-      }
-      return '' + this.config.task.prefix + this.config.task.name + this.config.task.suffix;
-    }
-  }, {
-    key: 'watchTaskName',
-    value: function watchTaskName() {
-      if (this.config.watch && this.config.watch.name) {
-        return this.config.watch.name;
-      } else {
-        return this.taskName() + ':watch';
+        this.debug('Registering task: ' + Util.colors.green(name));
+
+        // set metadata on fn for discovery by gulp
+        this.taskFn.displayName = name;
+        this.taskFn.description = this.config.task.description;
+
+        // register the task
+        this.gulp.task(name, this.taskFn);
       }
     }
   }, {
@@ -1262,7 +1245,12 @@ var Aggregate = function (_BaseGulp) {
 
     var _this = babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(Aggregate)).call.apply(_Object$getPrototypeO, [this, gulp, Default$8, { task: { name: taskName } }].concat(configs)));
 
-    _this.recipes = recipes;
+    if (Array.isArray(recipes)) {
+      _this.notifyError('recipes must not be an array, but a function, series, or parallel, found: ' + recipes);
+    }
+
+    // track recipes as taskFn so that aggregates can be included and resolved as part of other aggregates just like recipes
+    _this.taskFn = recipes;
     _this.registerTask(_this.taskName());
 
     if (_this.config.watch) {
@@ -1274,7 +1262,7 @@ var Aggregate = function (_BaseGulp) {
   babelHelpers.createClass(Aggregate, [{
     key: 'createHelpText',
     value: function createHelpText() {
-      //let taskNames = new Recipes().toTasks(this.recipes)
+      //let taskNames = new Recipes().toTasks(this.taskFn)
       //
       //// use the config to generate the dynamic help
       //return `Runs [${taskNames.join(', ')}]`
@@ -1292,10 +1280,10 @@ var Aggregate = function (_BaseGulp) {
   }, {
     key: 'registerTask',
     value: function registerTask(taskName) {
-      //let tasks = this.toTasks(this.recipes)
+      //let tasks = this.toTasks(this.taskFn)
       //this.debug(`Registering task: ${Util.colors.green(taskName)} for ${stringify(tasks)}`)
-      this.gulp.task(taskName, this.recipes);
-      this.recipes.description = this.createHelpText();
+      this.gulp.task(taskName, this.taskFn);
+      this.taskFn.description = this.createHelpText();
     }
   }, {
     key: 'registerWatchTask',
@@ -1314,7 +1302,7 @@ var Aggregate = function (_BaseGulp) {
       // on error ensure that we reset the flag so that it runs again
       this.gulp.on('error', function () {
         _this2.debug('Yay! listened for the error and am able to reset the running flag!');
-        _this2.recipes.running = false;
+        _this2.taskFn.running = false;
       });
 
       var watchFn = function watchFn() {
@@ -1332,21 +1320,21 @@ var Aggregate = function (_BaseGulp) {
             // declare this in here so we can use different display names in the log
             var runFn = function runFn(done) {
               // ensure that multiple watches do not run the entire set of recipes multiple times on a single change
-              if (_this2.recipes.running) {
+              if (_this2.taskFn.running) {
                 _this2.debug('Multiple matching watchers, skipping this one...');
                 done();
                 return;
               } else {
                 _this2.debug('Allowing it to run....');
-                _this2.recipes.running = true;
+                _this2.taskFn.running = true;
               }
 
               var finishFn = function finishFn() {
                 _this2.log('[' + Util.colors.green(taskName) + '] finished');
-                _this2.recipes.running = false;
+                _this2.taskFn.running = false;
               };
 
-              _this2.gulp.series(_this2.recipes, finishFn, done)();
+              _this2.gulp.series(_this2.taskFn, finishFn, done)();
             };
             runFn.displayName = recipe.taskName() + ' watcher';
 
@@ -1354,17 +1342,17 @@ var Aggregate = function (_BaseGulp) {
             var recipeName = Util.colors.grey('(' + recipe.taskName() + ')');
             // add watchers for logging/information
             watcher.on('add', function (path) {
-              if (!_this2.recipes.running) {
+              if (!_this2.taskFn.running) {
                 _this2.log('[' + Util.colors.green(taskName) + ' ' + recipeName + '] ' + path + ' was added, running...');
               }
             });
             watcher.on('change', function (path) {
-              if (!_this2.recipes.running) {
+              if (!_this2.taskFn.running) {
                 _this2.log('[' + Util.colors.green(taskName) + ' ' + recipeName + '] ' + path + ' was changed, running...');
               }
             });
             watcher.on('unlink', function (path) {
-              if (!_this2.recipes.running) {
+              if (!_this2.taskFn.running) {
                 _this2.log('[' + Util.colors.green(taskName) + ' ' + recipeName + '] ' + path + ' was deleted, running...');
               }
             });
@@ -1407,7 +1395,7 @@ var Aggregate = function (_BaseGulp) {
   }, {
     key: 'flattenedRecipes',
     value: function flattenedRecipes() {
-      var recipes = this.flatten([this.recipes]);
+      var recipes = this.flatten([this.taskFn]);
       this.debugDump('flattenedRecipes', recipes);
       return recipes;
     }
@@ -2385,7 +2373,7 @@ var CleanJavascripts = function (_BaseClean) {
 }(BaseClean);
 
 var Default$19 = {
-  presetType: 'digest',
+  presetType: 'postProcessor',
   task: {
     name: 'clean:digest'
   }
@@ -2415,6 +2403,111 @@ var CleanDigest = function (_BaseClean) {
   return CleanDigest;
 }(BaseClean);
 
+var Recipes = function (_Base) {
+  babelHelpers.inherits(Recipes, _Base);
+
+  function Recipes() {
+    var config = arguments.length <= 0 || arguments[0] === undefined ? { debug: false } : arguments[0];
+    babelHelpers.classCallCheck(this, Recipes);
+    return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Recipes).call(this, config));
+  }
+
+  /**
+   * Prefer to return the taskFn instead of a string, but return the string if that's all that is given to us.
+   *
+   * @param recipe
+   * @returns {*}
+   */
+
+
+  babelHelpers.createClass(Recipes, [{
+    key: "toTask",
+    value: function toTask(recipe) {
+      var taskName = null;
+      if (typeof recipe === "string") {
+        // any given task name should be returned as-is
+        taskName = recipe;
+        this.debug("toTask(): " + taskName);
+      } else {
+        if (typeof recipe === "function") {
+          // any given fn should be return as-is i.e. series/parallel
+          taskName = recipe;
+        } else {
+          // any recipe should be converted to string task name
+          taskName = recipe.taskFn;
+        }
+        this.debug("toTask(): " + (taskName.name || taskName.displayName));
+      }
+      return taskName;
+    }
+
+    /**
+     * Yield the nearest set of task names - return nested series/parallel fn - do not follow them and flatten them (they will do that themselves if using the helper methods)
+     *
+     * @param recipes
+     * @returns {Array}
+     */
+
+  }, {
+    key: "toTasks",
+    value: function toTasks(recipes) {
+      var tasks = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1];
+
+      this.debugDump('toTasks: recipes', recipes);
+
+      var _iteratorNormalCompletion = true;
+      var _didIteratorError = false;
+      var _iteratorError = undefined;
+
+      try {
+        for (var _iterator = recipes[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          var recipe = _step.value;
+
+          //this.debugDump(`recipe taskName[${recipe.taskName? recipe.taskName() : ''}] isArray[${Array.isArray(recipe)}]`, recipe)
+          if (Array.isArray(recipe)) {
+            tasks.push(this.toTasks(recipe, []));
+          } else {
+            var taskName = this.toTask(recipe);
+            tasks.push(taskName);
+          }
+        }
+      } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion && _iterator.return) {
+            _iterator.return();
+          }
+        } finally {
+          if (_didIteratorError) {
+            throw _iteratorError;
+          }
+        }
+      }
+
+      return tasks;
+    }
+  }]);
+  return Recipes;
+}(Base);
+
+/**
+ *
+ * @param recipes - (recipes or task fns, or task names)
+ */
+var parallel = function parallel(gulp) {
+  for (var _len = arguments.length, recipes = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+    recipes[_key - 1] = arguments[_key];
+  }
+
+  var parallel = gulp.parallel(new Recipes().toTasks(recipes));
+
+  // hack to attach the recipes for inspection by aggregate
+  parallel.recipes = recipes;
+  return parallel;
+};
+
 var Default$20 = {
   debug: false,
   watch: false,
@@ -2425,8 +2518,8 @@ var Default$20 = {
   }
 };
 
-var Clean = function (_BaseRecipe) {
-  babelHelpers.inherits(Clean, _BaseRecipe);
+var Clean = function (_Aggregate) {
+  babelHelpers.inherits(Clean, _Aggregate);
 
 
   /**
@@ -2436,40 +2529,24 @@ var Clean = function (_BaseRecipe) {
    */
 
   function Clean(gulp, preset) {
-    var _Object$getPrototypeO;
-
     babelHelpers.classCallCheck(this, Clean);
 
     for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
       configs[_key - 2] = arguments[_key];
     }
 
-    var _this = babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(Clean)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$20].concat(configs)));
+    var config = Preset.resolveConfig.apply(Preset, [preset, Default$20].concat(configs));
+    var recipes = parallel(gulp, new (Function.prototype.bind.apply(CleanImages, [null].concat([gulp, preset], configs)))(), new (Function.prototype.bind.apply(CleanStylesheets, [null].concat([gulp, preset], configs)))(), new (Function.prototype.bind.apply(CleanJavascripts, [null].concat([gulp, preset], configs)))(), new (Function.prototype.bind.apply(CleanDigest, [null].concat([gulp, preset], configs)))());
 
-    _this.cleanImages = new (Function.prototype.bind.apply(CleanImages, [null].concat([gulp, preset], configs)))();
-    _this.cleanStylesheets = new (Function.prototype.bind.apply(CleanStylesheets, [null].concat([gulp, preset], configs)))();
-    _this.cleanJavascripts = new (Function.prototype.bind.apply(CleanJavascripts, [null].concat([gulp, preset], configs)))();
-    _this.cleanDigest = new (Function.prototype.bind.apply(CleanDigest, [null].concat([gulp, preset], configs)))();
-    return _this;
+    return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Clean).call(this, gulp, config.task.name, recipes, config));
   }
 
-  babelHelpers.createClass(Clean, [{
-    key: 'run',
-    value: function run(done) {
-      this.cleanImages.run();
-      this.cleanStylesheets.run();
-      this.cleanJavascripts.run();
-      this.cleanDigest.run();
-
-      this.donezo(done);
-    }
-  }]);
   return Clean;
-}(BaseRecipe);
+}(Aggregate);
 
 var Default$21 = {
   debug: false,
-  presetType: 'digest',
+  presetType: 'postProcessor',
   task: {
     name: 'rev'
   },
@@ -2539,30 +2616,32 @@ var Rev = function (_BaseRecipe) {
 
 var Default$22 = {
   debug: false,
-  presetType: 'digest',
+  presetType: 'postProcessor',
   task: {
-    name: 'minifyCss'
+    name: 'cssNano'
   },
   watch: {
-    glob: ['digest/**.css'],
+    glob: ['**/*.css'],
     options: {
       //cwd: ** resolved from preset **
     }
   },
   source: {
-    glob: ['digest/**.css'],
+    glob: ['**/*.css', '!**/*.min.css'],
     options: {
       //cwd: ** resolved from preset **
     }
   },
-  options: {}
+  options: {
+    //autoprefixer: false // assume this is done with Sass recipe
+  }
 };
 
 /**
  * Recipe to be run after Rev or any other that places final assets in the digest destination directory
  */
-var MinifyCss = function (_BaseRecipe) {
-  babelHelpers.inherits(MinifyCss, _BaseRecipe);
+var CssNano = function (_BaseRecipe) {
+  babelHelpers.inherits(CssNano, _BaseRecipe);
 
 
   /**
@@ -2572,20 +2651,20 @@ var MinifyCss = function (_BaseRecipe) {
    * @param configs - customized overrides for this recipe
    */
 
-  function MinifyCss(gulp, preset) {
-    babelHelpers.classCallCheck(this, MinifyCss);
+  function CssNano(gulp, preset) {
+    babelHelpers.classCallCheck(this, CssNano);
 
     for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
       configs[_key - 2] = arguments[_key];
     }
 
-    var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(MinifyCss).call(this, gulp, preset, extend.apply(undefined, [true, {}, Default$22].concat(configs))));
+    var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(CssNano).call(this, gulp, preset, extend.apply(undefined, [true, {}, Default$22].concat(configs))));
 
     _this.browserSync = BrowserSync.create();
     return _this;
   }
 
-  babelHelpers.createClass(MinifyCss, [{
+  babelHelpers.createClass(CssNano, [{
     key: 'createDescription',
     value: function createDescription() {
       return 'Minifies digest css from ' + this.config.source.options.cwd + '/' + this.config.source.glob;
@@ -2598,14 +2677,12 @@ var MinifyCss = function (_BaseRecipe) {
       var watching = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
 
 
-      // FIXME merge in the clean as a task
-
-      return this.gulp.src(this.config.source.glob, this.config.source.options).pipe(gulpif(this.config.debug, debug(this.debugOptions()))).pipe(cssnano(this.config.options)).pipe(this.gulp.dest(this.config.dest)).on('error', function (error) {
+      return this.gulp.src(this.config.source.glob, this.config.source.options).pipe(gulpif(this.config.debug, debug(this.debugOptions()))).pipe(extReplace('.min.css')).pipe(cssnano(this.config.options)).pipe(this.gulp.dest(this.config.dest)).on('error', function (error) {
         _this2.notifyError(error, done, watching);
       }).pipe(this.browserSync.stream());
     }
   }]);
-  return MinifyCss;
+  return CssNano;
 }(BaseRecipe);
 
 var Default$23 = {
@@ -3070,95 +3147,6 @@ var Jekyll = function (_BaseRecipe) {
   return Jekyll;
 }(BaseRecipe);
 
-var Recipes = function (_Base) {
-  babelHelpers.inherits(Recipes, _Base);
-
-  function Recipes() {
-    var config = arguments.length <= 0 || arguments[0] === undefined ? { debug: false } : arguments[0];
-    babelHelpers.classCallCheck(this, Recipes);
-    return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Recipes).call(this, config));
-  }
-
-  /**
-   * Prefer to return the taskFn instead of a string, but return the string if that's all that is given to us.
-   *
-   * @param recipe
-   * @returns {*}
-   */
-
-
-  babelHelpers.createClass(Recipes, [{
-    key: "toTask",
-    value: function toTask(recipe) {
-      var taskName = null;
-      if (typeof recipe === "string") {
-        // any given task name should be returned as-is
-        taskName = recipe;
-        this.debug("toTask(): " + taskName);
-      } else {
-        if (typeof recipe === "function") {
-          // any given fn should be return as-is i.e. series/parallel
-          taskName = recipe;
-        } else {
-          // any recipe should be converted to string task name
-          taskName = recipe.taskFn;
-        }
-        this.debug("toTask(): " + (taskName.name || taskName.displayName));
-      }
-      return taskName;
-    }
-
-    /**
-     * Yield the nearest set of task names - return nested series/parallel fn - do not follow them and flatten them (they will do that themselves if using the helper methods)
-     *
-     * @param recipes
-     * @returns {Array}
-     */
-
-  }, {
-    key: "toTasks",
-    value: function toTasks(recipes) {
-      var tasks = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1];
-
-      this.debugDump('toTasks: recipes', recipes);
-
-      var _iteratorNormalCompletion = true;
-      var _didIteratorError = false;
-      var _iteratorError = undefined;
-
-      try {
-        for (var _iterator = recipes[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-          var recipe = _step.value;
-
-          //this.debugDump(`recipe taskName[${recipe.taskName? recipe.taskName() : ''}] isArray[${Array.isArray(recipe)}]`, recipe)
-          if (Array.isArray(recipe)) {
-            tasks.push(this.toTasks(recipe, []));
-          } else {
-            var taskName = this.toTask(recipe);
-            tasks.push(taskName);
-          }
-        }
-      } catch (err) {
-        _didIteratorError = true;
-        _iteratorError = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion && _iterator.return) {
-            _iterator.return();
-          }
-        } finally {
-          if (_didIteratorError) {
-            throw _iteratorError;
-          }
-        }
-      }
-
-      return tasks;
-    }
-  }]);
-  return Recipes;
-}(Base);
-
 /**
  *
  * @param recipes - (recipes or task fns, or task names)
@@ -3175,21 +3163,49 @@ var series = function series(gulp) {
   return series;
 };
 
+var Default$28 = {
+  debug: false,
+  watch: false,
+  presetType: 'macro',
+  task: false
+};
+
 /**
- *
- * @param recipes - (recipes or task fns, or task names)
+ * Sleep the given ms value.
  */
-var parallel = function parallel(gulp) {
-  for (var _len = arguments.length, recipes = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-    recipes[_key - 1] = arguments[_key];
+var Sleep = function (_BaseRecipe) {
+  babelHelpers.inherits(Sleep, _BaseRecipe);
+
+
+  /**
+   *
+   * @param gulp - gulp instance
+   * @param config - customized overrides
+   */
+
+  function Sleep(gulp, preset, sleep) {
+    babelHelpers.classCallCheck(this, Sleep);
+    return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Sleep).call(this, gulp, preset, Default$28, { sleep: sleep }));
   }
 
-  var parallel = gulp.parallel(new Recipes().toTasks(recipes));
+  babelHelpers.createClass(Sleep, [{
+    key: 'createDescription',
+    value: function createDescription() {
+      return 'Sleeps for ' + this.config.sleep + ' milliseconds.';
+    }
+  }, {
+    key: 'run',
+    value: function run(done) {
+      var _this2 = this;
 
-  // hack to attach the recipes for inspection by aggregate
-  parallel.recipes = recipes;
-  return parallel;
-};
+      setTimeout(function () {
+        // eslint-disable-line no-undef
+        _this2.donezo(done);
+      }, this.config.sleep);
+    }
+  }]);
+  return Sleep;
+}(BaseRecipe);
 
 exports.Preset = Preset;
 exports.Rails = Rails;
@@ -3212,11 +3228,12 @@ exports.CleanJavascripts = CleanJavascripts;
 exports.CleanDigest = CleanDigest;
 exports.Clean = Clean;
 exports.Rev = Rev;
-exports.MinifyCss = MinifyCss;
+exports.CssNano = CssNano;
 exports.Mocha = Mocha;
 exports.Prepublish = Prepublish;
 exports.PublishBuild = PublishBuild;
 exports.Jekyll = Jekyll;
 exports.series = series;
 exports.parallel = parallel;
+exports.Sleep = Sleep;
 //# sourceMappingURL=gulp-pipeline.cjs.js.map

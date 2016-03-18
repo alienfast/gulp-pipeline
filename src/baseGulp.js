@@ -26,11 +26,14 @@ const BaseGulp = class extends Base {
     this.gulp = gulp
   }
 
-
   taskName() {
-    if (!this.config.task.name) {
-      this.notifyError(`Expected ${this.constructor.name} to have a task name in the configuration.`)
+    if (!this.config.task || !this.config.task.name) {
+      return ''
     }
+
+    //if (!this.config.task.name) {
+    //  this.notifyError(`Expected ${this.constructor.name} to have a task name in the configuration.`)
+    //}
     return `${this.config.task.prefix}${this.config.task.name}${this.config.task.suffix}`
   }
 
@@ -43,12 +46,12 @@ const BaseGulp = class extends Base {
     }
   }
 
-  notifyError(error, done, watching = false) {
+  notifyError(error, done) { //, watching = false) {
 
     //this.debugDump('notifyError', error)
 
     let lineNumber = (error.lineNumber) ? `Line ${error.lineNumber} -- ` : ''
-    let taskName = error.task || this.taskName()
+    let taskName = error.task || ((this.config.task && this.config.task.name) ? this.taskName() : this.constructor.name)
 
     let title = `Task [${taskName}] failed`
     if (error.plugin) {
@@ -85,11 +88,6 @@ const BaseGulp = class extends Base {
       report += `${tag('    File:')} ${error.fileName}\n`
     }
     this.log(report)
-
-
-
-this.log(`watching? ${watching}`)
-this.log(`done was provided? ${done}`)
 
     // Prevent the 'watch' task from stopping
     //if (!watching && this.gulp) {

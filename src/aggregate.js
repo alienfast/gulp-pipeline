@@ -16,7 +16,13 @@ const Aggregate = class extends BaseGulp {
    */
   constructor(gulp, taskName, recipes, ...configs) {
     super(gulp, Default, {task: {name: taskName}}, ...configs)
-    this.recipes = recipes
+
+    if(Array.isArray(recipes)){
+      this.notifyError(`recipes must not be an array, but a function, series, or parallel, found: ${recipes}`)
+    }
+
+    // track recipes as taskFn so that aggregates can be included and resolved as part of other aggregates just like recipes
+    this.taskFn = recipes
     this.registerTask(this.taskName())
 
     if (this.config.watch) {
@@ -25,7 +31,7 @@ const Aggregate = class extends BaseGulp {
   }
 
   createHelpText() {
-    //let taskNames = new Recipes().toTasks(this.recipes)
+    //let taskNames = new Recipes().toTasks(this.taskFn)
     //
     //// use the config to generate the dynamic help
     //return `Runs [${taskNames.join(', ')}]`
@@ -41,10 +47,10 @@ const Aggregate = class extends BaseGulp {
   }
 
   registerTask(taskName) {
-    //let tasks = this.toTasks(this.recipes)
+    //let tasks = this.toTasks(this.taskFn)
     //this.debug(`Registering task: ${Util.colors.green(taskName)} for ${stringify(tasks)}`)
-    this.gulp.task(taskName, this.recipes)
-    this.recipes.description = this.createHelpText()
+    this.gulp.task(taskName, this.taskFn)
+    this.taskFn.description = this.createHelpText()
   }
 
   registerWatchTask(taskName) {
@@ -60,7 +66,7 @@ const Aggregate = class extends BaseGulp {
     // on error ensure that we reset the flag so that it runs again
     this.gulp.on('error', () => {
       this.debug(`Yay! listened for the error and am able to reset the running flag!`)
-      this.recipes.running = false
+      this.taskFn.running = false
     })
 
 
@@ -72,22 +78,22 @@ const Aggregate = class extends BaseGulp {
         // declare this in here so we can use different display names in the log
         let runFn = (done) => {
           // ensure that multiple watches do not run the entire set of recipes multiple times on a single change
-          if (this.recipes.running) {
+          if (this.taskFn.running) {
             this.debug('Multiple matching watchers, skipping this one...')
             done()
             return
           }
           else {
             this.debug('Allowing it to run....')
-            this.recipes.running = true
+            this.taskFn.running = true
           }
 
           let finishFn = () => {
             this.log(`[${Util.colors.green(taskName)}] finished`)
-            this.recipes.running = false
+            this.taskFn.running = false
           }
 
-          this.gulp.series(this.recipes, finishFn, done)()
+          this.gulp.series(this.taskFn, finishFn, done)()
         }
         runFn.displayName = `${recipe.taskName()} watcher`
 
@@ -95,17 +101,17 @@ const Aggregate = class extends BaseGulp {
         let recipeName = Util.colors.grey(`(${recipe.taskName()})`)
         // add watchers for logging/information
         watcher.on('add', (path) => {
-          if (!this.recipes.running) {
+          if (!this.taskFn.running) {
             this.log(`[${Util.colors.green(taskName)} ${recipeName}] ${path} was added, running...`)
           }
         })
         watcher.on('change', (path) => {
-          if (!this.recipes.running) {
+          if (!this.taskFn.running) {
             this.log(`[${Util.colors.green(taskName)} ${recipeName}] ${path} was changed, running...`)
           }
         })
         watcher.on('unlink', (path) => {
-          if (!this.recipes.running) {
+          if (!this.taskFn.running) {
             this.log(`[${Util.colors.green(taskName)} ${recipeName}] ${path} was deleted, running...`)
           }
         })
@@ -124,7 +130,7 @@ const Aggregate = class extends BaseGulp {
   }
 
   flattenedRecipes() {
-    let recipes = this.flatten([this.recipes])
+    let recipes = this.flatten([this.taskFn])
     this.debugDump(`flattenedRecipes`, recipes)
     return recipes
   }

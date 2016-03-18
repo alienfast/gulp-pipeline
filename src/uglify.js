@@ -1,6 +1,5 @@
 import BaseRecipe from './baseRecipe'
 import uglify from 'gulp-uglify'
-import extend from 'extend'
 import debug from 'gulp-debug'
 import gulpif from 'gulp-if'
 import sourcemaps from 'gulp-sourcemaps'
@@ -43,7 +42,7 @@ const Uglify = class extends BaseRecipe {
    * @param configs - customized overrides for this recipe
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, extend(true, {}, Default, ...configs))
+    super(gulp, preset, Default, ...configs)
   }
 
   createDescription() {
@@ -59,7 +58,7 @@ const Uglify = class extends BaseRecipe {
     // helpful log message if files not found
     let files = glob.sync(this.config.source.glob, this.config.source.options)
     if (!files || files.length <= 0) {
-      this.log(`No sources found to uglify in: ${this.dump(this.config.source)} from ${process.cwd()}`)
+      this.log(`No sources found to uglify in: ${this.dump(this.config.source)}`)
     }
 
     if (this.config.concat.dest) {

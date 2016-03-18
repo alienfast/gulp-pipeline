@@ -1,6 +1,5 @@
 import BasePublish from './basePublish'
 import BuildControl from 'build-control/src/buildControl'
-import extend from 'extend'
 import fs from 'fs-extra'
 import path from 'path'
 import process from 'process'
@@ -60,7 +59,7 @@ const PublishBuild = class extends BasePublish {
    * @param config - customized overrides
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, extend(true, {}, Default, ...configs))
+    super(gulp, preset, Default, ...configs)
   }
 
   run(done) {

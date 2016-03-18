@@ -26,7 +26,7 @@ const Sleep = class extends BaseRecipe {
   }
 
   run(done) {
-    setTimeout(() => {
+    setTimeout(() => { // eslint-disable-line no-undef
       this.donezo(done)
     }, this.config.sleep)
   }

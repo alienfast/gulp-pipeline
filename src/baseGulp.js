@@ -46,7 +46,7 @@ const BaseGulp = class extends Base {
     }
   }
 
-  notifyError(error, done, watching = false) {
+  notifyError(error, done) { //, watching = false) {
 
     //this.debugDump('notifyError', error)
 

@@ -37,7 +37,7 @@
     "babelify": "^7.2.0",
     "browser-sync": "^2.11.1",
     "browserify": "^13.0.0",
-    "build-control": "^0.3.4",
+    "build-control": "^0.3.5",
     "del": "^2.2.0",
     "extend": "^3.0.0",
     "file-sync-cmp": "^0.1.1",

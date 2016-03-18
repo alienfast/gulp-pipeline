@@ -1315,10 +1315,10 @@ const Default$10 = {
     })]
   },
   nodeResolve: {
-    enabled: true // bundle a full package with dependencies?
+    enabled: false // bundle a full package with dependencies?
   },
   commonjs: {
-    enabled: true // convert dependencies to commonjs modules for rollup
+    enabled: false // convert dependencies to commonjs modules for rollup
   }
 }
 
@@ -1342,14 +1342,13 @@ const RollupCjs = class extends RollupEs {
 
 const Default$11 = {
   task: {
-    name: 'rollup:iife'
-  },
-  options: {
-    //dest: '', // required
-    format: 'iife'
+    name: 'rollup:cjs-bundled'
   },
   nodeResolve: {
-    enabled: true // by nature, iife is the full package so bundle up those dependencies.
+    enabled: true // bundle a full package with dependencies? (if not use RollupCjs itself)
+  },
+  commonjs: {
+    enabled: true // convert dependencies to commonjs modules for rollup
   }
 }
 
@@ -1358,7 +1357,7 @@ const Default$11 = {
  * Class Definition
  * ----------------------------------------------
  */
-const RollupIife = class extends RollupCjs {
+const RollupCjsBundled = class extends RollupCjs {
 
   /**
    *
@@ -1372,6 +1371,34 @@ const RollupIife = class extends RollupCjs {
 }
 
 const Default$12 = {
+  task: {
+    name: 'rollup:iife'
+  },
+  options: {
+    //dest: '', // required
+    format: 'iife'
+  }
+}
+
+/**
+ * ----------------------------------------------
+ * Class Definition
+ * ----------------------------------------------
+ */
+const RollupIife = class extends RollupCjsBundled {
+
+  /**
+   *
+   * @param gulp - gulp instance
+   * @param preset - base preset configuration - either one from preset.js or a custom hash
+   * @param configs - customized overrides for this recipe
+   */
+  constructor(gulp, preset, ...configs) {
+    super(gulp, preset, Default$12, ...configs)
+  }
+}
+
+const Default$13 = {
   task: {
     name: 'rollup:amd'
   },
@@ -1395,11 +1422,11 @@ const RollupAmd = class extends RollupCjs {
    * @param configs - customized overrides for this recipe
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, Default$12, ...configs)
+    super(gulp, preset, Default$13, ...configs)
   }
 }
 
-const Default$13 = {
+const Default$14 = {
   task: {
     name: 'rollup:umd'
   },
@@ -1423,7 +1450,7 @@ const RollupUmd = class extends RollupCjs {
    * @param configs - customized overrides for this recipe
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, Default$13, ...configs)
+    super(gulp, preset, Default$14, ...configs)
   }
 }
 
@@ -1628,7 +1655,7 @@ const File = class {
 //  singleton
 let instance = new FileImplementation()
 
-const Default$14 = {
+const Default$15 = {
   debug: false,
   watch: false,
   presetType: 'macro',
@@ -1669,7 +1696,7 @@ const Copy = class extends BaseRecipe {
    * @param config - customized overrides
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, extend(true, {}, Default$14, ...configs))
+    super(gulp, preset, extend(true, {}, Default$15, ...configs))
 
     this.requireValue(this.config.source.glob, `source.glob`)
     this.requireValue(this.config.source.options.cwd, `source.options.cwd`)
@@ -1764,7 +1791,7 @@ const Copy = class extends BaseRecipe {
   }
 }
 
-const Default$16 = {
+const Default$17 = {
   debug: false,
   watch: false,
   sync: true  // necessary so that tasks can be run in a series, can be overriden for other purposes
@@ -1779,7 +1806,7 @@ const BaseClean = class extends BaseRecipe {
    * @param configs - customized overrides for this recipe
    */
   constructor(gulp, preset, config = {}) {
-    super(gulp, preset, extend(true, {}, Default$16, config))
+    super(gulp, preset, extend(true, {}, Default$17, config))
   }
 
   createDescription(){
@@ -1816,7 +1843,7 @@ const BaseClean = class extends BaseRecipe {
   }
 }
 
-const Default$15 = {
+const Default$16 = {
   presetType: 'images',
   task: {
     name: 'clean:images'
@@ -1832,11 +1859,11 @@ const CleanImages = class extends BaseClean {
    * @param configs - customized overrides for this recipe
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, extend(true, {}, Default$15, ...configs))
+    super(gulp, preset, extend(true, {}, Default$16, ...configs))
   }
 }
 
-const Default$17 = {
+const Default$18 = {
   presetType: 'stylesheets',
   task: {
     name: 'clean:stylesheets'
@@ -1852,11 +1879,11 @@ const CleanStylesheets = class extends BaseClean {
    * @param configs - customized overrides for this recipe
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, extend(true, {}, Default$17, ...configs))
+    super(gulp, preset, extend(true, {}, Default$18, ...configs))
   }
 }
 
-const Default$18 = {
+const Default$19 = {
   presetType: 'javascripts',
   task: {
     name: 'clean:javascripts'
@@ -1872,11 +1899,11 @@ const CleanJavascripts = class extends BaseClean {
    * @param configs - customized overrides for this recipe
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, extend(true, {}, Default$18, ...configs))
+    super(gulp, preset, extend(true, {}, Default$19, ...configs))
   }
 }
 
-const Default$19 = {
+const Default$20 = {
   presetType: 'postProcessor',
   task: {
     name: 'clean:digest'
@@ -1892,7 +1919,7 @@ const CleanDigest = class extends BaseClean {
    * @param configs - customized overrides for this recipe
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, extend(true, {}, Default$19, ...configs))
+    super(gulp, preset, extend(true, {}, Default$20, ...configs))
   }
 }
 
@@ -1965,7 +1992,7 @@ const parallel = (gulp, ...recipes) => {
   return parallel
 }
 
-const Default$20 = {
+const Default$21 = {
   debug: false,
   watch: false,
   presetType: 'macro',
@@ -1983,7 +2010,7 @@ const Clean = class extends Aggregate {
    * @param config - customized overrides
    */
   constructor(gulp, preset, ...configs) {
-    let config = Preset.resolveConfig(preset, Default$20, ...configs)
+    let config = Preset.resolveConfig(preset, Default$21, ...configs)
     let recipes = parallel(gulp,
       new CleanImages(gulp, preset, ...configs),
       new CleanStylesheets(gulp, preset, ...configs),
@@ -1995,7 +2022,7 @@ const Clean = class extends Aggregate {
   }
 }
 
-const Default$21 = {
+const Default$22 = {
   debug: false,
   presetType: 'postProcessor',
   task: {
@@ -2025,7 +2052,7 @@ const Rev = class extends BaseRecipe {
    * @param configs - customized overrides for this recipe
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, extend(true, {}, Default$21, ...configs))
+    super(gulp, preset, extend(true, {}, Default$22, ...configs))
     this.browserSync = BrowserSync.create()
   }
 
@@ -2053,7 +2080,7 @@ const Rev = class extends BaseRecipe {
   }
 }
 
-const Default$22 = {
+const Default$23 = {
   debug: false,
   presetType: 'postProcessor',
   task: {
@@ -2088,7 +2115,7 @@ const CssNano = class extends BaseRecipe {
    * @param configs - customized overrides for this recipe
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, extend(true, {}, Default$22, ...configs))
+    super(gulp, preset, extend(true, {}, Default$23, ...configs))
     this.browserSync = BrowserSync.create()
   }
 
@@ -2110,7 +2137,7 @@ const CssNano = class extends BaseRecipe {
   }
 }
 
-const Default$23 = {
+const Default$24 = {
   debug: false,
   presetType: 'javascripts',
   task: {
@@ -2130,8 +2157,8 @@ const Mocha = class extends BaseRecipe {
   constructor(gulp, preset, ...configs) {
     // resolve watch cwd based on test cwd
     super(gulp, preset, extend(true, {},
-      Default$23,
-      {watch: {options: {cwd: Preset.resolveConfig(preset, Default$23, ...configs).test.options.cwd}}},
+      Default$24,
+      {watch: {options: {cwd: Preset.resolveConfig(preset, Default$24, ...configs).test.options.cwd}}},
       ...configs))
   }
 
@@ -2154,7 +2181,7 @@ const Mocha = class extends BaseRecipe {
 /**
  *  This is the base for publish recipes using BuildControl
  */
-const Default$25 = {
+const Default$26 = {
 
   dir: 'build', // directory to assemble the files - make sure to add this to your .gitignore so you don't publish this to your source branch
   source: {
@@ -2184,14 +2211,14 @@ const BasePublish = class extends BaseRecipe {
    * @param config - customized overrides
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, Default$25, ...configs)
+    super(gulp, preset, Default$26, ...configs)
 
     // use the dir as the cwd to the BuildControl class
     this.config.options = extend(true, {debug: this.config.debug, cwd: this.config.dir}, this.config.options)
   }
 }
 
-const Default$24 = {
+const Default$25 = {
   task: {
     name: 'prepublish',
     description: 'Checks tag name and ensures directory has all files committed.'
@@ -2216,7 +2243,7 @@ const Prepublish = class extends BasePublish {
    * @param config - customized overrides
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, extend(true, {}, Default$24, ...configs))
+    super(gulp, preset, extend(true, {}, Default$25, ...configs))
   }
 
   run(done) {
@@ -2248,7 +2275,7 @@ const Prepublish = class extends BasePublish {
  *
  *  Have long running maintenance on an old version?  Publish to a different dist branch like { options: {branch: 'dist-v3'} }
  */
-const Default$26 = {
+const Default$27 = {
   //debug: true,
   npm: {
     bump: true,
@@ -2279,7 +2306,7 @@ const PublishBuild = class extends BasePublish {
    * @param config - customized overrides
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, Default$26, ...configs)
+    super(gulp, preset, Default$27, ...configs)
   }
 
   run(done) {
@@ -2365,7 +2392,7 @@ const PublishBuild = class extends BasePublish {
  *  This recipe will keep your source branch clean but allow you to easily push your
  *  _gh_pages files to the gh-pages branch.
  */
-const Default$27 = {
+const Default$28 = {
   //debug: true,
   task: {
     name: 'publishGhPages',
@@ -2390,7 +2417,7 @@ const PublishGhPages = class extends BasePublish {
    * @param config - customized overrides
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, Default$27, ...configs)
+    super(gulp, preset, Default$28, ...configs)
   }
 
   run(done) {
@@ -2403,7 +2430,7 @@ const PublishGhPages = class extends BasePublish {
   }
 }
 
-const Default$28 = {
+const Default$29 = {
   watch: false,
   presetType: 'macro',
   task: {
@@ -2427,7 +2454,7 @@ const Jekyll = class extends BaseRecipe {
    * @param config - customized overrides
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, Default$28, ...configs)
+    super(gulp, preset, Default$29, ...configs)
   }
 
   run(done) {
@@ -2475,7 +2502,7 @@ const series = (gulp, ...recipes) => {
   return series
 }
 
-const Default$29 = {
+const Default$30 = {
   debug: false,
   watch: false,
   presetType: 'macro',
@@ -2493,7 +2520,7 @@ const Sleep = class extends BaseRecipe {
    * @param config - customized overrides
    */
   constructor(gulp, preset, sleep) {
-    super(gulp, preset, Default$29, {sleep: sleep})
+    super(gulp, preset, Default$30, {sleep: sleep})
   }
 
   createDescription(){
@@ -2507,5 +2534,5 @@ const Sleep = class extends BaseRecipe {
   }
 }
 
-export { Preset, Rails, EsLint, Uglify, Autoprefixer, Images, Sass, ScssLint, Aggregate, RollupEs, RollupCjs, RollupIife, RollupAmd, RollupUmd, Copy, CleanImages, CleanStylesheets, CleanJavascripts, CleanDigest, Clean, Rev, CssNano, Mocha, Prepublish, PublishBuild, PublishGhPages, Jekyll, series, parallel, Sleep };
+export { Preset, Rails, EsLint, Uglify, Autoprefixer, Images, Sass, ScssLint, Aggregate, RollupEs, RollupCjs, RollupCjsBundled, RollupIife, RollupAmd, RollupUmd, Copy, CleanImages, CleanStylesheets, CleanJavascripts, CleanDigest, Clean, Rev, CssNano, Mocha, Prepublish, PublishBuild, PublishGhPages, Jekyll, series, parallel, Sleep };
 //# sourceMappingURL=gulp-pipeline.es.js.map

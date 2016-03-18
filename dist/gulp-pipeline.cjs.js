@@ -1666,10 +1666,10 @@ var Default$10 = {
     })]
   },
   nodeResolve: {
-    enabled: true // bundle a full package with dependencies?
+    enabled: false // bundle a full package with dependencies?
   },
   commonjs: {
-    enabled: true // convert dependencies to commonjs modules for rollup
+    enabled: false // convert dependencies to commonjs modules for rollup
   }
 };
 
@@ -1706,14 +1706,13 @@ var RollupCjs = function (_RollupEs) {
 
 var Default$11 = {
   task: {
-    name: 'rollup:iife'
-  },
-  options: {
-    //dest: '', // required
-    format: 'iife'
+    name: 'rollup:cjs-bundled'
   },
   nodeResolve: {
-    enabled: true // by nature, iife is the full package so bundle up those dependencies.
+    enabled: true // bundle a full package with dependencies? (if not use RollupCjs itself)
+  },
+  commonjs: {
+    enabled: true // convert dependencies to commonjs modules for rollup
   }
 };
 
@@ -1722,8 +1721,49 @@ var Default$11 = {
  * Class Definition
  * ----------------------------------------------
  */
-var RollupIife = function (_RollupCjs) {
-  babelHelpers.inherits(RollupIife, _RollupCjs);
+var RollupCjsBundled = function (_RollupCjs) {
+  babelHelpers.inherits(RollupCjsBundled, _RollupCjs);
+
+
+  /**
+   *
+   * @param gulp - gulp instance
+   * @param preset - base preset configuration - either one from preset.js or a custom hash
+   * @param configs - customized overrides for this recipe
+   */
+
+  function RollupCjsBundled(gulp, preset) {
+    var _Object$getPrototypeO;
+
+    babelHelpers.classCallCheck(this, RollupCjsBundled);
+
+    for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+      configs[_key - 2] = arguments[_key];
+    }
+
+    return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(RollupCjsBundled)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$11].concat(configs)));
+  }
+
+  return RollupCjsBundled;
+}(RollupCjs);
+
+var Default$12 = {
+  task: {
+    name: 'rollup:iife'
+  },
+  options: {
+    //dest: '', // required
+    format: 'iife'
+  }
+};
+
+/**
+ * ----------------------------------------------
+ * Class Definition
+ * ----------------------------------------------
+ */
+var RollupIife = function (_RollupCjsBundled) {
+  babelHelpers.inherits(RollupIife, _RollupCjsBundled);
 
 
   /**
@@ -1742,13 +1782,13 @@ var RollupIife = function (_RollupCjs) {
       configs[_key - 2] = arguments[_key];
     }
 
-    return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(RollupIife)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$11].concat(configs)));
+    return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(RollupIife)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$12].concat(configs)));
   }
 
   return RollupIife;
-}(RollupCjs);
+}(RollupCjsBundled);
 
-var Default$12 = {
+var Default$13 = {
   task: {
     name: 'rollup:amd'
   },
@@ -1783,13 +1823,13 @@ var RollupAmd = function (_RollupCjs) {
       configs[_key - 2] = arguments[_key];
     }
 
-    return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(RollupAmd)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$12].concat(configs)));
+    return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(RollupAmd)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$13].concat(configs)));
   }
 
   return RollupAmd;
 }(RollupCjs);
 
-var Default$13 = {
+var Default$14 = {
   task: {
     name: 'rollup:umd'
   },
@@ -1824,7 +1864,7 @@ var RollupUmd = function (_RollupCjs) {
       configs[_key - 2] = arguments[_key];
     }
 
-    return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(RollupUmd)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$13].concat(configs)));
+    return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(RollupUmd)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$14].concat(configs)));
   }
 
   return RollupUmd;
@@ -2066,7 +2106,7 @@ var File = function () {
 //  singleton
 var instance = new FileImplementation();
 
-var Default$14 = {
+var Default$15 = {
   debug: false,
   watch: false,
   presetType: 'macro',
@@ -2117,7 +2157,7 @@ var Copy = function (_BaseRecipe) {
       configs[_key - 2] = arguments[_key];
     }
 
-    var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Copy).call(this, gulp, preset, extend.apply(undefined, [true, {}, Default$14].concat(configs))));
+    var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Copy).call(this, gulp, preset, extend.apply(undefined, [true, {}, Default$15].concat(configs))));
 
     _this.requireValue(_this.config.source.glob, 'source.glob');
     _this.requireValue(_this.config.source.options.cwd, 'source.options.cwd');
@@ -2259,7 +2299,7 @@ var Copy = function (_BaseRecipe) {
   return Copy;
 }(BaseRecipe);
 
-var Default$16 = {
+var Default$17 = {
   debug: false,
   watch: false,
   sync: true // necessary so that tasks can be run in a series, can be overriden for other purposes
@@ -2279,7 +2319,7 @@ var BaseClean = function (_BaseRecipe) {
   function BaseClean(gulp, preset) {
     var config = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
     babelHelpers.classCallCheck(this, BaseClean);
-    return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(BaseClean).call(this, gulp, preset, extend(true, {}, Default$16, config)));
+    return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(BaseClean).call(this, gulp, preset, extend(true, {}, Default$17, config)));
   }
 
   babelHelpers.createClass(BaseClean, [{
@@ -2344,7 +2384,7 @@ var BaseClean = function (_BaseRecipe) {
   return BaseClean;
 }(BaseRecipe);
 
-var Default$15 = {
+var Default$16 = {
   presetType: 'images',
   task: {
     name: 'clean:images'
@@ -2369,13 +2409,13 @@ var CleanImages = function (_BaseClean) {
       configs[_key - 2] = arguments[_key];
     }
 
-    return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(CleanImages).call(this, gulp, preset, extend.apply(undefined, [true, {}, Default$15].concat(configs))));
+    return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(CleanImages).call(this, gulp, preset, extend.apply(undefined, [true, {}, Default$16].concat(configs))));
   }
 
   return CleanImages;
 }(BaseClean);
 
-var Default$17 = {
+var Default$18 = {
   presetType: 'stylesheets',
   task: {
     name: 'clean:stylesheets'
@@ -2400,13 +2440,13 @@ var CleanStylesheets = function (_BaseClean) {
       configs[_key - 2] = arguments[_key];
     }
 
-    return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(CleanStylesheets).call(this, gulp, preset, extend.apply(undefined, [true, {}, Default$17].concat(configs))));
+    return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(CleanStylesheets).call(this, gulp, preset, extend.apply(undefined, [true, {}, Default$18].concat(configs))));
   }
 
   return CleanStylesheets;
 }(BaseClean);
 
-var Default$18 = {
+var Default$19 = {
   presetType: 'javascripts',
   task: {
     name: 'clean:javascripts'
@@ -2431,13 +2471,13 @@ var CleanJavascripts = function (_BaseClean) {
       configs[_key - 2] = arguments[_key];
     }
 
-    return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(CleanJavascripts).call(this, gulp, preset, extend.apply(undefined, [true, {}, Default$18].concat(configs))));
+    return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(CleanJavascripts).call(this, gulp, preset, extend.apply(undefined, [true, {}, Default$19].concat(configs))));
   }
 
   return CleanJavascripts;
 }(BaseClean);
 
-var Default$19 = {
+var Default$20 = {
   presetType: 'postProcessor',
   task: {
     name: 'clean:digest'
@@ -2462,7 +2502,7 @@ var CleanDigest = function (_BaseClean) {
       configs[_key - 2] = arguments[_key];
     }
 
-    return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(CleanDigest).call(this, gulp, preset, extend.apply(undefined, [true, {}, Default$19].concat(configs))));
+    return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(CleanDigest).call(this, gulp, preset, extend.apply(undefined, [true, {}, Default$20].concat(configs))));
   }
 
   return CleanDigest;
@@ -2573,7 +2613,7 @@ var parallel = function parallel(gulp) {
   return parallel;
 };
 
-var Default$20 = {
+var Default$21 = {
   debug: false,
   watch: false,
   presetType: 'macro',
@@ -2600,7 +2640,7 @@ var Clean = function (_Aggregate) {
       configs[_key - 2] = arguments[_key];
     }
 
-    var config = Preset.resolveConfig.apply(Preset, [preset, Default$20].concat(configs));
+    var config = Preset.resolveConfig.apply(Preset, [preset, Default$21].concat(configs));
     var recipes = parallel(gulp, new (Function.prototype.bind.apply(CleanImages, [null].concat([gulp, preset], configs)))(), new (Function.prototype.bind.apply(CleanStylesheets, [null].concat([gulp, preset], configs)))(), new (Function.prototype.bind.apply(CleanJavascripts, [null].concat([gulp, preset], configs)))(), new (Function.prototype.bind.apply(CleanDigest, [null].concat([gulp, preset], configs)))());
 
     return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Clean).call(this, gulp, config.task.name, recipes, config));
@@ -2609,7 +2649,7 @@ var Clean = function (_Aggregate) {
   return Clean;
 }(Aggregate);
 
-var Default$21 = {
+var Default$22 = {
   debug: false,
   presetType: 'postProcessor',
   task: {
@@ -2648,7 +2688,7 @@ var Rev = function (_BaseRecipe) {
       configs[_key - 2] = arguments[_key];
     }
 
-    var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Rev).call(this, gulp, preset, extend.apply(undefined, [true, {}, Default$21].concat(configs))));
+    var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Rev).call(this, gulp, preset, extend.apply(undefined, [true, {}, Default$22].concat(configs))));
 
     _this.browserSync = BrowserSync.create();
     return _this;
@@ -2679,7 +2719,7 @@ var Rev = function (_BaseRecipe) {
   return Rev;
 }(BaseRecipe);
 
-var Default$22 = {
+var Default$23 = {
   debug: false,
   presetType: 'postProcessor',
   task: {
@@ -2723,7 +2763,7 @@ var CssNano = function (_BaseRecipe) {
       configs[_key - 2] = arguments[_key];
     }
 
-    var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(CssNano).call(this, gulp, preset, extend.apply(undefined, [true, {}, Default$22].concat(configs))));
+    var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(CssNano).call(this, gulp, preset, extend.apply(undefined, [true, {}, Default$23].concat(configs))));
 
     _this.browserSync = BrowserSync.create();
     return _this;
@@ -2750,7 +2790,7 @@ var CssNano = function (_BaseRecipe) {
   return CssNano;
 }(BaseRecipe);
 
-var Default$23 = {
+var Default$24 = {
   debug: false,
   presetType: 'javascripts',
   task: {
@@ -2778,7 +2818,7 @@ var Mocha = function (_BaseRecipe) {
     }
 
     // resolve watch cwd based on test cwd
-    return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Mocha).call(this, gulp, preset, extend.apply(undefined, [true, {}, Default$23, { watch: { options: { cwd: Preset.resolveConfig.apply(Preset, [preset, Default$23].concat(configs)).test.options.cwd } } }].concat(configs))));
+    return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Mocha).call(this, gulp, preset, extend.apply(undefined, [true, {}, Default$24, { watch: { options: { cwd: Preset.resolveConfig.apply(Preset, [preset, Default$24].concat(configs)).test.options.cwd } } }].concat(configs))));
   }
 
   babelHelpers.createClass(Mocha, [{
@@ -2807,7 +2847,7 @@ var Mocha = function (_BaseRecipe) {
 /**
  *  This is the base for publish recipes using BuildControl
  */
-var Default$25 = {
+var Default$26 = {
 
   dir: 'build', // directory to assemble the files - make sure to add this to your .gitignore so you don't publish this to your source branch
   source: {
@@ -2850,7 +2890,7 @@ var BasePublish = function (_BaseRecipe) {
 
     // use the dir as the cwd to the BuildControl class
 
-    var _this = babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(BasePublish)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$25].concat(configs)));
+    var _this = babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(BasePublish)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$26].concat(configs)));
 
     _this.config.options = extend(true, { debug: _this.config.debug, cwd: _this.config.dir }, _this.config.options);
     return _this;
@@ -2859,7 +2899,7 @@ var BasePublish = function (_BaseRecipe) {
   return BasePublish;
 }(BaseRecipe);
 
-var Default$24 = {
+var Default$25 = {
   task: {
     name: 'prepublish',
     description: 'Checks tag name and ensures directory has all files committed.'
@@ -2893,7 +2933,7 @@ var Prepublish = function (_BasePublish) {
       configs[_key - 2] = arguments[_key];
     }
 
-    return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Prepublish).call(this, gulp, preset, extend.apply(undefined, [true, {}, Default$24].concat(configs))));
+    return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Prepublish).call(this, gulp, preset, extend.apply(undefined, [true, {}, Default$25].concat(configs))));
   }
 
   babelHelpers.createClass(Prepublish, [{
@@ -2929,7 +2969,7 @@ var Prepublish = function (_BasePublish) {
  *
  *  Have long running maintenance on an old version?  Publish to a different dist branch like { options: {branch: 'dist-v3'} }
  */
-var Default$26 = {
+var Default$27 = {
   //debug: true,
   npm: {
     bump: true,
@@ -2965,7 +3005,7 @@ var PublishBuild = function (_BasePublish) {
       configs[_key - 2] = arguments[_key];
     }
 
-    return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(PublishBuild)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$26].concat(configs)));
+    return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(PublishBuild)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$27].concat(configs)));
   }
 
   babelHelpers.createClass(PublishBuild, [{
@@ -3145,7 +3185,7 @@ var PublishBuild = function (_BasePublish) {
  *  This recipe will keep your source branch clean but allow you to easily push your
  *  _gh_pages files to the gh-pages branch.
  */
-var Default$27 = {
+var Default$28 = {
   //debug: true,
   task: {
     name: 'publishGhPages',
@@ -3181,7 +3221,7 @@ var PublishGhPages = function (_BasePublish) {
       configs[_key - 2] = arguments[_key];
     }
 
-    return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(PublishGhPages)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$27].concat(configs)));
+    return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(PublishGhPages)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$28].concat(configs)));
   }
 
   babelHelpers.createClass(PublishGhPages, [{
@@ -3198,7 +3238,7 @@ var PublishGhPages = function (_BasePublish) {
   return PublishGhPages;
 }(BasePublish);
 
-var Default$28 = {
+var Default$29 = {
   watch: false,
   presetType: 'macro',
   task: {
@@ -3233,7 +3273,7 @@ var Jekyll = function (_BaseRecipe) {
       configs[_key - 2] = arguments[_key];
     }
 
-    return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(Jekyll)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$28].concat(configs)));
+    return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(Jekyll)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$29].concat(configs)));
   }
 
   babelHelpers.createClass(Jekyll, [{
@@ -3291,7 +3331,7 @@ var series = function series(gulp) {
   return series;
 };
 
-var Default$29 = {
+var Default$30 = {
   debug: false,
   watch: false,
   presetType: 'macro',
@@ -3313,7 +3353,7 @@ var Sleep = function (_BaseRecipe) {
 
   function Sleep(gulp, preset, sleep) {
     babelHelpers.classCallCheck(this, Sleep);
-    return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Sleep).call(this, gulp, preset, Default$29, { sleep: sleep }));
+    return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Sleep).call(this, gulp, preset, Default$30, { sleep: sleep }));
   }
 
   babelHelpers.createClass(Sleep, [{
@@ -3346,6 +3386,7 @@ exports.ScssLint = ScssLint;
 exports.Aggregate = Aggregate;
 exports.RollupEs = RollupEs;
 exports.RollupCjs = RollupCjs;
+exports.RollupCjsBundled = RollupCjsBundled;
 exports.RollupIife = RollupIife;
 exports.RollupAmd = RollupAmd;
 exports.RollupUmd = RollupUmd;

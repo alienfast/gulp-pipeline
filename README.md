@@ -88,26 +88,20 @@ import gulp from 'gulp'
 // Utilize one of the common directory structure configs
 let preset = Preset.rails() // other pre-configured presets: nodeSrc, nodeLib - see preset.js and submit PRs with other common configs
 
-// Instantiate ordered array of recipes (for each instantiation the tasks will be created e.g. sass and sass:watch)
-//  Note: these are run by the run-sequence, allowing series and parallel execution
-let recipes = series(gulp, 
-  new Clean(gulp, preset),
-  parallel(gulp, 
+// Create our `default` set of recipes as a combination of series tasks with as much parallelization as possible, creates the `default` and `default:watch`
+const recipes = new Aggregate(gulp, 'default',
+  series(gulp,
+    new Clean(gulp, preset),
     new EsLint(gulp, preset),
-    new ScssLint(gulp, preset)
-  ),
-  parallel(gulp, 
-    new Images(gulp, preset),
-    new Sass(gulp, preset),
-    new RollupEs(gulp, preset, {options: {dest: 'acme.es.js'}}),                        // es
-    new RollupCjs(gulp, preset, {options: {dest: 'acme.cjs.js'}}),                      // commonjs
-    new RollupIife(gulp, preset, {options: {dest: 'acme.iife.js', moduleName: 'acme'}}) // iife self executing bundle for the browser
+    parallel(gulp,
+      new RollupEs(gulp, preset, {options: {dest: 'gulp-pipeline.es.js'}}, jsOverrides),
+      new RollupAmd(gulp, preset, {options: {dest: 'gulp-pipeline.amd.js'}}, jsOverrides),
+      new RollupCjs(gulp, preset, {options: {dest: 'gulp-pipeline.cjs.js'}}, jsOverrides),
+      new RollupUmd(gulp, preset, {options: {dest: 'gulp-pipeline.umd.js', moduleName: 'gulpPipeline'}}, jsOverrides),
+      new RollupIife(gulp, preset, {options: {dest: 'gulp-pipeline.iife.js', moduleName: 'gulpPipeline'}}, jsOverrides)
+    )
   )
 )
-
-
-// Simple helper to create the `default` and `default:watch` tasks as a series of the recipes already defined
-new Aggregate(gulp, 'default', recipes)
 
 // Create the production digest assets
 let digest = [

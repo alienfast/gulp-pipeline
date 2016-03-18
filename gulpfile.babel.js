@@ -21,21 +21,20 @@ let preset = Preset.nodeSrc()
 let jsOverrides = {debug: false, nodeResolve: {enabled: false}, commonjs: {enabled: false}}
 
 // NOTE: it's overkill to generate all of these, but what the hell, it's a fair example.
-// Create our `default` set of recipes as a combination of series tasks with as much parallelization as possible
-let recipes = series(gulp,
-  new Clean(gulp, preset),
-  new EsLint(gulp, preset),
-  parallel(gulp,
-    new RollupEs(gulp, preset, {options: {dest: 'gulp-pipeline.es.js'}}, jsOverrides),
-    new RollupAmd(gulp, preset, {options: {dest: 'gulp-pipeline.amd.js'}}, jsOverrides),
-    new RollupCjs(gulp, preset, {options: {dest: 'gulp-pipeline.cjs.js'}}, jsOverrides),
-    new RollupUmd(gulp, preset, {options: {dest: 'gulp-pipeline.umd.js', moduleName: 'gulpPipeline'}}, jsOverrides),
-    new RollupIife(gulp, preset, {options: {dest: 'gulp-pipeline.iife.js', moduleName: 'gulpPipeline'}}, jsOverrides)
+// Create our `default` set of recipes as a combination of series tasks with as much parallelization as possible, creates the `default` and `default:watch`
+const recipes = new Aggregate(gulp, 'default',
+  series(gulp,
+    new Clean(gulp, preset),
+    new EsLint(gulp, preset),
+    parallel(gulp,
+      new RollupEs(gulp, preset, {options: {dest: 'gulp-pipeline.es.js'}}, jsOverrides),
+      new RollupAmd(gulp, preset, {options: {dest: 'gulp-pipeline.amd.js'}}, jsOverrides),
+      new RollupCjs(gulp, preset, {options: {dest: 'gulp-pipeline.cjs.js'}}, jsOverrides),
+      new RollupUmd(gulp, preset, {options: {dest: 'gulp-pipeline.umd.js', moduleName: 'gulpPipeline'}}, jsOverrides),
+      new RollupIife(gulp, preset, {options: {dest: 'gulp-pipeline.iife.js', moduleName: 'gulpPipeline'}}, jsOverrides)
+    )
   )
 )
-
-// Simple helper to create the `default` and `default:watch` tasks based on the recipes already defined, aggregating watches
-new Aggregate(gulp, 'default', recipes, {debug: false})
 
 //---------------
 // Publish tasks

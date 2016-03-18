@@ -1,4 +1,4 @@
-define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'gulp-util', 'stringify-object', 'gulp-notify', 'shelljs', 'gulp-eslint', 'gulp-debug', 'gulp-if', 'gulp-uglify', 'gulp-sourcemaps', 'gulp-concat', 'gulp-ext-replace', 'gulp-autoprefixer', 'browser-sync', 'gulp-changed', 'gulp-imagemin', 'merge-stream', 'gulp-sass', 'findup-sync', 'gulp-scss-lint', 'gulp-scss-lint-stylish', 'rollup', 'rollup-plugin-node-resolve', 'rollup-plugin-commonjs', 'process', 'rollup-plugin-babel', 'fs-extra', 'file-sync-cmp', 'iconv-lite', 'buffer', 'chalk', 'glob-all', 'del', 'gulp-rev', 'gulp-cssnano', 'gulp-mocha', 'build-control/src/buildControl', 'path-is-absolute', 'tmp'], function (exports, extend, path, fs, glob, spawn, jsonfile, Util, stringify, notify, shelljs, eslint, debug, gulpif, uglify, sourcemaps, concat, extReplace, autoprefixer, BrowserSync, changed, imagemin, merge, sass, findup, scssLint, scssLintStylish, rollup, nodeResolve, commonjs, process, babel, fs$1, fileSyncCmp, iconv, buffer, chalk, globAll, del, rev, cssnano, mocha, BuildControl, pathIsAbsolute, tmp) { 'use strict';
+define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'gulp-util', 'stringify-object', 'gulp-notify', 'shelljs', 'gulp-eslint', 'gulp-debug', 'gulp-if', 'gulp-uglify', 'gulp-sourcemaps', 'gulp-concat', 'gulp-ext-replace', 'gulp-autoprefixer', 'browser-sync', 'gulp-changed', 'gulp-imagemin', 'merge-stream', 'gulp-sass', 'findup-sync', 'gulp-scss-lint', 'gulp-scss-lint-stylish', 'rollup', 'rollup-plugin-node-resolve', 'rollup-plugin-commonjs', 'process', 'rollup-plugin-babel', 'fs-extra', 'file-sync-cmp', 'iconv-lite', 'buffer', 'chalk', 'glob-all', 'del', 'gulp-rev', 'gulp-cssnano', 'gulp-mocha', 'build-control/src/index', 'path-is-absolute', 'tmp'], function (exports, extend, path, fs, glob, spawn, jsonfile, Util, stringify, notify, shelljs, eslint, debug, gulpif, uglify, sourcemaps, concat, extReplace, autoprefixer, BrowserSync, changed, imagemin, merge, sass, findup, scssLint, scssLintStylish, rollup, nodeResolve, commonjs, process, babel, fs$1, fileSyncCmp, iconv, buffer, chalk, globAll, del, rev, cssnano, mocha, buildControl_src_index, pathIsAbsolute, tmp) { 'use strict';
 
   extend = 'default' in extend ? extend['default'] : extend;
   path = 'default' in path ? path['default'] : path;
@@ -39,7 +39,6 @@ define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'g
   rev = 'default' in rev ? rev['default'] : rev;
   cssnano = 'default' in cssnano ? cssnano['default'] : cssnano;
   mocha = 'default' in mocha ? mocha['default'] : mocha;
-  BuildControl = 'default' in BuildControl ? BuildControl['default'] : BuildControl;
   pathIsAbsolute = 'default' in pathIsAbsolute ? pathIsAbsolute['default'] : pathIsAbsolute;
   tmp = 'default' in tmp ? tmp['default'] : tmp;
 
@@ -1566,7 +1565,7 @@ define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'g
 
       // Utilize the presets to get the dest cwd/base directory, then add the remaining passed-in file path/name
 
-      var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(RollupEs).call(this, gulp, preset, extend(true, {}, Default$9, NodeResolve, CommonJs, config)));
+      var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(RollupEs).call(this, gulp, preset, Default$9, NodeResolve, CommonJs, config));
 
       _this.config.options.dest = _this.config.dest + '/' + _this.config.options.dest;
 
@@ -1686,13 +1685,15 @@ define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'g
      */
 
     function RollupCjs(gulp, preset) {
+      var _Object$getPrototypeO;
+
       babelHelpers.classCallCheck(this, RollupCjs);
 
       for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
         configs[_key - 2] = arguments[_key];
       }
 
-      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(RollupCjs).call(this, gulp, preset, extend.apply(undefined, [true, {}, Default$10].concat(configs))));
+      return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(RollupCjs)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$10].concat(configs)));
     }
 
     return RollupCjs;
@@ -1728,13 +1729,15 @@ define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'g
      */
 
     function RollupIife(gulp, preset) {
+      var _Object$getPrototypeO;
+
       babelHelpers.classCallCheck(this, RollupIife);
 
       for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
         configs[_key - 2] = arguments[_key];
       }
 
-      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(RollupIife).call(this, gulp, preset, extend.apply(undefined, [true, {}, Default$11].concat(configs))));
+      return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(RollupIife)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$11].concat(configs)));
     }
 
     return RollupIife;
@@ -1767,13 +1770,15 @@ define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'g
      */
 
     function RollupAmd(gulp, preset) {
+      var _Object$getPrototypeO;
+
       babelHelpers.classCallCheck(this, RollupAmd);
 
       for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
         configs[_key - 2] = arguments[_key];
       }
 
-      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(RollupAmd).call(this, gulp, preset, extend.apply(undefined, [true, {}, Default$12].concat(configs))));
+      return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(RollupAmd)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$12].concat(configs)));
     }
 
     return RollupAmd;
@@ -1806,13 +1811,15 @@ define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'g
      */
 
     function RollupUmd(gulp, preset) {
+      var _Object$getPrototypeO;
+
       babelHelpers.classCallCheck(this, RollupUmd);
 
       for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
         configs[_key - 2] = arguments[_key];
       }
 
-      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(RollupUmd).call(this, gulp, preset, extend.apply(undefined, [true, {}, Default$13].concat(configs))));
+      return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(RollupUmd)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$13].concat(configs)));
     }
 
     return RollupUmd;
@@ -2828,13 +2835,17 @@ define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'g
      */
 
     function BasePublish(gulp, preset) {
-      var config = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
+      var _Object$getPrototypeO;
+
       babelHelpers.classCallCheck(this, BasePublish);
 
+      for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+        configs[_key - 2] = arguments[_key];
+      }
 
       // use the dir as the cwd to the BuildControl class
 
-      var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(BasePublish).call(this, gulp, preset, extend(true, {}, Default$25, config)));
+      var _this = babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(BasePublish)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$25].concat(configs)));
 
       _this.config.options = extend(true, { debug: _this.config.debug, cwd: _this.config.dir }, _this.config.options);
       return _this;
@@ -2883,7 +2894,7 @@ define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'g
     babelHelpers.createClass(Prepublish, [{
       key: 'run',
       value: function run(done) {
-        var buildControl = new BuildControl(this.config.options);
+        var buildControl = new buildControl_src_index.BuildControl(this.config.options);
         buildControl.prepublishCheck();
 
         this.donezo(done);
@@ -2955,7 +2966,7 @@ define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'g
     babelHelpers.createClass(PublishBuild, [{
       key: 'run',
       value: function run(done) {
-        var buildControl = new BuildControl(this.config.options);
+        var buildControl = new buildControl_src_index.BuildControl(this.config.options);
 
         // bump the version and commit to git
         if (this.config.npm.bump) {
@@ -3141,7 +3152,7 @@ define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'g
       tag: false, // no tagging on gh-pages push
       clean: { // no cleaning of cwd, it is built externally
         before: false,
-        after: false
+        after: true // we create a git repo, and without cleaning, subsequent runs will fail with "uncommitted changes"
       }
     }
   };
@@ -3171,7 +3182,7 @@ define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'g
     babelHelpers.createClass(PublishGhPages, [{
       key: 'run',
       value: function run(done) {
-        var buildControl = new BuildControl(this.config.options);
+        var buildControl = new buildControl_src_index.BuildControl(this.config.options);
 
         // run the commit/tagging/pushing
         buildControl.run();

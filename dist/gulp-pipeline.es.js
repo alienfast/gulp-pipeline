@@ -39,7 +39,7 @@ import del from 'del';
 import rev from 'gulp-rev';
 import cssnano from 'gulp-cssnano';
 import mocha from 'gulp-mocha';
-import BuildControl from 'build-control/src/buildControl';
+import { BuildControl } from 'build-control/src/index';
 import pathIsAbsolute from 'path-is-absolute';
 import tmp from 'tmp';
 
@@ -1226,7 +1226,7 @@ const RollupEs = class extends BaseRecipe {
       throw new Error(`options.dest filename must be specified.`)
     }
 
-    super(gulp, preset, extend(true, {}, Default$9, NodeResolve, CommonJs, config))
+    super(gulp, preset, Default$9, NodeResolve, CommonJs, config)
 
     // Utilize the presets to get the dest cwd/base directory, then add the remaining passed-in file path/name
     this.config.options.dest = `${this.config.dest}/${this.config.options.dest}`
@@ -1336,7 +1336,7 @@ const RollupCjs = class extends RollupEs {
    * @param configs - customized overrides for this recipe
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, extend(true, {}, Default$10, ...configs))
+    super(gulp, preset, Default$10, ...configs)
   }
 }
 
@@ -1367,7 +1367,7 @@ const RollupIife = class extends RollupCjs {
    * @param configs - customized overrides for this recipe
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, extend(true, {}, Default$11, ...configs))
+    super(gulp, preset, Default$11, ...configs)
   }
 }
 
@@ -1395,7 +1395,7 @@ const RollupAmd = class extends RollupCjs {
    * @param configs - customized overrides for this recipe
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, extend(true, {}, Default$12, ...configs))
+    super(gulp, preset, Default$12, ...configs)
   }
 }
 
@@ -1423,7 +1423,7 @@ const RollupUmd = class extends RollupCjs {
    * @param configs - customized overrides for this recipe
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, extend(true, {}, Default$13, ...configs))
+    super(gulp, preset, Default$13, ...configs)
   }
 }
 
@@ -2183,8 +2183,8 @@ const BasePublish = class extends BaseRecipe {
    * @param gulp - gulp instance
    * @param config - customized overrides
    */
-  constructor(gulp, preset, config = {}) {
-    super(gulp, preset, extend(true, {}, Default$25, config))
+  constructor(gulp, preset, ...configs) {
+    super(gulp, preset, Default$25, ...configs)
 
     // use the dir as the cwd to the BuildControl class
     this.config.options = extend(true, {debug: this.config.debug, cwd: this.config.dir}, this.config.options)
@@ -2377,7 +2377,7 @@ const Default$27 = {
     tag: false, // no tagging on gh-pages push
     clean: { // no cleaning of cwd, it is built externally
       before: false,
-      after: false
+      after: true  // we create a git repo, and without cleaning, subsequent runs will fail with "uncommitted changes"
     }
   }
 }

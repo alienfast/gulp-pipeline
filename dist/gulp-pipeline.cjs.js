@@ -43,7 +43,7 @@ var del = _interopDefault(require('del'));
 var rev = _interopDefault(require('gulp-rev'));
 var cssnano = _interopDefault(require('gulp-cssnano'));
 var mocha = _interopDefault(require('gulp-mocha'));
-var BuildControl = _interopDefault(require('build-control/src/buildControl'));
+var buildControl_src_index = require('build-control/src/index');
 var pathIsAbsolute = _interopDefault(require('path-is-absolute'));
 var tmp = _interopDefault(require('tmp'));
 
@@ -1570,7 +1570,7 @@ var RollupEs = function (_BaseRecipe) {
 
     // Utilize the presets to get the dest cwd/base directory, then add the remaining passed-in file path/name
 
-    var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(RollupEs).call(this, gulp, preset, extend(true, {}, Default$9, NodeResolve, CommonJs, config)));
+    var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(RollupEs).call(this, gulp, preset, Default$9, NodeResolve, CommonJs, config));
 
     _this.config.options.dest = _this.config.dest + '/' + _this.config.options.dest;
 
@@ -1690,13 +1690,15 @@ var RollupCjs = function (_RollupEs) {
    */
 
   function RollupCjs(gulp, preset) {
+    var _Object$getPrototypeO;
+
     babelHelpers.classCallCheck(this, RollupCjs);
 
     for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
       configs[_key - 2] = arguments[_key];
     }
 
-    return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(RollupCjs).call(this, gulp, preset, extend.apply(undefined, [true, {}, Default$10].concat(configs))));
+    return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(RollupCjs)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$10].concat(configs)));
   }
 
   return RollupCjs;
@@ -1732,13 +1734,15 @@ var RollupIife = function (_RollupCjs) {
    */
 
   function RollupIife(gulp, preset) {
+    var _Object$getPrototypeO;
+
     babelHelpers.classCallCheck(this, RollupIife);
 
     for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
       configs[_key - 2] = arguments[_key];
     }
 
-    return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(RollupIife).call(this, gulp, preset, extend.apply(undefined, [true, {}, Default$11].concat(configs))));
+    return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(RollupIife)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$11].concat(configs)));
   }
 
   return RollupIife;
@@ -1771,13 +1775,15 @@ var RollupAmd = function (_RollupCjs) {
    */
 
   function RollupAmd(gulp, preset) {
+    var _Object$getPrototypeO;
+
     babelHelpers.classCallCheck(this, RollupAmd);
 
     for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
       configs[_key - 2] = arguments[_key];
     }
 
-    return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(RollupAmd).call(this, gulp, preset, extend.apply(undefined, [true, {}, Default$12].concat(configs))));
+    return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(RollupAmd)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$12].concat(configs)));
   }
 
   return RollupAmd;
@@ -1810,13 +1816,15 @@ var RollupUmd = function (_RollupCjs) {
    */
 
   function RollupUmd(gulp, preset) {
+    var _Object$getPrototypeO;
+
     babelHelpers.classCallCheck(this, RollupUmd);
 
     for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
       configs[_key - 2] = arguments[_key];
     }
 
-    return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(RollupUmd).call(this, gulp, preset, extend.apply(undefined, [true, {}, Default$13].concat(configs))));
+    return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(RollupUmd)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$13].concat(configs)));
   }
 
   return RollupUmd;
@@ -2832,13 +2840,17 @@ var BasePublish = function (_BaseRecipe) {
    */
 
   function BasePublish(gulp, preset) {
-    var config = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
+    var _Object$getPrototypeO;
+
     babelHelpers.classCallCheck(this, BasePublish);
 
+    for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+      configs[_key - 2] = arguments[_key];
+    }
 
     // use the dir as the cwd to the BuildControl class
 
-    var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(BasePublish).call(this, gulp, preset, extend(true, {}, Default$25, config)));
+    var _this = babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(BasePublish)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$25].concat(configs)));
 
     _this.config.options = extend(true, { debug: _this.config.debug, cwd: _this.config.dir }, _this.config.options);
     return _this;
@@ -2887,7 +2899,7 @@ var Prepublish = function (_BasePublish) {
   babelHelpers.createClass(Prepublish, [{
     key: 'run',
     value: function run(done) {
-      var buildControl = new BuildControl(this.config.options);
+      var buildControl = new buildControl_src_index.BuildControl(this.config.options);
       buildControl.prepublishCheck();
 
       this.donezo(done);
@@ -2959,7 +2971,7 @@ var PublishBuild = function (_BasePublish) {
   babelHelpers.createClass(PublishBuild, [{
     key: 'run',
     value: function run(done) {
-      var buildControl = new BuildControl(this.config.options);
+      var buildControl = new buildControl_src_index.BuildControl(this.config.options);
 
       // bump the version and commit to git
       if (this.config.npm.bump) {
@@ -3145,7 +3157,7 @@ var Default$27 = {
     tag: false, // no tagging on gh-pages push
     clean: { // no cleaning of cwd, it is built externally
       before: false,
-      after: false
+      after: true // we create a git repo, and without cleaning, subsequent runs will fail with "uncommitted changes"
     }
   }
 };
@@ -3175,7 +3187,7 @@ var PublishGhPages = function (_BasePublish) {
   babelHelpers.createClass(PublishGhPages, [{
     key: 'run',
     value: function run(done) {
-      var buildControl = new BuildControl(this.config.options);
+      var buildControl = new buildControl_src_index.BuildControl(this.config.options);
 
       // run the commit/tagging/pushing
       buildControl.run();

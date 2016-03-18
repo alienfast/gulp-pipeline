@@ -1,5 +1,5 @@
 import BasePublish from './basePublish'
-import BuildControl from 'build-control/src/buildControl'
+import {BuildControl} from 'build-control/src/index'
 
 
 /**
@@ -18,7 +18,7 @@ const Default = {
     tag: false, // no tagging on gh-pages push
     clean: { // no cleaning of cwd, it is built externally
       before: false,
-      after: false
+      after: true  // we create a git repo, and without cleaning, subsequent runs will fail with "uncommitted changes"
     }
   }
 }

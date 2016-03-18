@@ -33,8 +33,8 @@ const BasePublish = class extends BaseRecipe {
    * @param gulp - gulp instance
    * @param config - customized overrides
    */
-  constructor(gulp, preset, config = {}) {
-    super(gulp, preset, extend(true, {}, Default, config))
+  constructor(gulp, preset, ...configs) {
+    super(gulp, preset, Default, ...configs)
 
     // use the dir as the cwd to the BuildControl class
     this.config.options = extend(true, {debug: this.config.debug, cwd: this.config.dir}, this.config.options)

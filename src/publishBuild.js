@@ -1,5 +1,5 @@
 import BasePublish from './basePublish'
-import BuildControl from 'build-control'
+import {BuildControl} from 'build-control/src/index'
 import fs from 'fs-extra'
 import path from 'path'
 import process from 'process'

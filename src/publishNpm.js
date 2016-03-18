@@ -1,5 +1,5 @@
 import BasePublish from './basePublish'
-import Npm from 'build-control/src/npm'
+import {Npm} from 'build-control/src/index'
 
 const Default = {
   task: {

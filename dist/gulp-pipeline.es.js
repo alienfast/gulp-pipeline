@@ -351,7 +351,11 @@ const Base = class {
   }
 
   debugDump(msg, obj) {
-    this.debug(`${msg}:\n${stringify(obj)}`)
+    this.debug(`${msg}:\n${this.dump(obj)}`)
+  }
+
+  dump(obj) {
+    return stringify(obj)
   }
 
   notifyError(error, e) {
@@ -1597,7 +1601,7 @@ const Default$14 = {
   //preserveBOM: false,     // Whether to preserve the BOM on this.read rather than strip it.
 
   source: {
-    glob: undefined,      // [] or string glob pattern https://github.com/isaacs/node-glob#glob-primer
+    glob: undefined,      // [] or string glob pattern, uses node-glob-all https://github.com/jpillora/node-glob-all#usage
     options: {            // https://github.com/isaacs/node-glob#options
       cwd: process.cwd()  // base path
     }
@@ -1657,7 +1661,18 @@ const Copy = class extends BaseRecipe {
 
       let options = extend(true, {}, this.config.source.options, {realpath: true})
       let pattern = this.config.source.glob
+
+      // ensure pattern is an array
+      if (!Array.isArray(pattern)) {
+        pattern = [pattern]
+      }
+
+      // make a copy so that nothing processing will alter the config values
+      pattern = pattern.slice()
+
       this.log(`Copying ${options.cwd}/${pattern}...`)
+      //this.debugDump(`this config: `, this.config)
+
       for (let fromFullPath of globAll.sync(pattern, options)) {
         let from = path.relative(process.cwd(), fromFullPath)
         let toRelative = path.relative(options.cwd, from) // grab the path of the file relative to the cwd of the source cwd - allows nesting

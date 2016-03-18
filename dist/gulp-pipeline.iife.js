@@ -482,7 +482,12 @@
     }, {
       key: 'debugDump',
       value: function debugDump(msg, obj) {
-        this.debug(msg + ':\n' + stringify(obj));
+        this.debug(msg + ':\n' + this.dump(obj));
+      }
+    }, {
+      key: 'dump',
+      value: function dump(obj) {
+        return stringify(obj);
       }
     }, {
       key: 'notifyError',
@@ -2027,7 +2032,7 @@
     //preserveBOM: false,     // Whether to preserve the BOM on this.read rather than strip it.
 
     source: {
-      glob: undefined, // [] or string glob pattern https://github.com/isaacs/node-glob#glob-primer
+      glob: undefined, // [] or string glob pattern, uses node-glob-all https://github.com/jpillora/node-glob-all#usage
       options: { // https://github.com/isaacs/node-glob#options
         cwd: process.cwd() // base path
       }
@@ -2101,7 +2106,18 @@
 
           var options = extend(true, {}, this.config.source.options, { realpath: true });
           var pattern = this.config.source.glob;
+
+          // ensure pattern is an array
+          if (!Array.isArray(pattern)) {
+            pattern = [pattern];
+          }
+
+          // make a copy so that nothing processing will alter the config values
+          pattern = pattern.slice();
+
           this.log('Copying ' + options.cwd + '/' + pattern + '...');
+          //this.debugDump(`this config: `, this.config)
+
           var _iteratorNormalCompletion = true;
           var _didIteratorError = false;
           var _iteratorError = undefined;

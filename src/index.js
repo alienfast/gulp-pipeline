@@ -31,6 +31,7 @@ export { default as Mocha } from './mocha'
 
 export { default as Prepublish } from './prepublish'
 export { default as PublishBuild } from './publishBuild'
+export { default as PublishNpm } from './publishNpm'
 export { default as PublishGhPages } from './publishGhPages'
 export { default as Jekyll } from './jekyll'
 

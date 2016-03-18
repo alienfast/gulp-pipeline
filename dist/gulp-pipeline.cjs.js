@@ -43,7 +43,7 @@ var del = _interopDefault(require('del'));
 var rev = _interopDefault(require('gulp-rev'));
 var cssnano = _interopDefault(require('gulp-cssnano'));
 var mocha = _interopDefault(require('gulp-mocha'));
-var buildControl_src_index = require('build-control/src/index');
+var buildControl = require('build-control');
 var pathIsAbsolute = _interopDefault(require('path-is-absolute'));
 var tmp = _interopDefault(require('tmp'));
 
@@ -2939,8 +2939,8 @@ var Prepublish = function (_BasePublish) {
   babelHelpers.createClass(Prepublish, [{
     key: 'run',
     value: function run(done) {
-      var buildControl = new buildControl_src_index.BuildControl(this.config.options);
-      buildControl.prepublishCheck();
+      var buildControl$$ = new buildControl.BuildControl(this.config.options);
+      buildControl$$.prepublishCheck();
 
       this.donezo(done);
     }
@@ -3011,37 +3011,37 @@ var PublishBuild = function (_BasePublish) {
   babelHelpers.createClass(PublishBuild, [{
     key: 'run',
     value: function run(done) {
-      var buildControl = new buildControl_src_index.BuildControl(this.config.options);
+      var buildControl$$ = new buildControl.BuildControl(this.config.options);
 
       // bump the version and commit to git
       if (this.config.npm.bump) {
-        buildControl.npm.bump();
+        buildControl$$.npm.bump();
       }
 
       this.prepareBuildFiles();
 
-      this.generateReadme(buildControl);
+      this.generateReadme(buildControl$$);
 
       // run the commit/tagging/pushing
-      buildControl.run();
+      buildControl$$.run();
 
       // publish to npm
       if (this.config.npm.publish) {
-        buildControl.npm.publish();
+        buildControl$$.npm.publish();
       }
 
       done();
     }
   }, {
     key: 'generateReadme',
-    value: function generateReadme(buildControl) {
+    value: function generateReadme(buildControl$$) {
       // generate a readme on the branch if one is not copied in.
       if (this.config.readme.enabled) {
         var readme = path.join(this.config.dir, this.config.readme.name);
         if (fs$1.existsSync(readme)) {
           this.log('Found readme at ' + readme + '.  Will not generate a new one from the template.  Turn this message off with { readme: {enabled: false} }');
         } else {
-          fs$1.writeFileSync(readme, buildControl.interpolate(this.config.readme.template));
+          fs$1.writeFileSync(readme, buildControl$$.interpolate(this.config.readme.template));
         }
       }
     }
@@ -3181,11 +3181,57 @@ var PublishBuild = function (_BasePublish) {
   return PublishBuild;
 }(BasePublish);
 
+var Default$28 = {
+  task: {
+    name: 'publishNpm',
+    description: 'Publishes package on npm'
+  },
+  options: {}
+};
+
+/**
+ *  This recipe will run execute `npm publish` with no other checks.
+ *
+ *  @see also PublishBuild - it will bump, publish build, and publish npm (all in one)
+ */
+var PublishNpm = function (_BasePublish) {
+  babelHelpers.inherits(PublishNpm, _BasePublish);
+
+
+  /**
+   *
+   * @param gulp - gulp instance
+   * @param config - customized overrides
+   */
+
+  function PublishNpm(gulp, preset) {
+    var _Object$getPrototypeO;
+
+    babelHelpers.classCallCheck(this, PublishNpm);
+
+    for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+      configs[_key - 2] = arguments[_key];
+    }
+
+    return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(PublishNpm)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$28].concat(configs)));
+  }
+
+  babelHelpers.createClass(PublishNpm, [{
+    key: 'run',
+    value: function run(done) {
+      var npm = new buildControl.Npm(this.config.options);
+      npm.publish();
+      this.donezo(done);
+    }
+  }]);
+  return PublishNpm;
+}(BasePublish);
+
 /**
  *  This recipe will keep your source branch clean but allow you to easily push your
  *  _gh_pages files to the gh-pages branch.
  */
-var Default$28 = {
+var Default$29 = {
   //debug: true,
   task: {
     name: 'publishGhPages',
@@ -3221,16 +3267,16 @@ var PublishGhPages = function (_BasePublish) {
       configs[_key - 2] = arguments[_key];
     }
 
-    return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(PublishGhPages)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$28].concat(configs)));
+    return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(PublishGhPages)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$29].concat(configs)));
   }
 
   babelHelpers.createClass(PublishGhPages, [{
     key: 'run',
     value: function run(done) {
-      var buildControl = new buildControl_src_index.BuildControl(this.config.options);
+      var buildControl$$ = new buildControl.BuildControl(this.config.options);
 
       // run the commit/tagging/pushing
-      buildControl.run();
+      buildControl$$.run();
 
       done();
     }
@@ -3238,7 +3284,7 @@ var PublishGhPages = function (_BasePublish) {
   return PublishGhPages;
 }(BasePublish);
 
-var Default$29 = {
+var Default$30 = {
   watch: false,
   presetType: 'macro',
   task: {
@@ -3273,7 +3319,7 @@ var Jekyll = function (_BaseRecipe) {
       configs[_key - 2] = arguments[_key];
     }
 
-    return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(Jekyll)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$29].concat(configs)));
+    return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(Jekyll)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$30].concat(configs)));
   }
 
   babelHelpers.createClass(Jekyll, [{
@@ -3331,7 +3377,7 @@ var series = function series(gulp) {
   return series;
 };
 
-var Default$30 = {
+var Default$31 = {
   debug: false,
   watch: false,
   presetType: 'macro',
@@ -3353,7 +3399,7 @@ var Sleep = function (_BaseRecipe) {
 
   function Sleep(gulp, preset, sleep) {
     babelHelpers.classCallCheck(this, Sleep);
-    return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Sleep).call(this, gulp, preset, Default$30, { sleep: sleep }));
+    return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Sleep).call(this, gulp, preset, Default$31, { sleep: sleep }));
   }
 
   babelHelpers.createClass(Sleep, [{
@@ -3401,6 +3447,7 @@ exports.CssNano = CssNano;
 exports.Mocha = Mocha;
 exports.Prepublish = Prepublish;
 exports.PublishBuild = PublishBuild;
+exports.PublishNpm = PublishNpm;
 exports.PublishGhPages = PublishGhPages;
 exports.Jekyll = Jekyll;
 exports.series = series;

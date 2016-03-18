@@ -1,8 +1,8 @@
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('extend'), require('path'), require('fs'), require('glob'), require('cross-spawn'), require('jsonfile'), require('gulp-util'), require('stringify-object'), require('gulp-notify'), require('shelljs'), require('gulp-eslint'), require('gulp-debug'), require('gulp-if'), require('gulp-uglify'), require('gulp-sourcemaps'), require('gulp-concat'), require('gulp-ext-replace'), require('gulp-autoprefixer'), require('browser-sync'), require('gulp-changed'), require('gulp-imagemin'), require('merge-stream'), require('gulp-sass'), require('findup-sync'), require('gulp-scss-lint'), require('gulp-scss-lint-stylish'), require('rollup'), require('rollup-plugin-node-resolve'), require('rollup-plugin-commonjs'), require('process'), require('rollup-plugin-babel'), require('fs-extra'), require('file-sync-cmp'), require('iconv-lite'), require('buffer'), require('chalk'), require('glob-all'), require('del'), require('gulp-rev'), require('gulp-cssnano'), require('gulp-mocha'), require('build-control/src/index'), require('path-is-absolute'), require('tmp')) :
-  typeof define === 'function' && define.amd ? define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'gulp-util', 'stringify-object', 'gulp-notify', 'shelljs', 'gulp-eslint', 'gulp-debug', 'gulp-if', 'gulp-uglify', 'gulp-sourcemaps', 'gulp-concat', 'gulp-ext-replace', 'gulp-autoprefixer', 'browser-sync', 'gulp-changed', 'gulp-imagemin', 'merge-stream', 'gulp-sass', 'findup-sync', 'gulp-scss-lint', 'gulp-scss-lint-stylish', 'rollup', 'rollup-plugin-node-resolve', 'rollup-plugin-commonjs', 'process', 'rollup-plugin-babel', 'fs-extra', 'file-sync-cmp', 'iconv-lite', 'buffer', 'chalk', 'glob-all', 'del', 'gulp-rev', 'gulp-cssnano', 'gulp-mocha', 'build-control/src/index', 'path-is-absolute', 'tmp'], factory) :
-  (factory((global.gulpPipeline = global.gulpPipeline || {}),global.extend,global.path,global.fs,global.glob,global.spawn,global.jsonfile,global.Util,global.stringify,global.notify,global.shelljs,global.eslint,global.debug,global.gulpif,global.uglify,global.sourcemaps,global.concat,global.extReplace,global.autoprefixer,global.BrowserSync,global.changed,global.imagemin,global.merge,global.sass,global.findup,global.scssLint,global.scssLintStylish,global.rollup,global.nodeResolve,global.commonjs,global.process,global.babel,global.fs$1,global.fileSyncCmp,global.iconv,global.buffer,global.chalk,global.globAll,global.del,global.rev,global.cssnano,global.mocha,global.buildControl_src_index,global.pathIsAbsolute,global.tmp));
-}(this, function (exports,extend,path,fs,glob,spawn,jsonfile,Util,stringify,notify,shelljs,eslint,debug,gulpif,uglify,sourcemaps,concat,extReplace,autoprefixer,BrowserSync,changed,imagemin,merge,sass,findup,scssLint,scssLintStylish,rollup,nodeResolve,commonjs,process,babel,fs$1,fileSyncCmp,iconv,buffer,chalk,globAll,del,rev,cssnano,mocha,buildControl_src_index,pathIsAbsolute,tmp) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('extend'), require('path'), require('fs'), require('glob'), require('cross-spawn'), require('jsonfile'), require('gulp-util'), require('stringify-object'), require('gulp-notify'), require('shelljs'), require('gulp-eslint'), require('gulp-debug'), require('gulp-if'), require('gulp-uglify'), require('gulp-sourcemaps'), require('gulp-concat'), require('gulp-ext-replace'), require('gulp-autoprefixer'), require('browser-sync'), require('gulp-changed'), require('gulp-imagemin'), require('merge-stream'), require('gulp-sass'), require('findup-sync'), require('gulp-scss-lint'), require('gulp-scss-lint-stylish'), require('rollup'), require('rollup-plugin-node-resolve'), require('rollup-plugin-commonjs'), require('process'), require('rollup-plugin-babel'), require('fs-extra'), require('file-sync-cmp'), require('iconv-lite'), require('buffer'), require('chalk'), require('glob-all'), require('del'), require('gulp-rev'), require('gulp-cssnano'), require('gulp-mocha'), require('build-control'), require('path-is-absolute'), require('tmp')) :
+  typeof define === 'function' && define.amd ? define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'gulp-util', 'stringify-object', 'gulp-notify', 'shelljs', 'gulp-eslint', 'gulp-debug', 'gulp-if', 'gulp-uglify', 'gulp-sourcemaps', 'gulp-concat', 'gulp-ext-replace', 'gulp-autoprefixer', 'browser-sync', 'gulp-changed', 'gulp-imagemin', 'merge-stream', 'gulp-sass', 'findup-sync', 'gulp-scss-lint', 'gulp-scss-lint-stylish', 'rollup', 'rollup-plugin-node-resolve', 'rollup-plugin-commonjs', 'process', 'rollup-plugin-babel', 'fs-extra', 'file-sync-cmp', 'iconv-lite', 'buffer', 'chalk', 'glob-all', 'del', 'gulp-rev', 'gulp-cssnano', 'gulp-mocha', 'build-control', 'path-is-absolute', 'tmp'], factory) :
+  (factory((global.gulpPipeline = global.gulpPipeline || {}),global.extend,global.path,global.fs,global.glob,global.spawn,global.jsonfile,global.Util,global.stringify,global.notify,global.shelljs,global.eslint,global.debug,global.gulpif,global.uglify,global.sourcemaps,global.concat,global.extReplace,global.autoprefixer,global.BrowserSync,global.changed,global.imagemin,global.merge,global.sass,global.findup,global.scssLint,global.scssLintStylish,global.rollup,global.nodeResolve,global.commonjs,global.process,global.babel,global.fs$1,global.fileSyncCmp,global.iconv,global.buffer,global.chalk,global.globAll,global.del,global.rev,global.cssnano,global.mocha,global.buildControl,global.pathIsAbsolute,global.tmp));
+}(this, function (exports,extend,path,fs,glob,spawn,jsonfile,Util,stringify,notify,shelljs,eslint,debug,gulpif,uglify,sourcemaps,concat,extReplace,autoprefixer,BrowserSync,changed,imagemin,merge,sass,findup,scssLint,scssLintStylish,rollup,nodeResolve,commonjs,process,babel,fs$1,fileSyncCmp,iconv,buffer,chalk,globAll,del,rev,cssnano,mocha,buildControl,pathIsAbsolute,tmp) { 'use strict';
 
   extend = 'default' in extend ? extend['default'] : extend;
   path = 'default' in path ? path['default'] : path;
@@ -2938,8 +2938,8 @@
     babelHelpers.createClass(Prepublish, [{
       key: 'run',
       value: function run(done) {
-        var buildControl = new buildControl_src_index.BuildControl(this.config.options);
-        buildControl.prepublishCheck();
+        var buildControl$$ = new buildControl.BuildControl(this.config.options);
+        buildControl$$.prepublishCheck();
 
         this.donezo(done);
       }
@@ -3010,37 +3010,37 @@
     babelHelpers.createClass(PublishBuild, [{
       key: 'run',
       value: function run(done) {
-        var buildControl = new buildControl_src_index.BuildControl(this.config.options);
+        var buildControl$$ = new buildControl.BuildControl(this.config.options);
 
         // bump the version and commit to git
         if (this.config.npm.bump) {
-          buildControl.npm.bump();
+          buildControl$$.npm.bump();
         }
 
         this.prepareBuildFiles();
 
-        this.generateReadme(buildControl);
+        this.generateReadme(buildControl$$);
 
         // run the commit/tagging/pushing
-        buildControl.run();
+        buildControl$$.run();
 
         // publish to npm
         if (this.config.npm.publish) {
-          buildControl.npm.publish();
+          buildControl$$.npm.publish();
         }
 
         done();
       }
     }, {
       key: 'generateReadme',
-      value: function generateReadme(buildControl) {
+      value: function generateReadme(buildControl$$) {
         // generate a readme on the branch if one is not copied in.
         if (this.config.readme.enabled) {
           var readme = path.join(this.config.dir, this.config.readme.name);
           if (fs$1.existsSync(readme)) {
             this.log('Found readme at ' + readme + '.  Will not generate a new one from the template.  Turn this message off with { readme: {enabled: false} }');
           } else {
-            fs$1.writeFileSync(readme, buildControl.interpolate(this.config.readme.template));
+            fs$1.writeFileSync(readme, buildControl$$.interpolate(this.config.readme.template));
           }
         }
       }
@@ -3180,11 +3180,57 @@
     return PublishBuild;
   }(BasePublish);
 
+  var Default$28 = {
+    task: {
+      name: 'publishNpm',
+      description: 'Publishes package on npm'
+    },
+    options: {}
+  };
+
+  /**
+   *  This recipe will run execute `npm publish` with no other checks.
+   *
+   *  @see also PublishBuild - it will bump, publish build, and publish npm (all in one)
+   */
+  var PublishNpm = function (_BasePublish) {
+    babelHelpers.inherits(PublishNpm, _BasePublish);
+
+
+    /**
+     *
+     * @param gulp - gulp instance
+     * @param config - customized overrides
+     */
+
+    function PublishNpm(gulp, preset) {
+      var _Object$getPrototypeO;
+
+      babelHelpers.classCallCheck(this, PublishNpm);
+
+      for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+        configs[_key - 2] = arguments[_key];
+      }
+
+      return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(PublishNpm)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$28].concat(configs)));
+    }
+
+    babelHelpers.createClass(PublishNpm, [{
+      key: 'run',
+      value: function run(done) {
+        var npm = new buildControl.Npm(this.config.options);
+        npm.publish();
+        this.donezo(done);
+      }
+    }]);
+    return PublishNpm;
+  }(BasePublish);
+
   /**
    *  This recipe will keep your source branch clean but allow you to easily push your
    *  _gh_pages files to the gh-pages branch.
    */
-  var Default$28 = {
+  var Default$29 = {
     //debug: true,
     task: {
       name: 'publishGhPages',
@@ -3220,16 +3266,16 @@
         configs[_key - 2] = arguments[_key];
       }
 
-      return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(PublishGhPages)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$28].concat(configs)));
+      return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(PublishGhPages)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$29].concat(configs)));
     }
 
     babelHelpers.createClass(PublishGhPages, [{
       key: 'run',
       value: function run(done) {
-        var buildControl = new buildControl_src_index.BuildControl(this.config.options);
+        var buildControl$$ = new buildControl.BuildControl(this.config.options);
 
         // run the commit/tagging/pushing
-        buildControl.run();
+        buildControl$$.run();
 
         done();
       }
@@ -3237,7 +3283,7 @@
     return PublishGhPages;
   }(BasePublish);
 
-  var Default$29 = {
+  var Default$30 = {
     watch: false,
     presetType: 'macro',
     task: {
@@ -3272,7 +3318,7 @@
         configs[_key - 2] = arguments[_key];
       }
 
-      return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(Jekyll)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$29].concat(configs)));
+      return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(Jekyll)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$30].concat(configs)));
     }
 
     babelHelpers.createClass(Jekyll, [{
@@ -3330,7 +3376,7 @@
     return series;
   };
 
-  var Default$30 = {
+  var Default$31 = {
     debug: false,
     watch: false,
     presetType: 'macro',
@@ -3352,7 +3398,7 @@
 
     function Sleep(gulp, preset, sleep) {
       babelHelpers.classCallCheck(this, Sleep);
-      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Sleep).call(this, gulp, preset, Default$30, { sleep: sleep }));
+      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Sleep).call(this, gulp, preset, Default$31, { sleep: sleep }));
     }
 
     babelHelpers.createClass(Sleep, [{
@@ -3400,6 +3446,7 @@
   exports.Mocha = Mocha;
   exports.Prepublish = Prepublish;
   exports.PublishBuild = PublishBuild;
+  exports.PublishNpm = PublishNpm;
   exports.PublishGhPages = PublishGhPages;
   exports.Jekyll = Jekyll;
   exports.series = series;

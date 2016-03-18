@@ -39,7 +39,7 @@ import del from 'del';
 import rev from 'gulp-rev';
 import cssnano from 'gulp-cssnano';
 import mocha from 'gulp-mocha';
-import { BuildControl } from 'build-control/src/index';
+import { BuildControl, Npm } from 'build-control';
 import pathIsAbsolute from 'path-is-absolute';
 import tmp from 'tmp';
 
@@ -2388,11 +2388,42 @@ const PublishBuild = class extends BasePublish {
   }
 }
 
+const Default$28 = {
+  task: {
+    name: 'publishNpm',
+    description: 'Publishes package on npm'
+  },
+  options: {}
+}
+
+/**
+ *  This recipe will run execute `npm publish` with no other checks.
+ *
+ *  @see also PublishBuild - it will bump, publish build, and publish npm (all in one)
+ */
+const PublishNpm = class extends BasePublish {
+
+  /**
+   *
+   * @param gulp - gulp instance
+   * @param config - customized overrides
+   */
+  constructor(gulp, preset, ...configs) {
+    super(gulp, preset, Default$28, ...configs)
+  }
+
+  run(done) {
+    let npm = new Npm(this.config.options)
+    npm.publish()
+    this.donezo(done)
+  }
+}
+
 /**
  *  This recipe will keep your source branch clean but allow you to easily push your
  *  _gh_pages files to the gh-pages branch.
  */
-const Default$28 = {
+const Default$29 = {
   //debug: true,
   task: {
     name: 'publishGhPages',
@@ -2417,7 +2448,7 @@ const PublishGhPages = class extends BasePublish {
    * @param config - customized overrides
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, Default$28, ...configs)
+    super(gulp, preset, Default$29, ...configs)
   }
 
   run(done) {
@@ -2430,7 +2461,7 @@ const PublishGhPages = class extends BasePublish {
   }
 }
 
-const Default$29 = {
+const Default$30 = {
   watch: false,
   presetType: 'macro',
   task: {
@@ -2454,7 +2485,7 @@ const Jekyll = class extends BaseRecipe {
    * @param config - customized overrides
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, Default$29, ...configs)
+    super(gulp, preset, Default$30, ...configs)
   }
 
   run(done) {
@@ -2502,7 +2533,7 @@ const series = (gulp, ...recipes) => {
   return series
 }
 
-const Default$30 = {
+const Default$31 = {
   debug: false,
   watch: false,
   presetType: 'macro',
@@ -2520,7 +2551,7 @@ const Sleep = class extends BaseRecipe {
    * @param config - customized overrides
    */
   constructor(gulp, preset, sleep) {
-    super(gulp, preset, Default$30, {sleep: sleep})
+    super(gulp, preset, Default$31, {sleep: sleep})
   }
 
   createDescription(){
@@ -2534,5 +2565,5 @@ const Sleep = class extends BaseRecipe {
   }
 }
 
-export { Preset, Rails, EsLint, Uglify, Autoprefixer, Images, Sass, ScssLint, Aggregate, RollupEs, RollupCjs, RollupCjsBundled, RollupIife, RollupAmd, RollupUmd, Copy, CleanImages, CleanStylesheets, CleanJavascripts, CleanDigest, Clean, Rev, CssNano, Mocha, Prepublish, PublishBuild, PublishGhPages, Jekyll, series, parallel, Sleep };
+export { Preset, Rails, EsLint, Uglify, Autoprefixer, Images, Sass, ScssLint, Aggregate, RollupEs, RollupCjs, RollupCjsBundled, RollupIife, RollupAmd, RollupUmd, Copy, CleanImages, CleanStylesheets, CleanJavascripts, CleanDigest, Clean, Rev, CssNano, Mocha, Prepublish, PublishBuild, PublishNpm, PublishGhPages, Jekyll, series, parallel, Sleep };
 //# sourceMappingURL=gulp-pipeline.es.js.map

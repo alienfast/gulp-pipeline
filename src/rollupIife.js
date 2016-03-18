@@ -1,5 +1,4 @@
 import RollupCjs from './rollupCjs'
-import extend from 'extend'
 
 export const Default = {
   task: {
@@ -28,7 +27,7 @@ const RollupIife = class extends RollupCjs {
    * @param configs - customized overrides for this recipe
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, extend(true, {}, Default, ...configs))
+    super(gulp, preset, Default, ...configs)
   }
 }
 

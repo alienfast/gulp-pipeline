@@ -1,5 +1,4 @@
 import RollupEs from './rollupEs'
-import extend from 'extend'
 import babel from 'rollup-plugin-babel';
 
 export const Default = {
@@ -36,7 +35,7 @@ const RollupCjs = class extends RollupEs {
    * @param configs - customized overrides for this recipe
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, extend(true, {}, Default, ...configs))
+    super(gulp, preset, Default, ...configs)
   }
 }
 

@@ -85,7 +85,7 @@ const RollupEs = class extends BaseRecipe {
       throw new Error(`options.dest filename must be specified.`)
     }
 
-    super(gulp, preset, extend(true, {}, Default, NodeResolve, CommonJs, config))
+    super(gulp, preset, Default, NodeResolve, CommonJs, config)
 
     // Utilize the presets to get the dest cwd/base directory, then add the remaining passed-in file path/name
     this.config.options.dest = `${this.config.dest}/${this.config.options.dest}`

@@ -38,7 +38,11 @@ const Base = class {
   }
 
   debugDump(msg, obj) {
-    this.debug(`${msg}:\n${stringify(obj)}`)
+    this.debug(`${msg}:\n${this.dump(obj)}`)
+  }
+
+  dump(obj) {
+    return stringify(obj)
   }
 
   notifyError(error, e) {

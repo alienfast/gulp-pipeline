@@ -115,7 +115,7 @@ var Ruby = function () {
         fs.statSync(filepath);
       } catch (error) {
         // if using dist dir
-        filepath = path.join(__dirname, '../../src', filename); // eslint-disable-line no-undef
+        filepath = path.join(__dirname, '../src', filename); // eslint-disable-line no-undef
         fs.statSync(filepath);
       }
 

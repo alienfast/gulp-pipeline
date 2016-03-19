@@ -264,7 +264,7 @@ define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'g
       source: {
         glob: 'index.js',
         options: { cwd: 'src' },
-        all: '**/*.js'
+        all: '**/*' // include all files, may have yml, sh, json, in addition to js
       },
       test: {
         glob: '**/*.js',

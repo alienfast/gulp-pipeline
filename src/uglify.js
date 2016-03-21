@@ -83,7 +83,7 @@ const Uglify = class extends BaseRecipe {
       this.debug('single file with no dest')
 
       if (files.length > 1) {
-        throw new Error(`Should only find one file but found ${files.length} for source: ${this.dump(this.config.source)}.  Use the concat: {dest: 'output.min.js' } configuration for multiple files concatenated with uglify.`)
+        throw new Error(`Should only find one file but found ${files.length} for source: ${this.dump(this.config.source)}.  Use the concat: {dest: 'output.min.js' } configuration for multiple files concatenated with uglify.  Files found: ${this.dump(files)}`)
       }
 
       return this.gulp.src(this.config.source.glob, this.config.source.options)

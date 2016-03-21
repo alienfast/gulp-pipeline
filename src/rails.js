@@ -18,19 +18,27 @@ const Rails = class {
       cwd: this.railsAppCwd()
     })
 
-    //Util.log(stringify(results))
-    if (results.stderr != '' || results.error != null) {
-      Util.log(stringify(results))
 
-      let msg = ''
-      if (results.stderr) {
-        msg += results.stderr
+    // run via spring with zero results:
+    //    status: 0,
+    //    stdout: '{}\n',
+    //    stderr: 'Running via Spring preloader in process 95498\n',
+
+    if(results.status !== 0) {
+      //Util.log(stringify(results))
+      if (results.stderr != '' || results.error != null) {
+        Util.log(stringify(results))
+
+        let msg = ''
+        if (results.stderr) {
+          msg += results.stderr
+        }
+        if (results.error) {
+          msg += results.error
+        }
+        // message will be either error or stderr, so just grap both of them
+        throw new Error(`Ruby script error: \n${results.stderr}${results.error}`)
       }
-      if (results.error) {
-        msg += results.error
-      }
-      // message will be either error or stderr, so just grap both of them
-      throw new Error(`Ruby script error: \n${results.stderr}${results.error}`)
     }
     return JSON.parse(results.stdout)
   }

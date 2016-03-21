@@ -1,6 +1,6 @@
 # gulp-pipeline
 
-[`v4.0.11`](../../releases/tag/v4.0.11) built from commit [`94bc919`](../../commit/94bc919c967e26f3c2133f0ced80ee40754851e3) on branch `master`. See the [README](../..) for more details
+[`v4.0.12`](../../releases/tag/v4.0.12) built from commit [`1a2c115`](../../commit/1a2c1152b18e544ba9a3b17e210c6c59ef132e3a) on branch `master`. See the [README](../..) for more details
 
 ---
 <sup>Built and published by [gulp-pipeline](https://github.com/alienfast/gulp-pipeline) using [build-control](https://github.com/alienfast/build-control)</sup>

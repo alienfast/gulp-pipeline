@@ -141,19 +141,26 @@
           cwd: this.railsAppCwd()
         });
 
-        //Util.log(stringify(results))
-        if (results.stderr != '' || results.error != null) {
-          Util.log(stringify(results));
+        // run via spring with zero results:
+        //    status: 0,
+        //    stdout: '{}\n',
+        //    stderr: 'Running via Spring preloader in process 95498\n',
 
-          var msg = '';
-          if (results.stderr) {
-            msg += results.stderr;
+        if (results.status !== 0) {
+          //Util.log(stringify(results))
+          if (results.stderr != '' || results.error != null) {
+            Util.log(stringify(results));
+
+            var msg = '';
+            if (results.stderr) {
+              msg += results.stderr;
+            }
+            if (results.error) {
+              msg += results.error;
+            }
+            // message will be either error or stderr, so just grap both of them
+            throw new Error('Ruby script error: \n' + results.stderr + results.error);
           }
-          if (results.error) {
-            msg += results.error;
-          }
-          // message will be either error or stderr, so just grap both of them
-          throw new Error('Ruby script error: \n' + results.stderr + results.error);
         }
         return JSON.parse(results.stdout);
       }
@@ -971,7 +978,7 @@
           this.debug('single file with no dest');
 
           if (files.length > 1) {
-            throw new Error('Should only find one file but found ' + files.length + ' for source: ' + this.dump(this.config.source) + '.  Use the concat: {dest: \'output.min.js\' } configuration for multiple files concatenated with uglify.');
+            throw new Error('Should only find one file but found ' + files.length + ' for source: ' + this.dump(this.config.source) + '.  Use the concat: {dest: \'output.min.js\' } configuration for multiple files concatenated with uglify.  Files found: ' + this.dump(files));
           }
 
           return this.gulp.src(this.config.source.glob, this.config.source.options).pipe(gulpif(this.config.debug, debug(this.debugOptions()))).pipe(extReplace('.min.js'))

@@ -12,12 +12,13 @@ export const Default = {
   task: {
     name: 'cssNano'
   },
-  watch: {
-    glob: ['**/*.css'],
-    options: {
-      //cwd: ** resolved from preset **
-    }
-  },
+  watch: false, // typical use has this at the end of a pipeline, allowing watch here can cause infinite loops on aggregates
+  //watch: {
+  //  glob: ['**/*.css'],
+  //  options: {
+  //    //cwd: ** resolved from preset **
+  //  }
+  //},
   source: {
     glob: ['**/*.css', '!**/*.min.css'],
     options: {

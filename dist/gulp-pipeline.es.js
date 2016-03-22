@@ -1083,7 +1083,8 @@ const Aggregate = class extends BaseGulp {
     let watchFn = () => {
       // watch the watchable recipes and make them #run the series
       for (let recipe of watchableRecipes) {
-        this.log(`[${Util.colors.green(taskName)}] watching for ${recipe.taskName()} ${recipe.config.watch.glob}...`)
+        let recipeName = Util.colors.grey(`(${recipe.taskName() || recipe.constructor.name || 'anonymous'})`)
+        this.log(`[${Util.colors.green(taskName)} ${recipeName}] watching ${recipe.config.watch.options.cwd} for ${recipe.config.watch.glob}...`)
 
         // declare this in here so we can use different display names in the log
         let runFn = (done) => {
@@ -1108,7 +1109,6 @@ const Aggregate = class extends BaseGulp {
         runFn.displayName = `${recipe.taskName()} watcher`
 
         let watcher = this.gulp.watch(recipe.config.watch.glob, recipe.config.watch.options, runFn)
-        let recipeName = Util.colors.grey(`(${recipe.taskName()})`)
         // add watchers for logging/information
         watcher.on('add', (path) => {
           if (!this.taskFn.running) {
@@ -2094,12 +2094,13 @@ const Default$23 = {
   task: {
     name: 'cssNano'
   },
-  watch: {
-    glob: ['**/*.css'],
-    options: {
-      //cwd: ** resolved from preset **
-    }
-  },
+  watch: false, // typical use has this at the end of a pipeline, allowing watch here can cause infinite loops on aggregates
+  //watch: {
+  //  glob: ['**/*.css'],
+  //  options: {
+  //    //cwd: ** resolved from preset **
+  //  }
+  //},
   source: {
     glob: ['**/*.css', '!**/*.min.css'],
     options: {

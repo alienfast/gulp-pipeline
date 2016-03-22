@@ -1367,7 +1367,8 @@
             var _loop = function _loop() {
               var recipe = _step.value;
 
-              _this2.log('[' + Util.colors.green(taskName) + '] watching for ' + recipe.taskName() + ' ' + recipe.config.watch.glob + '...');
+              var recipeName = Util.colors.grey('(' + (recipe.taskName() || recipe.constructor.name || 'anonymous') + ')');
+              _this2.log('[' + Util.colors.green(taskName) + ' ' + recipeName + '] watching ' + recipe.config.watch.options.cwd + ' for ' + recipe.config.watch.glob + '...');
 
               // declare this in here so we can use different display names in the log
               var runFn = function runFn(done) {
@@ -1391,7 +1392,6 @@
               runFn.displayName = recipe.taskName() + ' watcher';
 
               var watcher = _this2.gulp.watch(recipe.config.watch.glob, recipe.config.watch.options, runFn);
-              var recipeName = Util.colors.grey('(' + recipe.taskName() + ')');
               // add watchers for logging/information
               watcher.on('add', function (path) {
                 if (!_this2.taskFn.running) {
@@ -2731,12 +2731,13 @@
     task: {
       name: 'cssNano'
     },
-    watch: {
-      glob: ['**/*.css'],
-      options: {
-        //cwd: ** resolved from preset **
-      }
-    },
+    watch: false, // typical use has this at the end of a pipeline, allowing watch here can cause infinite loops on aggregates
+    //watch: {
+    //  glob: ['**/*.css'],
+    //  options: {
+    //    //cwd: ** resolved from preset **
+    //  }
+    //},
     source: {
       glob: ['**/*.css', '!**/*.min.css'],
       options: {

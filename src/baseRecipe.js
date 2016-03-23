@@ -67,33 +67,37 @@ const BaseRecipe = class extends BaseGulp {
       return this.run(done)
     }
 
-    if (this.config.task && this.config.task.name) {
-      let name = this.taskName()
-      if (this.createDescription !== undefined) {
-        this.config.task.description = this.createDescription()
-      }
-
-      this.debug(`Registering task: ${Util.colors.green(name)}`)
-
-      // set metadata on fn for discovery by gulp
-      taskFn.description = this.config.task.description
-
-      // register the task
-      this.gulp.task(name, this.taskFn)
+    //if (this.shouldRegisterTask()) {
+    if (this.createDescription !== undefined) {
+      this.config.task.description = this.createDescription()
     }
+
+    // set metadata on fn for discovery by gulp
+    taskFn.description = this.config.task.description
+    //}
 
     // metadata for convenience so that gulp tasks show up with this instead of 'anonymous'
     taskFn.displayName = this.displayName()
 
     // assign it last so that displayName() can resolve this first as others may set it externally like <clean>
     this.taskFn = taskFn
+
+    if (this.shouldRegisterTask()) {
+      let name = this.taskName()
+      this.debug(`Registering task: ${Util.colors.green(name)}`)
+      this.gulp.task(name, this.taskFn)
+    }
+  }
+
+  shouldRegisterTask() {
+    return (this.config.task && this.config.task.name)
   }
 
   displayName() {
-    if (this.taskFn !== undefined && this.taskFn.displayName){
+    if (this.taskFn !== undefined && this.taskFn.displayName) {
       return this.taskFn.displayName
     }
-    else if (this.config.task && this.config.task.name) {
+    else if (this.shouldRegisterTask()) {
       return this.taskName()
     }
     else {

@@ -67,15 +67,6 @@ const BaseRecipe = class extends BaseGulp {
       return this.run(done)
     }
 
-    //if (this.shouldRegisterTask()) {
-    if (this.createDescription !== undefined) {
-      this.config.task.description = this.createDescription()
-    }
-
-    // set metadata on fn for discovery by gulp
-    taskFn.description = this.config.task.description
-    //}
-
     // metadata for convenience so that gulp tasks show up with this instead of 'anonymous'
     taskFn.displayName = this.displayName()
 
@@ -83,6 +74,17 @@ const BaseRecipe = class extends BaseGulp {
     this.taskFn = taskFn
 
     if (this.shouldRegisterTask()) {
+
+      // set the description
+      if (this.createDescription !== undefined) {
+        this.config.task.description = this.createDescription()
+      }
+
+      // set metadata on fn for discovery by gulp
+      this.taskFn.description = this.config.task.description
+
+
+      // register
       let name = this.taskName()
       this.debug(`Registering task: ${Util.colors.green(name)}`)
       this.gulp.task(name, this.taskFn)

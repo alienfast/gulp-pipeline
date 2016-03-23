@@ -4,6 +4,7 @@ import del from 'del'
 export const Default = {
   presetType: `macro`, // allows direct instantiation
   debug: false,
+  task: false,
   watch: false,
   sync: true  // necessary so that tasks can be run in a series, can be overriden for other purposes
 }
@@ -27,10 +28,12 @@ const BaseClean = class extends BaseRecipe {
 
   run(done, watching = false) {
     if (this.config.sync) {
+      this.debug(`deleting ${this.config.dest}`)
       let paths = del.sync(this.config.dest)
       this.logDeleted(paths)
     }
     else {
+      this.debug(`deleting ${this.config.dest}`)
       return del(this.config.dest)
         .then((paths) => {
           this.logDeleted(paths)

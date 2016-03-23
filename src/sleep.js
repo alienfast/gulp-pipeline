@@ -17,8 +17,8 @@ const Sleep = class extends BaseRecipe {
    * @param gulp - gulp instance
    * @param config - customized overrides
    */
-  constructor(gulp, preset, sleep) {
-    super(gulp, preset, Default, {sleep: sleep})
+  constructor(gulp, preset, sleep, ...configs) {
+    super(gulp, preset, Default, {sleep: sleep}, ...configs)
   }
 
   createDescription(){

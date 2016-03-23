@@ -25,7 +25,10 @@ export const Default = {
       ignore: ['**/digest', '**/digest/**', '**/*.map']
     }
   },
-  options: {}
+  options: {
+    merge: true,
+    path: "rev-manifest.json"
+  }
 }
 
 const Rev = class extends BaseRecipe {
@@ -37,7 +40,7 @@ const Rev = class extends BaseRecipe {
    * @param configs - customized overrides for this recipe
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, extend(true, {}, Default, ...configs))
+    super(gulp, preset, Default, ...configs)
     this.browserSync = BrowserSync.create()
   }
 
@@ -46,22 +49,35 @@ const Rev = class extends BaseRecipe {
   }
 
   run(done, watching = false) {
-
-    // FIXME merge in the clean as a task
-
     this.debugDump(`gulp.src ${this.config.source.glob}`, this.config.source.options)
+
+
+    // base is not working    https://github.com/sindresorhus/gulp-rev/issues/150
+    //let manifestOptions = extend(true, {}, {base: this.config.dest}, this.config.options)
+
+    // workaround
+    let manifestOptions = extend(true, {},
+      this.config.options,
+      {
+        base: this.config.dest,
+        path: `${this.config.dest}/${this.config.options.path}`
+      }
+    )
+
+    this.debugDump(`manifestOptions`, manifestOptions)
+
     return this.gulp.src(this.config.source.glob, this.config.source.options)
-      //.pipe(changed(this.config.dest)) // ignore unchanged files
       .pipe(gulpif(this.config.debug, debug(this.debugOptions())))
       .pipe(rev(this.config.options))
       .pipe(this.gulp.dest(this.config.dest))
-      .pipe(rev.manifest(this.config.options))
+
+      // Merge with an existing unless merge == false
+      .pipe(rev.manifest(manifestOptions))
       .pipe(this.gulp.dest(this.config.dest))
       .on('error', (error) => {
         this.notifyError(error, done, watching)
       })
       .pipe(this.browserSync.stream())
-
   }
 }
 

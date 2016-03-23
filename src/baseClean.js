@@ -1,5 +1,4 @@
 import BaseRecipe from './baseRecipe'
-import extend from 'extend'
 import del from 'del'
 
 export const Default = {
@@ -17,8 +16,8 @@ const BaseClean = class extends BaseRecipe {
    * @param preset - base preset configuration - either one from preset.js or a custom hash
    * @param configs - customized overrides for this recipe
    */
-  constructor(gulp, preset, config = {}) {
-    super(gulp, preset, extend(true, {}, Default, config))
+  constructor(gulp, preset, ...configs) {
+    super(gulp, preset, Default, ...configs)
   }
 
   createDescription(){

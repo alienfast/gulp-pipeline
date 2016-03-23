@@ -23,6 +23,7 @@ export { default as CleanStylesheets } from './cleanStylesheets'
 export { default as CleanJavascripts } from './cleanJavascripts'
 export { default as CleanDigest } from './cleanDigest'
 export { default as Clean } from './clean'
+export { default as clean } from './util/clean'
 
 export { default as Rev } from './rev'
 export { default as CssNano } from './cssNano'
@@ -40,3 +41,4 @@ export { default as parallel } from './util/parallel'
 export { default as tmpDir } from './util/tmpDir'
 
 export { default as Sleep } from './sleep'
+export { default as sleep } from './util/sleep'

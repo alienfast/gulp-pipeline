@@ -8,7 +8,7 @@ const Default = {
 }
 
 /**
- * Sleep the given ms value.
+ * Sleep the given ms value, for those quirky cases like when you need the filesystem to catch up.
  */
 const Sleep = class extends BaseRecipe {
 

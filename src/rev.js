@@ -12,15 +12,17 @@ export const Default = {
     name: 'rev'
   },
   watch: {
-    glob: ['**', '!digest', '!digest/**', '!*.map'],
+    glob: '**',
     options: {
       //cwd: ** resolved from preset **
+      ignore: ['**/digest', '**/digest/**', '**/*.map']
     }
   },
   source: {
-    glob: ['**', '!digest', '!digest/**', '!*.map'],
+    glob: '**',
     options: {
       //cwd: ** resolved from preset **
+      ignore: ['**/digest', '**/digest/**', '**/*.map']
     }
   },
   options: {}
@@ -47,13 +49,13 @@ const Rev = class extends BaseRecipe {
 
     // FIXME merge in the clean as a task
 
-
+    this.debugDump(`gulp.src ${this.config.source.glob}`, this.config.source.options)
     return this.gulp.src(this.config.source.glob, this.config.source.options)
       //.pipe(changed(this.config.dest)) // ignore unchanged files
       .pipe(gulpif(this.config.debug, debug(this.debugOptions())))
       .pipe(rev(this.config.options))
       .pipe(this.gulp.dest(this.config.dest))
-      .pipe(rev.manifest())
+      .pipe(rev.manifest(this.config.options))
       .pipe(this.gulp.dest(this.config.dest))
       .on('error', (error) => {
         this.notifyError(error, done, watching)

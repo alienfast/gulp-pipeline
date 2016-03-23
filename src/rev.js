@@ -4,11 +4,9 @@ import debug from 'gulp-debug'
 import extend from 'extend'
 import gulpif from 'gulp-if'
 import rev   from 'gulp-rev'
-import revdel from 'gulp-rev-delete-original'
 
 export const Default = {
   debug: false,
-  deleteOriginal: false,
   presetType: 'postProcessor',
   task: {
     name: 'rev'
@@ -56,7 +54,6 @@ const Rev = class extends BaseRecipe {
       .pipe(rev(this.config.options))
       .pipe(this.gulp.dest(this.config.dest))
       .pipe(rev.manifest())
-      .pipe(gulpif(this.config.deleteOriginal, revdel()))
       .pipe(this.gulp.dest(this.config.dest))
       .on('error', (error) => {
         this.notifyError(error, done, watching)

@@ -139,7 +139,7 @@ const Aggregate = class extends BaseGulp {
     // create an array of watchable recipes
     let watchableRecipes = []
     for (let recipe of this.flattenedRecipes()) {
-      if ((typeof recipe !== "string") && recipe.config.watch) {
+      if ((typeof recipe !== "string") && (typeof recipe !== "function") && recipe.config.watch) {
         watchableRecipes.push(recipe)
       }
     }

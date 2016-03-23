@@ -27,7 +27,7 @@ export const Default = {
   },
   options: {
     merge: true,
-    path: "rev-manifest.json"
+    path: 'rev-manifest.json'
   }
 }
 

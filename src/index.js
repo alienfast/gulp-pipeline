@@ -26,6 +26,7 @@ export { default as Clean } from './clean'
 export { default as clean } from './util/clean'
 
 export { default as Rev } from './rev'
+export { default as RevReplace } from './revReplace'
 export { default as CssNano } from './cssNano'
 
 export { default as Mocha } from './mocha'

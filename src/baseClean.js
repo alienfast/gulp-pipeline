@@ -3,6 +3,7 @@ import extend from 'extend'
 import del from 'del'
 
 export const Default = {
+  presetType: `macro`, // allows direct instantiation
   debug: false,
   watch: false,
   sync: true  // necessary so that tasks can be run in a series, can be overriden for other purposes

@@ -82,6 +82,10 @@ const BaseRecipe = class extends BaseGulp {
       // register the task
       this.gulp.task(name, this.taskFn)
     }
+    else {
+      // metadata for convenience so that gulp tasks show up with this instead of 'anonymous'
+      this.taskFn.displayName = `<${this.constructor.name}>`
+    }
   }
 
   logFinish(message = 'finished.') {

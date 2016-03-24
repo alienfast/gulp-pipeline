@@ -37,7 +37,7 @@ We eat our own dogfood.  All distributions are built and published by gulp-pipel
 Here's a `gulpfile.babel.js` that uses the [`RailsRegistry`](src/registry/railsRegistry.js) tasks to build and watch an ES2015/SCSS project.  We can get this kind of reuse because of the standards employed in a rails project structure.
  
 ```javascript
-import {RailsRegistry} from 'gulp-pipeline/src/index'
+import {RailsRegistry} from 'gulp-pipeline'
 import gulp from 'gulp'
 
 // minimal setup with no overrides config

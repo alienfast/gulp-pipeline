@@ -6,6 +6,7 @@ import fs from 'fs'
 import jsonfile from 'jsonfile'
 import Util from 'gulp-util'
 import stringify from 'stringify-object'
+import console from 'console'
 
 const BaseDirectoriesCache = `.gulp-pipeline-rails.json`
 const GemfileLock = `Gemfile.lock`
@@ -85,7 +86,7 @@ const Rails = class {
         //ignore
       }
 
-      let engines = Rails.enumerateEngines()
+      let engines = Rails.enumerateEngines()  // eslint-disable-line no-console
       console.log(stringify(engines))
 
       let baseDirectories = ['./']

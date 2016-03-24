@@ -1,8 +1,8 @@
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('extend'), require('path'), require('fs'), require('glob'), require('cross-spawn'), require('jsonfile'), require('gulp-util'), require('stringify-object'), require('gulp-notify'), require('shelljs'), require('gulp-eslint'), require('gulp-debug'), require('gulp-if'), require('gulp-uglify'), require('gulp-sourcemaps'), require('gulp-concat'), require('gulp-ext-replace'), require('gulp-autoprefixer'), require('browser-sync'), require('gulp-changed'), require('gulp-imagemin'), require('merge-stream'), require('gulp-sass'), require('findup-sync'), require('gulp-scss-lint'), require('gulp-scss-lint-stylish'), require('rollup'), require('rollup-plugin-node-resolve'), require('rollup-plugin-commonjs'), require('process'), require('rollup-plugin-babel'), require('fs-extra'), require('file-sync-cmp'), require('iconv-lite'), require('buffer'), require('chalk'), require('glob-all'), require('del'), require('gulp-rev'), require('gulp-rev-replace'), require('gulp-cssnano'), require('gulp-mocha'), require('build-control'), require('path-is-absolute'), require('tmp'), require('undertaker-registry')) :
-  typeof define === 'function' && define.amd ? define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'gulp-util', 'stringify-object', 'gulp-notify', 'shelljs', 'gulp-eslint', 'gulp-debug', 'gulp-if', 'gulp-uglify', 'gulp-sourcemaps', 'gulp-concat', 'gulp-ext-replace', 'gulp-autoprefixer', 'browser-sync', 'gulp-changed', 'gulp-imagemin', 'merge-stream', 'gulp-sass', 'findup-sync', 'gulp-scss-lint', 'gulp-scss-lint-stylish', 'rollup', 'rollup-plugin-node-resolve', 'rollup-plugin-commonjs', 'process', 'rollup-plugin-babel', 'fs-extra', 'file-sync-cmp', 'iconv-lite', 'buffer', 'chalk', 'glob-all', 'del', 'gulp-rev', 'gulp-rev-replace', 'gulp-cssnano', 'gulp-mocha', 'build-control', 'path-is-absolute', 'tmp', 'undertaker-registry'], factory) :
-  (factory((global.gulpPipeline = global.gulpPipeline || {}),global.extend,global.path,global.fs,global.glob,global.spawn,global.jsonfile,global.Util,global.stringify,global.notify,global.shelljs,global.eslint,global.debug,global.gulpif,global.uglify,global.sourcemaps,global.concat,global.extReplace,global.autoprefixer,global.BrowserSync,global.changed,global.imagemin,global.merge,global.sass,global.findup,global.scssLint,global.scssLintStylish,global.rollup,global.nodeResolve,global.commonjs,global.process,global.babel,global.fs$1,global.fileSyncCmp,global.iconv,global.buffer,global.chalk,global.globAll,global.del,global.rev,global.revReplace,global.cssnano,global.mocha,global.buildControl,global.pathIsAbsolute,global.tmp,global.DefaultRegistry));
-}(this, function (exports,extend,path,fs,glob,spawn,jsonfile,Util,stringify,notify,shelljs,eslint,debug,gulpif,uglify,sourcemaps,concat,extReplace,autoprefixer,BrowserSync,changed,imagemin,merge,sass,findup,scssLint,scssLintStylish,rollup,nodeResolve,commonjs,process,babel,fs$1,fileSyncCmp,iconv,buffer,chalk,globAll,del,rev,revReplace,cssnano,mocha,buildControl,pathIsAbsolute,tmp,DefaultRegistry) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('extend'), require('path'), require('fs'), require('glob'), require('cross-spawn'), require('jsonfile'), require('gulp-util'), require('stringify-object'), require('console'), require('gulp-notify'), require('shelljs'), require('gulp-eslint'), require('gulp-debug'), require('gulp-if'), require('gulp-uglify'), require('gulp-sourcemaps'), require('gulp-concat'), require('gulp-ext-replace'), require('gulp-autoprefixer'), require('browser-sync'), require('gulp-changed'), require('gulp-imagemin'), require('merge-stream'), require('gulp-sass'), require('findup-sync'), require('gulp-scss-lint'), require('gulp-scss-lint-stylish'), require('rollup'), require('rollup-plugin-node-resolve'), require('rollup-plugin-commonjs'), require('process'), require('rollup-plugin-babel'), require('fs-extra'), require('file-sync-cmp'), require('iconv-lite'), require('buffer'), require('chalk'), require('glob-all'), require('del'), require('gulp-rev'), require('gulp-rev-replace'), require('gulp-cssnano'), require('gulp-mocha'), require('build-control'), require('path-is-absolute'), require('tmp'), require('undertaker-registry')) :
+  typeof define === 'function' && define.amd ? define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'gulp-util', 'stringify-object', 'console', 'gulp-notify', 'shelljs', 'gulp-eslint', 'gulp-debug', 'gulp-if', 'gulp-uglify', 'gulp-sourcemaps', 'gulp-concat', 'gulp-ext-replace', 'gulp-autoprefixer', 'browser-sync', 'gulp-changed', 'gulp-imagemin', 'merge-stream', 'gulp-sass', 'findup-sync', 'gulp-scss-lint', 'gulp-scss-lint-stylish', 'rollup', 'rollup-plugin-node-resolve', 'rollup-plugin-commonjs', 'process', 'rollup-plugin-babel', 'fs-extra', 'file-sync-cmp', 'iconv-lite', 'buffer', 'chalk', 'glob-all', 'del', 'gulp-rev', 'gulp-rev-replace', 'gulp-cssnano', 'gulp-mocha', 'build-control', 'path-is-absolute', 'tmp', 'undertaker-registry'], factory) :
+  (factory((global.gulpPipeline = global.gulpPipeline || {}),global.extend,global.path,global.fs,global.glob,global.spawn,global.jsonfile,global.Util,global.stringify,global.console,global.notify,global.shelljs,global.eslint,global.debug,global.gulpif,global.uglify,global.sourcemaps,global.concat,global.extReplace,global.autoprefixer,global.BrowserSync,global.changed,global.imagemin,global.merge,global.sass,global.findup,global.scssLint,global.scssLintStylish,global.rollup,global.nodeResolve,global.commonjs,global.process,global.babel,global.fs$1,global.fileSyncCmp,global.iconv,global.buffer,global.chalk,global.globAll,global.del,global.rev,global.revReplace,global.cssnano,global.mocha,global.buildControl,global.pathIsAbsolute,global.tmp,global.DefaultRegistry));
+}(this, function (exports,extend,path,fs,glob,spawn,jsonfile,Util,stringify,console,notify,shelljs,eslint,debug,gulpif,uglify,sourcemaps,concat,extReplace,autoprefixer,BrowserSync,changed,imagemin,merge,sass,findup,scssLint,scssLintStylish,rollup,nodeResolve,commonjs,process,babel,fs$1,fileSyncCmp,iconv,buffer,chalk,globAll,del,rev,revReplace,cssnano,mocha,buildControl,pathIsAbsolute,tmp,DefaultRegistry) { 'use strict';
 
   extend = 'default' in extend ? extend['default'] : extend;
   path = 'default' in path ? path['default'] : path;
@@ -12,6 +12,7 @@
   jsonfile = 'default' in jsonfile ? jsonfile['default'] : jsonfile;
   Util = 'default' in Util ? Util['default'] : Util;
   stringify = 'default' in stringify ? stringify['default'] : stringify;
+  console = 'default' in console ? console['default'] : console;
   notify = 'default' in notify ? notify['default'] : notify;
   shelljs = 'default' in shelljs ? shelljs['default'] : shelljs;
   eslint = 'default' in eslint ? eslint['default'] : eslint;
@@ -149,7 +150,9 @@
         //    stderr: 'Running via Spring preloader in process 95498\n',
 
         if (results.status !== 0) {
-          //Util.log(stringify(results))
+
+          Util.log(stringify(results));
+
           if (results.stderr != '' || results.error != null) {
             Util.log(stringify(results));
 
@@ -200,18 +203,18 @@
       key: 'baseDirectories',
       value: function baseDirectories() {
         if (!this.changed(GemfileLock, BaseDirectoriesCache)) {
+          Util.log('Gemfile.lock is unchanged, using baseDirectories cache.');
           return jsonfile.readFileSync(BaseDirectoriesCache);
         } else {
-          Util.log('Generating baseDirectories cache...');
+          Util.log('Generating baseDirectories and rails engines cache...');
           try {
             fs.unlinkSync(BaseDirectoriesCache);
           } catch (error) {
             //ignore
           }
 
-          Util.log('Enumerating rails engines...');
           var engines = Rails.enumerateEngines();
-          //console.log(stringify(engines))
+          console.log(stringify(engines)); // eslint-disable-line no-console
 
           var baseDirectories = ['./'];
           var _iteratorNormalCompletion = true;

@@ -6,6 +6,7 @@ import spawn from 'cross-spawn';
 import jsonfile from 'jsonfile';
 import Util from 'gulp-util';
 import stringify from 'stringify-object';
+import console from 'console';
 import notify from 'gulp-notify';
 import shelljs from 'shelljs';
 import eslint from 'gulp-eslint';
@@ -82,7 +83,11 @@ const Rails = class {
     //    stderr: 'Running via Spring preloader in process 95498\n',
 
     if(results.status !== 0) {
-      //Util.log(stringify(results))
+
+
+      Util.log(stringify(results))
+
+
       if (results.stderr != '' || results.error != null) {
         Util.log(stringify(results))
 
@@ -127,19 +132,19 @@ const Rails = class {
    */
   static baseDirectories() {
     if (!this.changed(GemfileLock, BaseDirectoriesCache)) {
+      Util.log(`Gemfile.lock is unchanged, using baseDirectories cache.`)
       return jsonfile.readFileSync(BaseDirectoriesCache)
     }
     else {
-      Util.log(`Generating baseDirectories cache...`)
+      Util.log(`Generating baseDirectories and rails engines cache...`)
       try {
         fs.unlinkSync(BaseDirectoriesCache)
       } catch (error) {
         //ignore
       }
 
-      Util.log(`Enumerating rails engines...`)
       let engines = Rails.enumerateEngines()
-      //console.log(stringify(engines))
+      console.log(stringify(engines)) // eslint-disable-line no-console
 
       let baseDirectories = ['./']
       for (let key of Object.keys(engines)) {

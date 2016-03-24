@@ -1,4 +1,4 @@
-define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'gulp-util', 'stringify-object', 'gulp-notify', 'shelljs', 'gulp-eslint', 'gulp-debug', 'gulp-if', 'gulp-uglify', 'gulp-sourcemaps', 'gulp-concat', 'gulp-ext-replace', 'gulp-autoprefixer', 'browser-sync', 'gulp-changed', 'gulp-imagemin', 'merge-stream', 'gulp-sass', 'findup-sync', 'gulp-scss-lint', 'gulp-scss-lint-stylish', 'rollup', 'rollup-plugin-node-resolve', 'rollup-plugin-commonjs', 'process', 'rollup-plugin-babel', 'fs-extra', 'file-sync-cmp', 'iconv-lite', 'buffer', 'chalk', 'glob-all', 'del', 'gulp-rev', 'gulp-rev-replace', 'gulp-cssnano', 'gulp-mocha', 'build-control', 'path-is-absolute', 'tmp', 'undertaker-registry'], function (exports, extend, path, fs, glob, spawn, jsonfile, Util, stringify, notify, shelljs, eslint, debug, gulpif, uglify, sourcemaps, concat, extReplace, autoprefixer, BrowserSync, changed, imagemin, merge, sass, findup, scssLint, scssLintStylish, rollup, nodeResolve, commonjs, process, babel, fs$1, fileSyncCmp, iconv, buffer, chalk, globAll, del, rev, revReplace, cssnano, mocha, buildControl, pathIsAbsolute, tmp, DefaultRegistry) { 'use strict';
+define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'gulp-util', 'stringify-object', 'console', 'gulp-notify', 'shelljs', 'gulp-eslint', 'gulp-debug', 'gulp-if', 'gulp-uglify', 'gulp-sourcemaps', 'gulp-concat', 'gulp-ext-replace', 'gulp-autoprefixer', 'browser-sync', 'gulp-changed', 'gulp-imagemin', 'merge-stream', 'gulp-sass', 'findup-sync', 'gulp-scss-lint', 'gulp-scss-lint-stylish', 'rollup', 'rollup-plugin-node-resolve', 'rollup-plugin-commonjs', 'process', 'rollup-plugin-babel', 'fs-extra', 'file-sync-cmp', 'iconv-lite', 'buffer', 'chalk', 'glob-all', 'del', 'gulp-rev', 'gulp-rev-replace', 'gulp-cssnano', 'gulp-mocha', 'build-control', 'path-is-absolute', 'tmp', 'undertaker-registry'], function (exports, extend, path, fs, glob, spawn, jsonfile, Util, stringify, console, notify, shelljs, eslint, debug, gulpif, uglify, sourcemaps, concat, extReplace, autoprefixer, BrowserSync, changed, imagemin, merge, sass, findup, scssLint, scssLintStylish, rollup, nodeResolve, commonjs, process, babel, fs$1, fileSyncCmp, iconv, buffer, chalk, globAll, del, rev, revReplace, cssnano, mocha, buildControl, pathIsAbsolute, tmp, DefaultRegistry) { 'use strict';
 
   extend = 'default' in extend ? extend['default'] : extend;
   path = 'default' in path ? path['default'] : path;
@@ -8,6 +8,7 @@ define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'g
   jsonfile = 'default' in jsonfile ? jsonfile['default'] : jsonfile;
   Util = 'default' in Util ? Util['default'] : Util;
   stringify = 'default' in stringify ? stringify['default'] : stringify;
+  console = 'default' in console ? console['default'] : console;
   notify = 'default' in notify ? notify['default'] : notify;
   shelljs = 'default' in shelljs ? shelljs['default'] : shelljs;
   eslint = 'default' in eslint ? eslint['default'] : eslint;
@@ -145,7 +146,9 @@ define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'g
         //    stderr: 'Running via Spring preloader in process 95498\n',
 
         if (results.status !== 0) {
-          //Util.log(stringify(results))
+
+          Util.log(stringify(results));
+
           if (results.stderr != '' || results.error != null) {
             Util.log(stringify(results));
 
@@ -196,18 +199,18 @@ define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'g
       key: 'baseDirectories',
       value: function baseDirectories() {
         if (!this.changed(GemfileLock, BaseDirectoriesCache)) {
+          Util.log('Gemfile.lock is unchanged, using baseDirectories cache.');
           return jsonfile.readFileSync(BaseDirectoriesCache);
         } else {
-          Util.log('Generating baseDirectories cache...');
+          Util.log('Generating baseDirectories and rails engines cache...');
           try {
             fs.unlinkSync(BaseDirectoriesCache);
           } catch (error) {
             //ignore
           }
 
-          Util.log('Enumerating rails engines...');
           var engines = Rails.enumerateEngines();
-          //console.log(stringify(engines))
+          console.log(stringify(engines)); // eslint-disable-line no-console
 
           var baseDirectories = ['./'];
           var _iteratorNormalCompletion = true;

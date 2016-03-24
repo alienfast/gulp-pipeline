@@ -10,6 +10,7 @@ var spawn = _interopDefault(require('cross-spawn'));
 var jsonfile = _interopDefault(require('jsonfile'));
 var Util = _interopDefault(require('gulp-util'));
 var stringify = _interopDefault(require('stringify-object'));
+var console = _interopDefault(require('console'));
 var notify = _interopDefault(require('gulp-notify'));
 var shelljs = _interopDefault(require('shelljs'));
 var eslint = _interopDefault(require('gulp-eslint'));
@@ -150,7 +151,9 @@ var Rails = function () {
       //    stderr: 'Running via Spring preloader in process 95498\n',
 
       if (results.status !== 0) {
-        //Util.log(stringify(results))
+
+        Util.log(stringify(results));
+
         if (results.stderr != '' || results.error != null) {
           Util.log(stringify(results));
 
@@ -201,18 +204,18 @@ var Rails = function () {
     key: 'baseDirectories',
     value: function baseDirectories() {
       if (!this.changed(GemfileLock, BaseDirectoriesCache)) {
+        Util.log('Gemfile.lock is unchanged, using baseDirectories cache.');
         return jsonfile.readFileSync(BaseDirectoriesCache);
       } else {
-        Util.log('Generating baseDirectories cache...');
+        Util.log('Generating baseDirectories and rails engines cache...');
         try {
           fs.unlinkSync(BaseDirectoriesCache);
         } catch (error) {
           //ignore
         }
 
-        Util.log('Enumerating rails engines...');
         var engines = Rails.enumerateEngines();
-        //console.log(stringify(engines))
+        console.log(stringify(engines)); // eslint-disable-line no-console
 
         var baseDirectories = ['./'];
         var _iteratorNormalCompletion = true;

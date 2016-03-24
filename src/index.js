@@ -1,5 +1,5 @@
 export { default as Preset } from './preset'
-export { default as Rails } from './rails'
+export { default as Rails } from './ruby/rails'
 
 export { default as EsLint } from './eslint'
 export { default as Uglify } from './uglify'

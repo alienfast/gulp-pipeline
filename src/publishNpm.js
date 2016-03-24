@@ -3,7 +3,7 @@ import {Npm} from 'build-control'
 
 const Default = {
   task: {
-    name: 'publishNpm',
+    name: 'publish:npm',
     description: 'Publishes package on npm'
   },
   options: {}

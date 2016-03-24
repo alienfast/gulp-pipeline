@@ -1,4 +1,4 @@
-import Ruby from './ruby/ruby'
+import Ruby from './ruby'
 import path from 'path'
 import glob from 'glob'
 import spawn from 'cross-spawn'

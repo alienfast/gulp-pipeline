@@ -9,7 +9,7 @@ import {BuildControl} from 'build-control'
 const Default = {
   //debug: true,
   task: {
-    name: 'publishGhPages',
+    name: 'publish:gh-pages',
     description: 'Publishes a _gh_pages directory to gh-pages branch'
   },
   options: {

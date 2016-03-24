@@ -4,8 +4,11 @@ import tmp from 'tmp'
  *
  */
 const tmpDir = (options = {prefix: 'gulp-pipeline_'}) => {
-  let tmpobj = tmp.dirSync(options)
-  return tmpobj.name
+  let tmpDirObj = tmp.dirSync(options)
+
+  tmpDirObj.removeCallback.displayName = '<tmpDir cleanup>'
+
+  return tmpDirObj
 }
 
 export default tmpDir

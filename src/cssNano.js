@@ -11,7 +11,7 @@ export const Default = {
   minExtension: true, // replace extension .css with .min.css
   presetType: 'postProcessor',
   task: {
-    name: 'cssNano'
+    name: 'css:nano'
   },
   watch: false, // typical use has this at the end of a pipeline, allowing watch here can cause infinite loops on aggregates
   //watch: {

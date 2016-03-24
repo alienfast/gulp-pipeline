@@ -43,6 +43,7 @@ import mocha from 'gulp-mocha';
 import { BuildControl, Npm } from 'build-control';
 import pathIsAbsolute from 'path-is-absolute';
 import tmp from 'tmp';
+import DefaultRegistry from 'undertaker-registry';
 
 const Ruby = class {
   static localPath(name) {
@@ -393,6 +394,7 @@ const BaseGulp = class extends Base {
    */
   constructor(gulp, ...configs) {
     super(Default$2, ...configs)
+    this.requireValue(gulp, 'gulp')
     this.gulp = gulp
   }
 
@@ -1001,7 +1003,7 @@ const Default$7 = {
   debug: false,
   presetType: 'stylesheets',
   task: {
-    name: 'scsslint'
+    name: 'scss:lint'
   },
   source: {
     glob: '**/*.scss'
@@ -1829,7 +1831,8 @@ const Default$17 = {
   debug: false,
   task: false,
   watch: false,
-  sync: true  // necessary so that tasks can be run in a series, can be overriden for other purposes
+  sync: true,  // necessary so that tasks can be run in a series, can be overriden for other purposes
+  options: {}
 }
 
 const BaseClean = class extends BaseRecipe {
@@ -1852,12 +1855,12 @@ const BaseClean = class extends BaseRecipe {
   run(done, watching = false) {
     if (this.config.sync) {
       this.debug(`deleting ${this.config.dest}`)
-      let paths = del.sync(this.config.dest)
+      let paths = del.sync(this.config.dest, this.config.options)
       this.logDeleted(paths)
     }
     else {
       this.debug(`deleting ${this.config.dest}`)
-      return del(this.config.dest)
+      return del(this.config.dest, this.config.options)
         .then((paths) => {
           this.logDeleted(paths)
         })
@@ -2063,7 +2066,7 @@ const Clean = class extends Aggregate {
  * Simplified clean() that uses the BaseClean recipe
  */
 const clean = (gulp, name, options = {}) => {
-  let c = new BaseClean(gulp, {}, {dest: name}, options)
+  let c = new BaseClean(gulp, {}, {dest: name, options: {force: true}}, options)
   // set the display name so it shows up in the task list
   c.taskFn.displayName = `<clean>`
   return c
@@ -2216,7 +2219,7 @@ const Default$24 = {
   minExtension: true, // replace extension .css with .min.css
   presetType: 'postProcessor',
   task: {
-    name: 'cssNano'
+    name: 'css:nano'
   },
   watch: false, // typical use has this at the end of a pipeline, allowing watch here can cause infinite loops on aggregates
   //watch: {
@@ -2426,7 +2429,7 @@ const Default$28 = {
 `
   },
   task: {
-    name: 'publishBuild',
+    name: 'publish:build',
     description: 'Assembles and pushes the build to a branch'
   }
 }
@@ -2523,7 +2526,7 @@ const PublishBuild = class extends BasePublish {
 
 const Default$29 = {
   task: {
-    name: 'publishNpm',
+    name: 'publish:npm',
     description: 'Publishes package on npm'
   },
   options: {}
@@ -2559,7 +2562,7 @@ const PublishNpm = class extends BasePublish {
 const Default$30 = {
   //debug: true,
   task: {
-    name: 'publishGhPages',
+    name: 'publish:gh-pages',
     description: 'Publishes a _gh_pages directory to gh-pages branch'
   },
   options: {
@@ -2670,8 +2673,18 @@ const series = (gulp, ...recipes) => {
  *
  */
 const tmpDir = (options = {prefix: 'gulp-pipeline_'}) => {
-  let tmpobj = tmp.dirSync(options)
-  return tmpobj.name
+  let tmpDirObj = tmp.dirSync(options)
+
+  tmpDirObj.removeCallback.displayName = '<tmpDir cleanup>'
+
+  return tmpDirObj
+}
+
+/**
+ *
+ */
+const tmpDirName = (options = {prefix: 'gulp-pipeline_'}) => {
+  return tmpDir(options).name
 }
 
 const Default$32 = {
@@ -2716,5 +2729,153 @@ const sleep = (gulp, ms) => {
   return c
 }
 
-export { Preset, Rails, EsLint, Uglify, Autoprefixer, Images, Sass, ScssLint, Aggregate, RollupEs, RollupCjs, RollupCjsBundled, RollupIife, RollupAmd, RollupUmd, Copy, CleanImages, CleanStylesheets, CleanJavascripts, CleanDigest, Clean, clean, Rev, RevReplace, CssNano, Mocha, Prepublish, PublishBuild, PublishNpm, PublishGhPages, Jekyll, series, parallel, tmpDir, Sleep, sleep };
+const Default$34 = {
+  debug: false
+}
+
+const BaseRegistry = class extends DefaultRegistry {
+
+  /**
+   *
+   * @param gulp - gulp instance
+   * @param config - customized overrides
+   */
+  constructor(...configs) {
+    super()
+    this.config = extend(true, {}, Default$34, ...configs)
+    this.debugDump(`[${this.constructor.name}] using resolved config:`, this.config)
+  }
+
+  // ----------------------------------------------
+  // protected
+  requireValue(value, name) {
+    if (value === undefined || value == null) {
+      this.notifyError(`${name} must be defined, found: ${value}`)
+    }
+  }
+
+  log(msg) {
+    Util.log(msg)
+  }
+
+  debug(msg) {
+    if (this.config.debug) {
+      this.log(`[${Util.colors.cyan('debug')}][${Util.colors.cyan(this.constructor.name)}] ${msg}`)
+    }
+  }
+
+  debugDump(msg, obj) {
+    this.debug(`${msg}:\n${this.dump(obj)}`)
+  }
+
+  dump(obj) {
+    return stringify(obj)
+  }
+
+  notifyError(error, e) {
+    this.log(error)
+    throw e
+  }
+}
+
+// per class name defaults that can be overridden
+const Default$33 = {
+  preset: Preset.rails()
+}
+
+/**
+ * gulp.registry(new RailsRegistry(...configs))
+ */
+const RailsRegistry = class extends BaseRegistry {
+
+  /**
+   * @param config - customized overrides of the Default, last one wins
+   */
+  constructor(...configs) {
+    super(Default$33, ...configs)
+  }
+
+  init(gulp) {
+    const preset = this.config.preset
+
+    const js = new Aggregate(gulp, 'js',
+      series(gulp,
+        new EsLint(gulp, preset),
+        new RollupIife(gulp, preset, {options: {dest: 'application.js', moduleName: 'application'}}, this.config.RollupIife)
+      )
+    )
+
+    const css = new Aggregate(gulp, 'css',
+      series(gulp,
+        new ScssLint(gulp, preset),
+        new Sass(gulp, preset)
+      )
+    )
+
+    const defaultRecipes = new Aggregate(gulp, 'default',
+      series(gulp,
+        new Clean(gulp, preset),
+        parallel(gulp,
+          new Images(gulp, preset),
+          js,
+          css
+        )
+      )
+    )
+
+    // Create the production assets
+    const tmpDirObj = tmpDir()
+    const minifiedAssetsDir = tmpDirObj.name
+    this.debug(`tmpDir for minified assets: ${minifiedAssetsDir}`)
+
+
+    // digests need to be one task, tmpDir makes things interdependent
+    const digests = {debug: false, task: false, watch: false}
+
+    const digest = new Aggregate(gulp, 'digest',
+      series(gulp,
+        new CleanDigest(gulp, preset, digests),
+
+        // minify application.(css|js) to a tmp directory
+        parallel(gulp,
+          new Uglify(gulp, preset, digests, {dest: minifiedAssetsDir, concat: {dest: 'application.js'}}),
+          new CssNano(gulp, preset, digests, {dest: minifiedAssetsDir, minExtension: false})
+        ),
+
+        // rev minified css|js from tmp
+        new Rev(gulp, preset, digests, {
+          source: {
+            options: {
+              cwd: minifiedAssetsDir
+            }
+          }
+        }),
+        // rev all the rest from the debug dir (except the minified application(css|js)) and merge with the previous rev
+        new Rev(gulp, preset, digests, {
+          source: {
+            options: {
+              ignore: ['**/application.js', '**/*.js.map', '**/application.css']
+            }
+          }
+        }),
+
+        // rewrite all revised urls in the assets i.e. css, js
+        new RevReplace(gulp, preset, digests),
+
+        // cleanup the temp files and folders
+        clean(gulp, `${minifiedAssetsDir}/**`)
+      )
+    )
+
+    // default then digest
+    new Aggregate(gulp, 'build',
+      series(gulp,
+        defaultRecipes,
+        digest
+      )
+    )
+  }
+}
+
+export { Preset, Rails, EsLint, Uglify, Autoprefixer, Images, Sass, ScssLint, Aggregate, RollupEs, RollupCjs, RollupCjsBundled, RollupIife, RollupAmd, RollupUmd, Copy, CleanImages, CleanStylesheets, CleanJavascripts, CleanDigest, Clean, clean, Rev, RevReplace, CssNano, Mocha, Prepublish, PublishBuild, PublishNpm, PublishGhPages, Jekyll, series, parallel, tmpDirName, tmpDir, Sleep, sleep, RailsRegistry };
 //# sourceMappingURL=gulp-pipeline.es.js.map

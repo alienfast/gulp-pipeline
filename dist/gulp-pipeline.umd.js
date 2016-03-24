@@ -1,8 +1,8 @@
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('extend'), require('path'), require('fs'), require('glob'), require('cross-spawn'), require('jsonfile'), require('gulp-util'), require('stringify-object'), require('gulp-notify'), require('shelljs'), require('gulp-eslint'), require('gulp-debug'), require('gulp-if'), require('gulp-uglify'), require('gulp-sourcemaps'), require('gulp-concat'), require('gulp-ext-replace'), require('gulp-autoprefixer'), require('browser-sync'), require('gulp-changed'), require('gulp-imagemin'), require('merge-stream'), require('gulp-sass'), require('findup-sync'), require('gulp-scss-lint'), require('gulp-scss-lint-stylish'), require('rollup'), require('rollup-plugin-node-resolve'), require('rollup-plugin-commonjs'), require('process'), require('rollup-plugin-babel'), require('fs-extra'), require('file-sync-cmp'), require('iconv-lite'), require('buffer'), require('chalk'), require('glob-all'), require('del'), require('gulp-rev'), require('gulp-rev-replace'), require('gulp-cssnano'), require('gulp-mocha'), require('build-control'), require('path-is-absolute'), require('tmp')) :
-  typeof define === 'function' && define.amd ? define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'gulp-util', 'stringify-object', 'gulp-notify', 'shelljs', 'gulp-eslint', 'gulp-debug', 'gulp-if', 'gulp-uglify', 'gulp-sourcemaps', 'gulp-concat', 'gulp-ext-replace', 'gulp-autoprefixer', 'browser-sync', 'gulp-changed', 'gulp-imagemin', 'merge-stream', 'gulp-sass', 'findup-sync', 'gulp-scss-lint', 'gulp-scss-lint-stylish', 'rollup', 'rollup-plugin-node-resolve', 'rollup-plugin-commonjs', 'process', 'rollup-plugin-babel', 'fs-extra', 'file-sync-cmp', 'iconv-lite', 'buffer', 'chalk', 'glob-all', 'del', 'gulp-rev', 'gulp-rev-replace', 'gulp-cssnano', 'gulp-mocha', 'build-control', 'path-is-absolute', 'tmp'], factory) :
-  (factory((global.gulpPipeline = global.gulpPipeline || {}),global.extend,global.path,global.fs,global.glob,global.spawn,global.jsonfile,global.Util,global.stringify,global.notify,global.shelljs,global.eslint,global.debug,global.gulpif,global.uglify,global.sourcemaps,global.concat,global.extReplace,global.autoprefixer,global.BrowserSync,global.changed,global.imagemin,global.merge,global.sass,global.findup,global.scssLint,global.scssLintStylish,global.rollup,global.nodeResolve,global.commonjs,global.process,global.babel,global.fs$1,global.fileSyncCmp,global.iconv,global.buffer,global.chalk,global.globAll,global.del,global.rev,global.revReplace,global.cssnano,global.mocha,global.buildControl,global.pathIsAbsolute,global.tmp));
-}(this, function (exports,extend,path,fs,glob,spawn,jsonfile,Util,stringify,notify,shelljs,eslint,debug,gulpif,uglify,sourcemaps,concat,extReplace,autoprefixer,BrowserSync,changed,imagemin,merge,sass,findup,scssLint,scssLintStylish,rollup,nodeResolve,commonjs,process,babel,fs$1,fileSyncCmp,iconv,buffer,chalk,globAll,del,rev,revReplace,cssnano,mocha,buildControl,pathIsAbsolute,tmp) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('extend'), require('path'), require('fs'), require('glob'), require('cross-spawn'), require('jsonfile'), require('gulp-util'), require('stringify-object'), require('gulp-notify'), require('shelljs'), require('gulp-eslint'), require('gulp-debug'), require('gulp-if'), require('gulp-uglify'), require('gulp-sourcemaps'), require('gulp-concat'), require('gulp-ext-replace'), require('gulp-autoprefixer'), require('browser-sync'), require('gulp-changed'), require('gulp-imagemin'), require('merge-stream'), require('gulp-sass'), require('findup-sync'), require('gulp-scss-lint'), require('gulp-scss-lint-stylish'), require('rollup'), require('rollup-plugin-node-resolve'), require('rollup-plugin-commonjs'), require('process'), require('rollup-plugin-babel'), require('fs-extra'), require('file-sync-cmp'), require('iconv-lite'), require('buffer'), require('chalk'), require('glob-all'), require('del'), require('gulp-rev'), require('gulp-rev-replace'), require('gulp-cssnano'), require('gulp-mocha'), require('build-control'), require('path-is-absolute'), require('tmp'), require('undertaker-registry')) :
+  typeof define === 'function' && define.amd ? define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'gulp-util', 'stringify-object', 'gulp-notify', 'shelljs', 'gulp-eslint', 'gulp-debug', 'gulp-if', 'gulp-uglify', 'gulp-sourcemaps', 'gulp-concat', 'gulp-ext-replace', 'gulp-autoprefixer', 'browser-sync', 'gulp-changed', 'gulp-imagemin', 'merge-stream', 'gulp-sass', 'findup-sync', 'gulp-scss-lint', 'gulp-scss-lint-stylish', 'rollup', 'rollup-plugin-node-resolve', 'rollup-plugin-commonjs', 'process', 'rollup-plugin-babel', 'fs-extra', 'file-sync-cmp', 'iconv-lite', 'buffer', 'chalk', 'glob-all', 'del', 'gulp-rev', 'gulp-rev-replace', 'gulp-cssnano', 'gulp-mocha', 'build-control', 'path-is-absolute', 'tmp', 'undertaker-registry'], factory) :
+  (factory((global.gulpPipeline = global.gulpPipeline || {}),global.extend,global.path,global.fs,global.glob,global.spawn,global.jsonfile,global.Util,global.stringify,global.notify,global.shelljs,global.eslint,global.debug,global.gulpif,global.uglify,global.sourcemaps,global.concat,global.extReplace,global.autoprefixer,global.BrowserSync,global.changed,global.imagemin,global.merge,global.sass,global.findup,global.scssLint,global.scssLintStylish,global.rollup,global.nodeResolve,global.commonjs,global.process,global.babel,global.fs$1,global.fileSyncCmp,global.iconv,global.buffer,global.chalk,global.globAll,global.del,global.rev,global.revReplace,global.cssnano,global.mocha,global.buildControl,global.pathIsAbsolute,global.tmp,global.DefaultRegistry));
+}(this, function (exports,extend,path,fs,glob,spawn,jsonfile,Util,stringify,notify,shelljs,eslint,debug,gulpif,uglify,sourcemaps,concat,extReplace,autoprefixer,BrowserSync,changed,imagemin,merge,sass,findup,scssLint,scssLintStylish,rollup,nodeResolve,commonjs,process,babel,fs$1,fileSyncCmp,iconv,buffer,chalk,globAll,del,rev,revReplace,cssnano,mocha,buildControl,pathIsAbsolute,tmp,DefaultRegistry) { 'use strict';
 
   extend = 'default' in extend ? extend['default'] : extend;
   path = 'default' in path ? path['default'] : path;
@@ -46,6 +46,7 @@
   mocha = 'default' in mocha ? mocha['default'] : mocha;
   pathIsAbsolute = 'default' in pathIsAbsolute ? pathIsAbsolute['default'] : pathIsAbsolute;
   tmp = 'default' in tmp ? tmp['default'] : tmp;
+  DefaultRegistry = 'default' in DefaultRegistry ? DefaultRegistry['default'] : DefaultRegistry;
 
   var babelHelpers = {};
 
@@ -541,6 +542,7 @@
 
       var _this = babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(BaseGulp)).call.apply(_Object$getPrototypeO, [this, Default$2].concat(configs)));
 
+      _this.requireValue(gulp, 'gulp');
       _this.gulp = gulp;
       return _this;
     }
@@ -1245,7 +1247,7 @@
     debug: false,
     presetType: 'stylesheets',
     task: {
-      name: 'scsslint'
+      name: 'scss:lint'
     },
     source: {
       glob: '**/*.scss'
@@ -2335,7 +2337,8 @@
     debug: false,
     task: false,
     watch: false,
-    sync: true // necessary so that tasks can be run in a series, can be overriden for other purposes
+    sync: true, // necessary so that tasks can be run in a series, can be overriden for other purposes
+    options: {}
   };
 
   var BaseClean = function (_BaseRecipe) {
@@ -2376,11 +2379,11 @@
 
         if (this.config.sync) {
           this.debug('deleting ' + this.config.dest);
-          var paths = del.sync(this.config.dest);
+          var paths = del.sync(this.config.dest, this.config.options);
           this.logDeleted(paths);
         } else {
           this.debug('deleting ' + this.config.dest);
-          return del(this.config.dest).then(function (paths) {
+          return del(this.config.dest, this.config.options).then(function (paths) {
             _this2.logDeleted(paths);
           }).catch(function (error) {
             error.plugin = 'del';
@@ -2704,7 +2707,7 @@
   var clean = function clean(gulp, name) {
     var options = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
 
-    var c = new BaseClean(gulp, {}, { dest: name }, options);
+    var c = new BaseClean(gulp, {}, { dest: name, options: { force: true } }, options);
     // set the display name so it shows up in the task list
     c.taskFn.displayName = '<clean>';
     return c;
@@ -2879,7 +2882,7 @@
     minExtension: true, // replace extension .css with .min.css
     presetType: 'postProcessor',
     task: {
-      name: 'cssNano'
+      name: 'css:nano'
     },
     watch: false, // typical use has this at the end of a pipeline, allowing watch here can cause infinite loops on aggregates
     //watch: {
@@ -3140,7 +3143,7 @@
       template: '# %sourceName%\n\n%sourceTagLink% built from commit %sourceCommitLink% on branch `%sourceBranch%`. See the [README](../..) for more details\n\n---\n<sup>Built and published by [gulp-pipeline](https://github.com/alienfast/gulp-pipeline) using [build-control](https://github.com/alienfast/build-control)</sup>\n'
     },
     task: {
-      name: 'publishBuild',
+      name: 'publish:build',
       description: 'Assembles and pushes the build to a branch'
     }
   };
@@ -3342,7 +3345,7 @@
 
   var Default$29 = {
     task: {
-      name: 'publishNpm',
+      name: 'publish:npm',
       description: 'Publishes package on npm'
     },
     options: {}
@@ -3393,7 +3396,7 @@
   var Default$30 = {
     //debug: true,
     task: {
-      name: 'publishGhPages',
+      name: 'publish:gh-pages',
       description: 'Publishes a _gh_pages directory to gh-pages branch'
     },
     options: {
@@ -3542,8 +3545,20 @@
   var tmpDir = function tmpDir() {
     var options = arguments.length <= 0 || arguments[0] === undefined ? { prefix: 'gulp-pipeline_' } : arguments[0];
 
-    var tmpobj = tmp.dirSync(options);
-    return tmpobj.name;
+    var tmpDirObj = tmp.dirSync(options);
+
+    tmpDirObj.removeCallback.displayName = '<tmpDir cleanup>';
+
+    return tmpDirObj;
+  };
+
+  /**
+   *
+   */
+  var tmpDirName = function tmpDirName() {
+    var options = arguments.length <= 0 || arguments[0] === undefined ? { prefix: 'gulp-pipeline_' } : arguments[0];
+
+    return tmpDir(options).name;
   };
 
   var Default$32 = {
@@ -3607,6 +3622,159 @@
     return c;
   };
 
+  var Default$34 = {
+    debug: false
+  };
+
+  var BaseRegistry = function (_DefaultRegistry) {
+    babelHelpers.inherits(BaseRegistry, _DefaultRegistry);
+
+
+    /**
+     *
+     * @param gulp - gulp instance
+     * @param config - customized overrides
+     */
+
+    function BaseRegistry() {
+      babelHelpers.classCallCheck(this, BaseRegistry);
+
+      var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(BaseRegistry).call(this));
+
+      for (var _len = arguments.length, configs = Array(_len), _key = 0; _key < _len; _key++) {
+        configs[_key] = arguments[_key];
+      }
+
+      _this.config = extend.apply(undefined, [true, {}, Default$34].concat(configs));
+      _this.debugDump('[' + _this.constructor.name + '] using resolved config:', _this.config);
+      return _this;
+    }
+
+    // ----------------------------------------------
+    // protected
+
+
+    babelHelpers.createClass(BaseRegistry, [{
+      key: 'requireValue',
+      value: function requireValue(value, name) {
+        if (value === undefined || value == null) {
+          this.notifyError(name + ' must be defined, found: ' + value);
+        }
+      }
+    }, {
+      key: 'log',
+      value: function log(msg) {
+        Util.log(msg);
+      }
+    }, {
+      key: 'debug',
+      value: function debug(msg) {
+        if (this.config.debug) {
+          this.log('[' + Util.colors.cyan('debug') + '][' + Util.colors.cyan(this.constructor.name) + '] ' + msg);
+        }
+      }
+    }, {
+      key: 'debugDump',
+      value: function debugDump(msg, obj) {
+        this.debug(msg + ':\n' + this.dump(obj));
+      }
+    }, {
+      key: 'dump',
+      value: function dump(obj) {
+        return stringify(obj);
+      }
+    }, {
+      key: 'notifyError',
+      value: function notifyError(error, e) {
+        this.log(error);
+        throw e;
+      }
+    }]);
+    return BaseRegistry;
+  }(DefaultRegistry);
+
+  // per class name defaults that can be overridden
+  var Default$33 = {
+    preset: Preset.rails()
+  };
+
+  /**
+   * gulp.registry(new RailsRegistry(...configs))
+   */
+  var RailsRegistry = function (_BaseRegistry) {
+    babelHelpers.inherits(RailsRegistry, _BaseRegistry);
+
+
+    /**
+     * @param config - customized overrides of the Default, last one wins
+     */
+
+    function RailsRegistry() {
+      var _Object$getPrototypeO;
+
+      babelHelpers.classCallCheck(this, RailsRegistry);
+
+      for (var _len = arguments.length, configs = Array(_len), _key = 0; _key < _len; _key++) {
+        configs[_key] = arguments[_key];
+      }
+
+      return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(RailsRegistry)).call.apply(_Object$getPrototypeO, [this, Default$33].concat(configs)));
+    }
+
+    babelHelpers.createClass(RailsRegistry, [{
+      key: 'init',
+      value: function init(gulp) {
+        var preset = this.config.preset;
+
+        var js = new Aggregate(gulp, 'js', series(gulp, new EsLint(gulp, preset), new RollupIife(gulp, preset, { options: { dest: 'application.js', moduleName: 'application' } }, this.config.RollupIife)));
+
+        var css = new Aggregate(gulp, 'css', series(gulp, new ScssLint(gulp, preset), new Sass(gulp, preset)));
+
+        var defaultRecipes = new Aggregate(gulp, 'default', series(gulp, new Clean(gulp, preset), parallel(gulp, new Images(gulp, preset), js, css)));
+
+        // Create the production assets
+        var tmpDirObj = tmpDir();
+        var minifiedAssetsDir = tmpDirObj.name;
+        this.debug('tmpDir for minified assets: ' + minifiedAssetsDir);
+
+        // digests need to be one task, tmpDir makes things interdependent
+        var digests = { debug: false, task: false, watch: false };
+
+        var digest = new Aggregate(gulp, 'digest', series(gulp, new CleanDigest(gulp, preset, digests),
+
+        // minify application.(css|js) to a tmp directory
+        parallel(gulp, new Uglify(gulp, preset, digests, { dest: minifiedAssetsDir, concat: { dest: 'application.js' } }), new CssNano(gulp, preset, digests, { dest: minifiedAssetsDir, minExtension: false })),
+
+        // rev minified css|js from tmp
+        new Rev(gulp, preset, digests, {
+          source: {
+            options: {
+              cwd: minifiedAssetsDir
+            }
+          }
+        }),
+        // rev all the rest from the debug dir (except the minified application(css|js)) and merge with the previous rev
+        new Rev(gulp, preset, digests, {
+          source: {
+            options: {
+              ignore: ['**/application.js', '**/*.js.map', '**/application.css']
+            }
+          }
+        }),
+
+        // rewrite all revised urls in the assets i.e. css, js
+        new RevReplace(gulp, preset, digests),
+
+        // cleanup the temp files and folders
+        clean(gulp, minifiedAssetsDir + '/**')));
+
+        // default then digest
+        new Aggregate(gulp, 'build', series(gulp, defaultRecipes, digest));
+      }
+    }]);
+    return RailsRegistry;
+  }(BaseRegistry);
+
   exports.Preset = Preset;
   exports.Rails = Rails;
   exports.EsLint = EsLint;
@@ -3640,9 +3808,11 @@
   exports.Jekyll = Jekyll;
   exports.series = series;
   exports.parallel = parallel;
+  exports.tmpDirName = tmpDirName;
   exports.tmpDir = tmpDir;
   exports.Sleep = Sleep;
   exports.sleep = sleep;
+  exports.RailsRegistry = RailsRegistry;
 
 }));
 //# sourceMappingURL=gulp-pipeline.umd.js.map

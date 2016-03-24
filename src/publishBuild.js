@@ -46,7 +46,7 @@ const Default = {
 `
   },
   task: {
-    name: 'publishBuild',
+    name: 'publish:build',
     description: 'Assembles and pushes the build to a branch'
   }
 }

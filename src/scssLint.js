@@ -9,7 +9,7 @@ export const Default = {
   debug: false,
   presetType: 'stylesheets',
   task: {
-    name: 'scsslint'
+    name: 'scss:lint'
   },
   source: {
     glob: '**/*.scss'

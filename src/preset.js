@@ -1,5 +1,5 @@
 import extend from 'extend'
-import Rails from './rails'
+import Rails from './ruby/rails'
 import stringify from 'stringify-object'
 
 //import Util from 'gulp-util'

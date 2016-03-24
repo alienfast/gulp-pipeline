@@ -23,6 +23,7 @@ const BaseGulp = class extends Base {
    */
   constructor(gulp, ...configs) {
     super(Default, ...configs)
+    this.requireValue(gulp, 'gulp')
     this.gulp = gulp
   }
 

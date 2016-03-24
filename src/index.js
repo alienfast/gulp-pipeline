@@ -1,5 +1,5 @@
 export { default as Preset } from './preset'
-export { default as Rails } from './rails'
+export { default as Rails } from './ruby/rails'
 
 export { default as EsLint } from './eslint'
 export { default as Uglify } from './uglify'
@@ -39,7 +39,12 @@ export { default as Jekyll } from './jekyll'
 
 export { default as series } from './util/series'
 export { default as parallel } from './util/parallel'
+export { default as tmpDirName } from './util/tmpDirName'
 export { default as tmpDir } from './util/tmpDir'
 
 export { default as Sleep } from './sleep'
 export { default as sleep } from './util/sleep'
+
+
+
+export { default as RailsRegistry } from './registry/railsRegistry'

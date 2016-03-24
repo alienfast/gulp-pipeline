@@ -86,8 +86,8 @@ const Rails = class {
         //ignore
       }
 
-      let engines = Rails.enumerateEngines()  // eslint-disable-line no-console
-      console.log(stringify(engines))
+      let engines = Rails.enumerateEngines()
+      console.log(stringify(engines)) // eslint-disable-line no-console
 
       let baseDirectories = ['./']
       for (let key of Object.keys(engines)) {

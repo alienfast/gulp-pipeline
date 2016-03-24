@@ -14,7 +14,7 @@ export const Default = {
 /**
  * gulp.registry(new RailsRegistry(...configs))
  */
-const RailsRegistry = class extends DefaultRegistry, Base {
+const RailsRegistry = class extends DefaultRegistry {
 
   /**
    * @param config - customized overrides of the Default, last one wins

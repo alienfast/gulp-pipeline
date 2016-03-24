@@ -25,6 +25,18 @@ See the [src](src) directory for a full list.  Common recipes:
 
 ## Usage
 
+### Rails sample
+Here's a `gulpfile.babel.js` that uses the [`RailsRegistry`](src/registry/railsRegistry.js) tasks to build and watch an ES2015/SCSS project.  We can get this kind of reuse because of the standards employed in a rails project structure.
+ 
+```javascript
+import {RailsRegistry} from 'gulp-pipeline/src/index'
+import gulp from 'gulp'
+
+// minimal setup with no overrides config
+gulp.registry(new RailsRegistry({}))
+```
+
+
 ### NPM ES2015 package sample 
 
 This project's [`gulpfile.babel.js`](gulpfile.babel.js) serves as a reasonable npm package example, complete with build, bump version, and [publish build to a separate branch](https://github.com/alienfast/gulp-pipeline/tree/dist) and [publish to npm](https://www.npmjs.com/package/gulp-pipeline)
@@ -67,44 +79,6 @@ This configuration generates the following (call the `help` task) that is specif
 
 ![Help](help-demo.png) 
 
-
-### Rails sample
-Here's a `gulpfile.babel.js` that provides tasks to build and watch an ES2015/SCSS project.  It happens to use the Rails preset, but you can see that's a simple hash.  Simple enough?
- 
-```javascript
-// Assuming project named: acme
-
-import { Preset, Clean, CleanDigest, EsLint, Images, MinifyCss, Rev, Sass, ScssLint, RollupEs, RollupCjs, RollupIife, Aggregate, series, parallel } from 'gulp-pipeline'
-
-import gulp from 'gulp'
-
-// Utilize one of the common directory structure configs
-let preset = Preset.rails() // other pre-configured presets: nodeSrc, nodeLib - see preset.js and submit PRs with other common configs
-
-// Create our `default` set of recipes as a combination of series tasks with as much parallelization as possible, creates the `default` and `default:watch`
-new Aggregate(gulp, 'default',
-  series(gulp,
-    new Clean(gulp, preset),
-    parallel(gulp, 
-      new EsLint(gulp, preset),
-      new RollupIife(gulp, preset, {options: {dest: 'acme.iife.js', moduleName: 'acme'}})
-    ),
-    parallel(gulp,
-      new ScssLint(gulp, preset),
-      new Sass(gulp, preset)
-    )
-  )
-)
-
-// Create the production digest assets
-new Aggregate(gulp, 'digest', 
-  parallel(gulp,
-    new CleanDigest(gulp, preset),
-    new Rev(gulp, preset),
-    new MinifyCss(gulp, preset)
-  )
-)
-```
 
 ## Aggregate
 Aggregate provides a helper to not only generate a basic task from a list of series/parallel tasks e.g. `default`, but also aggregate all the watches so that separate watches do not have to be defined separately e.g. `default:watch`.  In the npm package example above and as indicated by `gulp --tasks`, `gulp default:watch` will do the folowing:

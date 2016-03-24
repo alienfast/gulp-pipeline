@@ -1,6 +1,6 @@
 {
   "name": "gulp-pipeline",
-  "version": "4.0.14",
+  "version": "4.0.15",
   "description": "Meta gulp plugin recipes modularized as ES6 classes. Fully configurable. Fully extensible. Full pipeline in a few lines of code.",
   "main": "dist/gulp-pipeline.cjs.js",
   "jsnext:main": "src/index.js",

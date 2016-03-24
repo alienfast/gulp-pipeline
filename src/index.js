@@ -39,6 +39,7 @@ export { default as Jekyll } from './jekyll'
 
 export { default as series } from './util/series'
 export { default as parallel } from './util/parallel'
+export { default as tmpDirName } from './util/tmpDirName'
 export { default as tmpDir } from './util/tmpDir'
 
 export { default as Sleep } from './sleep'

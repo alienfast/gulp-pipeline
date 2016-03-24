@@ -1,10 +1,7 @@
-import Base from '../base'
-import DefaultRegistry from 'undertaker-registry'
-import Util from 'util'
-import extend from 'extend'
+import BaseRegistry from './baseRegistry'
 
 
-import {Preset, Clean, CleanDigest, CssNano, Images, Sass, RollupIife, ScssLint, EsLint, Rev, RevReplace, Uglify, Aggregate, parallel, series, tmpDir} from '../index'
+import {Preset, Clean, CleanDigest, CssNano, Images, Sass, RollupIife, ScssLint, EsLint, Rev, RevReplace, Uglify, Aggregate, parallel, series, tmpDir, clean} from '../index'
 
 // per class name defaults that can be overridden
 export const Default = {
@@ -14,14 +11,13 @@ export const Default = {
 /**
  * gulp.registry(new RailsRegistry(...configs))
  */
-const RailsRegistry = class extends DefaultRegistry {
+const RailsRegistry = class extends BaseRegistry {
 
   /**
    * @param config - customized overrides of the Default, last one wins
    */
   constructor(...configs) {
-    super()
-    this.config = extend(true, {}, Default, ...configs)
+    super(Default, ...configs)
   }
 
   init(gulp) {
@@ -53,8 +49,9 @@ const RailsRegistry = class extends DefaultRegistry {
     )
 
     // Create the production assets
-    const minifiedAssetsDir = tmpDir()
-    //console.log(`Using ******* ${minifiedAssetsDir}`)
+    const tmpDirObj = tmpDir()
+    const minifiedAssetsDir = tmpDirObj.name
+    this.debug(`tmpDir for minified assets: ${minifiedAssetsDir}`)
 
 
     // digests need to be one task, tmpDir makes things interdependent
@@ -78,7 +75,7 @@ const RailsRegistry = class extends DefaultRegistry {
             }
           }
         }),
-        // rev all the rest from the debug dir (except the minified application(css|js))
+        // rev all the rest from the debug dir (except the minified application(css|js)) and merge with the previous rev
         new Rev(gulp, preset, digests, {
           source: {
             options: {
@@ -86,7 +83,12 @@ const RailsRegistry = class extends DefaultRegistry {
             }
           }
         }),
-        new RevReplace(gulp, preset, digests)
+
+        // rewrite all revised urls in the assets i.e. css, js
+        new RevReplace(gulp, preset, digests),
+
+        // cleanup the temp files and folders
+        clean(gulp, `${minifiedAssetsDir}/**`)
       )
     )
 
@@ -99,8 +101,5 @@ const RailsRegistry = class extends DefaultRegistry {
     )
   }
 }
-
-// add all the undertaker properties
-Util.inherits(RailsRegistry, DefaultRegistry)
 
 export default RailsRegistry

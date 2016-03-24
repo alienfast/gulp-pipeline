@@ -27,6 +27,10 @@ See the [src](src) directory for a full list.  Common recipes:
 
 `npm install --save-dev gulp-pipeline`
 
+** Distributions
+
+We eat our own dogfood.  All distributions are built and published by gulp-pipeline using [build-control](https://github.com/alienfast/build-control), you can find these on our [`dist` branch](tree/dist)
+
 ## Usage
 
 ### Rails sample

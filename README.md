@@ -23,6 +23,10 @@ See the [src](src) directory for a full list.  Common recipes:
 - ScssLint
 - Uglify - uglify source javascripts to destination
 
+## Install
+
+`npm install --save-dev gulp-pipeline`
+
 ## Usage
 
 ### Rails sample
@@ -36,6 +40,11 @@ import gulp from 'gulp'
 gulp.registry(new RailsRegistry({}))
 ```
 
+This creates all the tasks you need, view them with `gulp --tasks`.  Notable tasks (subject to name changes):
+
+- `gulp` runs the `default` task which builds all assets for development
+- `gulp default:watch` will watch all asset sources and run `default` - use this one while developing
+- `gulp build` runs `default` then `digest` which is a full clean build with revisioned assets for production
 
 ### NPM ES2015 package sample 
 

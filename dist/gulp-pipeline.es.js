@@ -37,6 +37,7 @@ import chalk from 'chalk';
 import globAll from 'glob-all';
 import del from 'del';
 import rev from 'gulp-rev';
+import revReplace from 'gulp-rev-replace';
 import cssnano from 'gulp-cssnano';
 import mocha from 'gulp-mocha';
 import { BuildControl, Npm } from 'build-control';
@@ -337,7 +338,7 @@ const Base = class {
    */
   constructor(...configs) {
     this.config = extend(true, {}, Default$3, ...configs)
-    this.debug(`[${this.constructor.name}] using resolved config: ${stringify(this.config)}`)
+    //this.debugDump(`[${this.constructor.name}] using resolved config:`, this.config)
   }
 
   // ----------------------------------------------
@@ -369,10 +370,6 @@ const Base = class {
   notifyError(error, e) {
     this.log(error)
     throw e
-  }
-
-  debugOptions() {
-    return {title: `[${Util.colors.cyan('debug')}][${Util.colors.cyan(this.taskName())}]`}
   }
 }
 
@@ -617,34 +614,62 @@ const BaseRecipe = class extends BaseGulp {
     // generate primary task e.g. sass
 
     // set a fn for use by the task, also used by aggregate/series/parallel
-    this.taskFn = (done) => {
+    let taskFn = (done) => {
       //this.log(`Running task: ${Util.colors.green(name)}`)
 
       if (this.config.debug) {
-        this.debugDump(`Executing ${Util.colors.green(this.taskName())} with options:`, this.config.options)
+        this.debugDump(`Executing ${Util.colors.green(this.displayName())} with config`, this.config)
       }
       return this.run(done)
     }
 
-    if (this.config.task && this.config.task.name) {
-      let name = this.taskName()
+    // metadata for convenience so that gulp tasks show up with this instead of 'anonymous'
+    taskFn.displayName = this.displayName()
+
+    // assign it last so that displayName() can resolve this first as others may set it externally like <clean>
+    this.taskFn = taskFn
+
+    if (this.shouldRegisterTask()) {
+
+      // set the description
       if (this.createDescription !== undefined) {
         this.config.task.description = this.createDescription()
       }
 
-      this.debug(`Registering task: ${Util.colors.green(name)}`)
-
       // set metadata on fn for discovery by gulp
-      this.taskFn.displayName = name
       this.taskFn.description = this.config.task.description
 
-      // register the task
+
+      // register
+      let name = this.taskName()
+      this.debug(`Registering task: ${Util.colors.green(name)}`)
       this.gulp.task(name, this.taskFn)
+    }
+  }
+
+  shouldRegisterTask() {
+    return (this.config.task && this.config.task.name)
+  }
+
+  displayName() {
+    if (this.taskFn !== undefined && this.taskFn.displayName) {
+      return this.taskFn.displayName
+    }
+    else if (this.shouldRegisterTask()) {
+      return this.taskName()
+    }
+    else {
+      // metadata for convenience so that gulp tasks show up with this instead of 'anonymous'
+      return `<${this.constructor.name}>`
     }
   }
 
   logFinish(message = 'finished.') {
     this.log(`[${Util.colors.green(this.taskName())}] ${message}`)
+  }
+
+  debugOptions() { // this controls the gulp-debug log statement, created to mirror our #debug's log format
+    return {title: `[${Util.colors.cyan('debug')}][${Util.colors.cyan(this.constructor.name)}]`}
   }
 }
 
@@ -751,7 +776,7 @@ const Uglify = class extends BaseRecipe {
     if (this.config.concat.dest) {
 
       // run the concat scenario
-      this.debug(`concat dest: ${this.config.concat.dest}`)
+      this.debug(`concat dest: ${this.config.dest}/${this.config.concat.dest}`)
       return this.gulp.src(this.config.source.glob, this.config.source.options)
         .pipe(gulpif(this.config.debug, debug(this.debugOptions())))
         .pipe(concat(this.config.concat.dest))
@@ -1149,7 +1174,7 @@ const Aggregate = class extends BaseGulp {
     // create an array of watchable recipes
     let watchableRecipes = []
     for (let recipe of this.flattenedRecipes()) {
-      if ((typeof recipe !== "string") && recipe.config.watch) {
+      if ((typeof recipe !== "string") && (typeof recipe !== "function") && recipe.config.watch) {
         watchableRecipes.push(recipe)
       }
     }
@@ -1800,7 +1825,9 @@ const Copy = class extends BaseRecipe {
 }
 
 const Default$17 = {
+  presetType: `macro`, // allows direct instantiation
   debug: false,
+  task: false,
   watch: false,
   sync: true  // necessary so that tasks can be run in a series, can be overriden for other purposes
 }
@@ -1813,8 +1840,8 @@ const BaseClean = class extends BaseRecipe {
    * @param preset - base preset configuration - either one from preset.js or a custom hash
    * @param configs - customized overrides for this recipe
    */
-  constructor(gulp, preset, config = {}) {
-    super(gulp, preset, extend(true, {}, Default$17, config))
+  constructor(gulp, preset, ...configs) {
+    super(gulp, preset, Default$17, ...configs)
   }
 
   createDescription(){
@@ -1824,10 +1851,12 @@ const BaseClean = class extends BaseRecipe {
 
   run(done, watching = false) {
     if (this.config.sync) {
+      this.debug(`deleting ${this.config.dest}`)
       let paths = del.sync(this.config.dest)
       this.logDeleted(paths)
     }
     else {
+      this.debug(`deleting ${this.config.dest}`)
       return del(this.config.dest)
         .then((paths) => {
           this.logDeleted(paths)
@@ -1867,7 +1896,7 @@ const CleanImages = class extends BaseClean {
    * @param configs - customized overrides for this recipe
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, extend(true, {}, Default$16, ...configs))
+    super(gulp, preset, Default$16, ...configs)
   }
 }
 
@@ -1887,7 +1916,7 @@ const CleanStylesheets = class extends BaseClean {
    * @param configs - customized overrides for this recipe
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, extend(true, {}, Default$18, ...configs))
+    super(gulp, preset, Default$18, ...configs)
   }
 }
 
@@ -1907,7 +1936,7 @@ const CleanJavascripts = class extends BaseClean {
    * @param configs - customized overrides for this recipe
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, extend(true, {}, Default$19, ...configs))
+    super(gulp, preset, Default$19, ...configs)
   }
 }
 
@@ -1927,7 +1956,7 @@ const CleanDigest = class extends BaseClean {
    * @param configs - customized overrides for this recipe
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, extend(true, {}, Default$20, ...configs))
+    super(gulp, preset, Default$20, ...configs)
   }
 }
 
@@ -2030,6 +2059,16 @@ const Clean = class extends Aggregate {
   }
 }
 
+/**
+ * Simplified clean() that uses the BaseClean recipe
+ */
+const clean = (gulp, name, options = {}) => {
+  let c = new BaseClean(gulp, {}, {dest: name}, options)
+  // set the display name so it shows up in the task list
+  c.taskFn.displayName = `<clean>`
+  return c
+}
+
 const Default$22 = {
   debug: false,
   presetType: 'postProcessor',
@@ -2037,18 +2076,23 @@ const Default$22 = {
     name: 'rev'
   },
   watch: {
-    glob: ['**', '!digest', '!digest/**', '!*.map'],
+    glob: '**',
     options: {
       //cwd: ** resolved from preset **
+      ignore: ['**/digest', '**/digest/**', '**/*.map']
     }
   },
   source: {
-    glob: ['**', '!digest', '!digest/**', '!*.map'],
+    glob: '**',
     options: {
       //cwd: ** resolved from preset **
+      ignore: ['**/digest', '**/digest/**', '**/*.map']
     }
   },
-  options: {}
+  options: {
+    merge: true,
+    path: 'rev-manifest.json'
+  }
 }
 
 const Rev = class extends BaseRecipe {
@@ -2060,7 +2104,7 @@ const Rev = class extends BaseRecipe {
    * @param configs - customized overrides for this recipe
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, extend(true, {}, Default$22, ...configs))
+    super(gulp, preset, Default$22, ...configs)
     this.browserSync = BrowserSync.create()
   }
 
@@ -2069,27 +2113,107 @@ const Rev = class extends BaseRecipe {
   }
 
   run(done, watching = false) {
+    this.debugDump(`gulp.src ${this.config.source.glob}`, this.config.source.options)
 
-    // FIXME merge in the clean as a task
 
+    // base is not working    https://github.com/sindresorhus/gulp-rev/issues/150
+    //let manifestOptions = extend(true, {}, {base: this.config.dest}, this.config.options)
+
+    // workaround
+    let manifestOptions = extend(true, {},
+      this.config.options,
+      {
+        base: this.config.dest,
+        path: `${this.config.dest}/${this.config.options.path}`
+      }
+    )
+
+    this.debugDump(`manifestOptions`, manifestOptions)
 
     return this.gulp.src(this.config.source.glob, this.config.source.options)
-      //.pipe(changed(this.config.dest)) // ignore unchanged files
       .pipe(gulpif(this.config.debug, debug(this.debugOptions())))
       .pipe(rev(this.config.options))
       .pipe(this.gulp.dest(this.config.dest))
-      .pipe(rev.manifest())
+
+      // Merge with an existing unless merge == false
+      .pipe(rev.manifest(manifestOptions))
       .pipe(this.gulp.dest(this.config.dest))
       .on('error', (error) => {
         this.notifyError(error, done, watching)
       })
       .pipe(this.browserSync.stream())
-
   }
 }
 
 const Default$23 = {
   debug: false,
+  presetType: 'postProcessor',
+  task: {
+    name: 'rev:replace'
+  },
+  watch: false,
+  source: { // cwd/ignore defaulted from preset set in constructor
+    glob: '**'
+  },
+  manifest: 'rev-manifest.json', // file name only
+  options: {}
+}
+
+const RevReplace = class extends BaseRecipe {
+
+  /**
+   *
+   * @param gulp - gulp instance
+   * @param preset - base preset configuration - either one from preset.js or a custom hash
+   * @param configs - customized overrides for this recipe
+   */
+  constructor(gulp, preset, ...configs) {
+    let resolvedPreset = Preset.resolveConfig(preset, Default$23, ...configs)
+    super(gulp, preset,
+      Default$23,
+      {
+        source: {
+          options: { // replace everything in the postProcessor dest folder (except manifest)
+            cwd: resolvedPreset.dest,
+            ignore: [`**/${resolvedPreset.manifest}`]
+          }
+        }
+      },
+      ...configs)
+  }
+
+  createDescription() {
+    return `Adds revision digest to assets from ${this.config.source.options.cwd}/${this.config.source.glob}`
+  }
+
+  run(done, watching = false) {
+
+    this.debugDump(`gulp.src ${this.config.source.glob}`, this.config.source.options)
+
+    // options.manifest has to originate from gulp.src
+    let options = extend(true, {},
+      {
+        // full path to the manifest file
+        manifest: this.gulp.src(`${this.config.dest}/${this.config.manifest}`)
+      },
+      this.config.options
+    )
+
+    this.debugDump(`revReplace options`, options)
+
+    return this.gulp.src(this.config.source.glob, this.config.source.options)
+      .pipe(gulpif(this.config.debug, debug(this.debugOptions())))
+      .pipe(revReplace(options))
+      .pipe(this.gulp.dest(this.config.dest))
+      .on('error', (error) => {
+        this.notifyError(error, done, watching)
+      })
+  }
+}
+
+const Default$24 = {
+  debug: false,
+  minExtension: true, // replace extension .css with .min.css
   presetType: 'postProcessor',
   task: {
     name: 'cssNano'
@@ -2124,7 +2248,7 @@ const CssNano = class extends BaseRecipe {
    * @param configs - customized overrides for this recipe
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, extend(true, {}, Default$23, ...configs))
+    super(gulp, preset, extend(true, {}, Default$24, ...configs))
     this.browserSync = BrowserSync.create()
   }
 
@@ -2136,7 +2260,7 @@ const CssNano = class extends BaseRecipe {
 
     return this.gulp.src(this.config.source.glob, this.config.source.options)
       .pipe(gulpif(this.config.debug, debug(this.debugOptions())))
-      .pipe(extReplace('.min.css'))
+      .pipe(gulpif(this.config.minExtension, extReplace('.min.css')))
       .pipe(cssnano(this.config.options))
       .pipe(this.gulp.dest(this.config.dest))
       .on('error', (error) => {
@@ -2146,7 +2270,7 @@ const CssNano = class extends BaseRecipe {
   }
 }
 
-const Default$24 = {
+const Default$25 = {
   debug: false,
   presetType: 'javascripts',
   task: {
@@ -2165,10 +2289,10 @@ const Mocha = class extends BaseRecipe {
    */
   constructor(gulp, preset, ...configs) {
     // resolve watch cwd based on test cwd
-    super(gulp, preset, extend(true, {},
-      Default$24,
-      {watch: {options: {cwd: Preset.resolveConfig(preset, Default$24, ...configs).test.options.cwd}}},
-      ...configs))
+    super(gulp, preset,
+      Default$25,
+      {watch: {options: {cwd: Preset.resolveConfig(preset, Default$25, ...configs).test.options.cwd}}},
+      ...configs)
   }
 
   createDescription() {
@@ -2190,7 +2314,7 @@ const Mocha = class extends BaseRecipe {
 /**
  *  This is the base for publish recipes using BuildControl
  */
-const Default$26 = {
+const Default$27 = {
 
   dir: 'build', // directory to assemble the files - make sure to add this to your .gitignore so you don't publish this to your source branch
   source: {
@@ -2220,14 +2344,14 @@ const BasePublish = class extends BaseRecipe {
    * @param config - customized overrides
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, Default$26, ...configs)
+    super(gulp, preset, Default$27, ...configs)
 
     // use the dir as the cwd to the BuildControl class
     this.config.options = extend(true, {debug: this.config.debug, cwd: this.config.dir}, this.config.options)
   }
 }
 
-const Default$25 = {
+const Default$26 = {
   task: {
     name: 'prepublish',
     description: 'Checks tag name and ensures directory has all files committed.'
@@ -2252,7 +2376,7 @@ const Prepublish = class extends BasePublish {
    * @param config - customized overrides
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, extend(true, {}, Default$25, ...configs))
+    super(gulp, preset, extend(true, {}, Default$26, ...configs))
   }
 
   run(done) {
@@ -2284,7 +2408,7 @@ const Prepublish = class extends BasePublish {
  *
  *  Have long running maintenance on an old version?  Publish to a different dist branch like { options: {branch: 'dist-v3'} }
  */
-const Default$27 = {
+const Default$28 = {
   //debug: true,
   npm: {
     bump: true,
@@ -2315,7 +2439,7 @@ const PublishBuild = class extends BasePublish {
    * @param config - customized overrides
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, Default$27, ...configs)
+    super(gulp, preset, Default$28, ...configs)
   }
 
   run(done) {
@@ -2397,7 +2521,7 @@ const PublishBuild = class extends BasePublish {
   }
 }
 
-const Default$28 = {
+const Default$29 = {
   task: {
     name: 'publishNpm',
     description: 'Publishes package on npm'
@@ -2418,7 +2542,7 @@ const PublishNpm = class extends BasePublish {
    * @param config - customized overrides
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, Default$28, ...configs)
+    super(gulp, preset, Default$29, ...configs)
   }
 
   run(done) {
@@ -2432,7 +2556,7 @@ const PublishNpm = class extends BasePublish {
  *  This recipe will keep your source branch clean but allow you to easily push your
  *  _gh_pages files to the gh-pages branch.
  */
-const Default$29 = {
+const Default$30 = {
   //debug: true,
   task: {
     name: 'publishGhPages',
@@ -2457,7 +2581,7 @@ const PublishGhPages = class extends BasePublish {
    * @param config - customized overrides
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, Default$29, ...configs)
+    super(gulp, preset, Default$30, ...configs)
   }
 
   run(done) {
@@ -2470,7 +2594,7 @@ const PublishGhPages = class extends BasePublish {
   }
 }
 
-const Default$30 = {
+const Default$31 = {
   watch: false,
   presetType: 'macro',
   task: {
@@ -2494,7 +2618,7 @@ const Jekyll = class extends BaseRecipe {
    * @param config - customized overrides
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, Default$30, ...configs)
+    super(gulp, preset, Default$31, ...configs)
   }
 
   run(done) {
@@ -2542,7 +2666,15 @@ const series = (gulp, ...recipes) => {
   return series
 }
 
-const Default$31 = {
+/**
+ *
+ */
+const tmpDir = (options = {prefix: 'gulp-pipeline_'}) => {
+  let tmpobj = tmp.dirSync(options)
+  return tmpobj.name
+}
+
+const Default$32 = {
   debug: false,
   watch: false,
   presetType: 'macro',
@@ -2550,7 +2682,7 @@ const Default$31 = {
 }
 
 /**
- * Sleep the given ms value.
+ * Sleep the given ms value, for those quirky cases like when you need the filesystem to catch up.
  */
 const Sleep = class extends BaseRecipe {
 
@@ -2559,8 +2691,8 @@ const Sleep = class extends BaseRecipe {
    * @param gulp - gulp instance
    * @param config - customized overrides
    */
-  constructor(gulp, preset, sleep) {
-    super(gulp, preset, Default$31, {sleep: sleep})
+  constructor(gulp, preset, sleep, ...configs) {
+    super(gulp, preset, Default$32, {sleep: sleep}, ...configs)
   }
 
   createDescription(){
@@ -2574,5 +2706,15 @@ const Sleep = class extends BaseRecipe {
   }
 }
 
-export { Preset, Rails, EsLint, Uglify, Autoprefixer, Images, Sass, ScssLint, Aggregate, RollupEs, RollupCjs, RollupCjsBundled, RollupIife, RollupAmd, RollupUmd, Copy, CleanImages, CleanStylesheets, CleanJavascripts, CleanDigest, Clean, Rev, CssNano, Mocha, Prepublish, PublishBuild, PublishNpm, PublishGhPages, Jekyll, series, parallel, Sleep };
+/**
+ * Simplified sleep() that uses the Sleep recipe
+ */
+const sleep = (gulp, ms) => {
+  let c = new Sleep(gulp, {}, ms)
+  // set the display name so it shows up in the task list
+  c.taskFn.displayName = `<sleep>`
+  return c
+}
+
+export { Preset, Rails, EsLint, Uglify, Autoprefixer, Images, Sass, ScssLint, Aggregate, RollupEs, RollupCjs, RollupCjsBundled, RollupIife, RollupAmd, RollupUmd, Copy, CleanImages, CleanStylesheets, CleanJavascripts, CleanDigest, Clean, clean, Rev, RevReplace, CssNano, Mocha, Prepublish, PublishBuild, PublishNpm, PublishGhPages, Jekyll, series, parallel, tmpDir, Sleep, sleep };
 //# sourceMappingURL=gulp-pipeline.es.js.map

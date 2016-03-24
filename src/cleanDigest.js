@@ -1,5 +1,4 @@
 import BaseClean from './baseClean'
-import extend from 'extend'
 
 export const Default = {
   presetType: 'postProcessor',
@@ -17,7 +16,7 @@ const CleanDigest = class extends BaseClean {
    * @param configs - customized overrides for this recipe
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, extend(true, {}, Default, ...configs))
+    super(gulp, preset, Default, ...configs)
   }
 }
 

@@ -41,6 +41,7 @@ var chalk = _interopDefault(require('chalk'));
 var globAll = _interopDefault(require('glob-all'));
 var del = _interopDefault(require('del'));
 var rev = _interopDefault(require('gulp-rev'));
+var revReplace = _interopDefault(require('gulp-rev-replace'));
 var cssnano = _interopDefault(require('gulp-cssnano'));
 var mocha = _interopDefault(require('gulp-mocha'));
 var buildControl = require('build-control');
@@ -463,7 +464,7 @@ var Base = function () {
     }
 
     this.config = extend.apply(undefined, [true, {}, Default$3].concat(configs));
-    this.debug('[' + this.constructor.name + '] using resolved config: ' + stringify(this.config));
+    //this.debugDump(`[${this.constructor.name}] using resolved config:`, this.config)
   }
 
   // ----------------------------------------------
@@ -504,11 +505,6 @@ var Base = function () {
     value: function notifyError(error, e) {
       this.log(error);
       throw e;
-    }
-  }, {
-    key: 'debugOptions',
-    value: function debugOptions() {
-      return { title: '[' + Util.colors.cyan('debug') + '][' + Util.colors.cyan(this.taskName()) + ']' };
     }
   }]);
   return Base;
@@ -794,29 +790,52 @@ var BaseRecipe = function (_BaseGulp) {
       // generate primary task e.g. sass
 
       // set a fn for use by the task, also used by aggregate/series/parallel
-      this.taskFn = function (done) {
+      var taskFn = function taskFn(done) {
         //this.log(`Running task: ${Util.colors.green(name)}`)
 
         if (_this3.config.debug) {
-          _this3.debugDump('Executing ' + Util.colors.green(_this3.taskName()) + ' with options:', _this3.config.options);
+          _this3.debugDump('Executing ' + Util.colors.green(_this3.displayName()) + ' with config', _this3.config);
         }
         return _this3.run(done);
       };
 
-      if (this.config.task && this.config.task.name) {
-        var name = this.taskName();
+      // metadata for convenience so that gulp tasks show up with this instead of 'anonymous'
+      taskFn.displayName = this.displayName();
+
+      // assign it last so that displayName() can resolve this first as others may set it externally like <clean>
+      this.taskFn = taskFn;
+
+      if (this.shouldRegisterTask()) {
+
+        // set the description
         if (this.createDescription !== undefined) {
           this.config.task.description = this.createDescription();
         }
 
-        this.debug('Registering task: ' + Util.colors.green(name));
-
         // set metadata on fn for discovery by gulp
-        this.taskFn.displayName = name;
         this.taskFn.description = this.config.task.description;
 
-        // register the task
+        // register
+        var name = this.taskName();
+        this.debug('Registering task: ' + Util.colors.green(name));
         this.gulp.task(name, this.taskFn);
+      }
+    }
+  }, {
+    key: 'shouldRegisterTask',
+    value: function shouldRegisterTask() {
+      return this.config.task && this.config.task.name;
+    }
+  }, {
+    key: 'displayName',
+    value: function displayName() {
+      if (this.taskFn !== undefined && this.taskFn.displayName) {
+        return this.taskFn.displayName;
+      } else if (this.shouldRegisterTask()) {
+        return this.taskName();
+      } else {
+        // metadata for convenience so that gulp tasks show up with this instead of 'anonymous'
+        return '<' + this.constructor.name + '>';
       }
     }
   }, {
@@ -825,6 +844,12 @@ var BaseRecipe = function (_BaseGulp) {
       var message = arguments.length <= 0 || arguments[0] === undefined ? 'finished.' : arguments[0];
 
       this.log('[' + Util.colors.green(this.taskName()) + '] ' + message);
+    }
+  }, {
+    key: 'debugOptions',
+    value: function debugOptions() {
+      // this controls the gulp-debug log statement, created to mirror our #debug's log format
+      return { title: '[' + Util.colors.cyan('debug') + '][' + Util.colors.cyan(this.constructor.name) + ']' };
     }
   }]);
   return BaseRecipe;
@@ -966,7 +991,7 @@ var Uglify = function (_BaseRecipe) {
       if (this.config.concat.dest) {
 
         // run the concat scenario
-        this.debug('concat dest: ' + this.config.concat.dest);
+        this.debug('concat dest: ' + this.config.dest + '/' + this.config.concat.dest);
         return this.gulp.src(this.config.source.glob, this.config.source.options).pipe(gulpif(this.config.debug, debug(this.debugOptions()))).pipe(concat(this.config.concat.dest))
 
         // identical to below
@@ -1465,7 +1490,7 @@ var Aggregate = function (_BaseGulp) {
         for (var _iterator2 = this.flattenedRecipes()[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
           var recipe = _step2.value;
 
-          if (typeof recipe !== "string" && recipe.config.watch) {
+          if (typeof recipe !== "string" && typeof recipe !== "function" && recipe.config.watch) {
             watchableRecipes.push(recipe);
           }
         }
@@ -2307,7 +2332,9 @@ var Copy = function (_BaseRecipe) {
 }(BaseRecipe);
 
 var Default$17 = {
+  presetType: 'macro', // allows direct instantiation
   debug: false,
+  task: false,
   watch: false,
   sync: true // necessary so that tasks can be run in a series, can be overriden for other purposes
 };
@@ -2324,9 +2351,15 @@ var BaseClean = function (_BaseRecipe) {
    */
 
   function BaseClean(gulp, preset) {
-    var config = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
+    var _Object$getPrototypeO;
+
     babelHelpers.classCallCheck(this, BaseClean);
-    return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(BaseClean).call(this, gulp, preset, extend(true, {}, Default$17, config)));
+
+    for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+      configs[_key - 2] = arguments[_key];
+    }
+
+    return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(BaseClean)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$17].concat(configs)));
   }
 
   babelHelpers.createClass(BaseClean, [{
@@ -2343,9 +2376,11 @@ var BaseClean = function (_BaseRecipe) {
       var watching = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
 
       if (this.config.sync) {
+        this.debug('deleting ' + this.config.dest);
         var paths = del.sync(this.config.dest);
         this.logDeleted(paths);
       } else {
+        this.debug('deleting ' + this.config.dest);
         return del(this.config.dest).then(function (paths) {
           _this2.logDeleted(paths);
         }).catch(function (error) {
@@ -2410,13 +2445,15 @@ var CleanImages = function (_BaseClean) {
    */
 
   function CleanImages(gulp, preset) {
+    var _Object$getPrototypeO;
+
     babelHelpers.classCallCheck(this, CleanImages);
 
     for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
       configs[_key - 2] = arguments[_key];
     }
 
-    return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(CleanImages).call(this, gulp, preset, extend.apply(undefined, [true, {}, Default$16].concat(configs))));
+    return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(CleanImages)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$16].concat(configs)));
   }
 
   return CleanImages;
@@ -2441,13 +2478,15 @@ var CleanStylesheets = function (_BaseClean) {
    */
 
   function CleanStylesheets(gulp, preset) {
+    var _Object$getPrototypeO;
+
     babelHelpers.classCallCheck(this, CleanStylesheets);
 
     for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
       configs[_key - 2] = arguments[_key];
     }
 
-    return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(CleanStylesheets).call(this, gulp, preset, extend.apply(undefined, [true, {}, Default$18].concat(configs))));
+    return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(CleanStylesheets)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$18].concat(configs)));
   }
 
   return CleanStylesheets;
@@ -2472,13 +2511,15 @@ var CleanJavascripts = function (_BaseClean) {
    */
 
   function CleanJavascripts(gulp, preset) {
+    var _Object$getPrototypeO;
+
     babelHelpers.classCallCheck(this, CleanJavascripts);
 
     for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
       configs[_key - 2] = arguments[_key];
     }
 
-    return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(CleanJavascripts).call(this, gulp, preset, extend.apply(undefined, [true, {}, Default$19].concat(configs))));
+    return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(CleanJavascripts)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$19].concat(configs)));
   }
 
   return CleanJavascripts;
@@ -2503,13 +2544,15 @@ var CleanDigest = function (_BaseClean) {
    */
 
   function CleanDigest(gulp, preset) {
+    var _Object$getPrototypeO;
+
     babelHelpers.classCallCheck(this, CleanDigest);
 
     for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
       configs[_key - 2] = arguments[_key];
     }
 
-    return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(CleanDigest).call(this, gulp, preset, extend.apply(undefined, [true, {}, Default$20].concat(configs))));
+    return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(CleanDigest)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$20].concat(configs)));
   }
 
   return CleanDigest;
@@ -2656,6 +2699,18 @@ var Clean = function (_Aggregate) {
   return Clean;
 }(Aggregate);
 
+/**
+ * Simplified clean() that uses the BaseClean recipe
+ */
+var clean = function clean(gulp, name) {
+  var options = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
+
+  var c = new BaseClean(gulp, {}, { dest: name }, options);
+  // set the display name so it shows up in the task list
+  c.taskFn.displayName = '<clean>';
+  return c;
+};
+
 var Default$22 = {
   debug: false,
   presetType: 'postProcessor',
@@ -2663,18 +2718,23 @@ var Default$22 = {
     name: 'rev'
   },
   watch: {
-    glob: ['**', '!digest', '!digest/**', '!*.map'],
+    glob: '**',
     options: {
       //cwd: ** resolved from preset **
+      ignore: ['**/digest', '**/digest/**', '**/*.map']
     }
   },
   source: {
-    glob: ['**', '!digest', '!digest/**', '!*.map'],
+    glob: '**',
     options: {
       //cwd: ** resolved from preset **
+      ignore: ['**/digest', '**/digest/**', '**/*.map']
     }
   },
-  options: {}
+  options: {
+    merge: true,
+    path: 'rev-manifest.json'
+  }
 };
 
 var Rev = function (_BaseRecipe) {
@@ -2689,13 +2749,15 @@ var Rev = function (_BaseRecipe) {
    */
 
   function Rev(gulp, preset) {
+    var _Object$getPrototypeO;
+
     babelHelpers.classCallCheck(this, Rev);
 
     for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
       configs[_key - 2] = arguments[_key];
     }
 
-    var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Rev).call(this, gulp, preset, extend.apply(undefined, [true, {}, Default$22].concat(configs))));
+    var _this = babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(Rev)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$22].concat(configs)));
 
     _this.browserSync = BrowserSync.create();
     return _this;
@@ -2713,12 +2775,23 @@ var Rev = function (_BaseRecipe) {
 
       var watching = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
 
+      this.debugDump('gulp.src ' + this.config.source.glob, this.config.source.options);
 
-      // FIXME merge in the clean as a task
+      // base is not working    https://github.com/sindresorhus/gulp-rev/issues/150
+      //let manifestOptions = extend(true, {}, {base: this.config.dest}, this.config.options)
 
-      return this.gulp.src(this.config.source.glob, this.config.source.options)
-      //.pipe(changed(this.config.dest)) // ignore unchanged files
-      .pipe(gulpif(this.config.debug, debug(this.debugOptions()))).pipe(rev(this.config.options)).pipe(this.gulp.dest(this.config.dest)).pipe(rev.manifest()).pipe(this.gulp.dest(this.config.dest)).on('error', function (error) {
+      // workaround
+      var manifestOptions = extend(true, {}, this.config.options, {
+        base: this.config.dest,
+        path: this.config.dest + '/' + this.config.options.path
+      });
+
+      this.debugDump('manifestOptions', manifestOptions);
+
+      return this.gulp.src(this.config.source.glob, this.config.source.options).pipe(gulpif(this.config.debug, debug(this.debugOptions()))).pipe(rev(this.config.options)).pipe(this.gulp.dest(this.config.dest))
+
+      // Merge with an existing unless merge == false
+      .pipe(rev.manifest(manifestOptions)).pipe(this.gulp.dest(this.config.dest)).on('error', function (error) {
         _this2.notifyError(error, done, watching);
       }).pipe(this.browserSync.stream());
     }
@@ -2728,6 +2801,83 @@ var Rev = function (_BaseRecipe) {
 
 var Default$23 = {
   debug: false,
+  presetType: 'postProcessor',
+  task: {
+    name: 'rev:replace'
+  },
+  watch: false,
+  source: { // cwd/ignore defaulted from preset set in constructor
+    glob: '**'
+  },
+  manifest: 'rev-manifest.json', // file name only
+  options: {}
+};
+
+var RevReplace = function (_BaseRecipe) {
+  babelHelpers.inherits(RevReplace, _BaseRecipe);
+
+
+  /**
+   *
+   * @param gulp - gulp instance
+   * @param preset - base preset configuration - either one from preset.js or a custom hash
+   * @param configs - customized overrides for this recipe
+   */
+
+  function RevReplace(gulp, preset) {
+    var _Object$getPrototypeO;
+
+    babelHelpers.classCallCheck(this, RevReplace);
+
+    for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+      configs[_key - 2] = arguments[_key];
+    }
+
+    var resolvedPreset = Preset.resolveConfig.apply(Preset, [preset, Default$23].concat(configs));
+    return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(RevReplace)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$23, {
+      source: {
+        options: { // replace everything in the postProcessor dest folder (except manifest)
+          cwd: resolvedPreset.dest,
+          ignore: ['**/' + resolvedPreset.manifest]
+        }
+      }
+    }].concat(configs)));
+  }
+
+  babelHelpers.createClass(RevReplace, [{
+    key: 'createDescription',
+    value: function createDescription() {
+      return 'Adds revision digest to assets from ' + this.config.source.options.cwd + '/' + this.config.source.glob;
+    }
+  }, {
+    key: 'run',
+    value: function run(done) {
+      var _this2 = this;
+
+      var watching = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
+
+
+      this.debugDump('gulp.src ' + this.config.source.glob, this.config.source.options);
+
+      // options.manifest has to originate from gulp.src
+      var options = extend(true, {}, {
+        // full path to the manifest file
+        manifest: this.gulp.src(this.config.dest + '/' + this.config.manifest)
+      }, this.config.options);
+
+      this.debugDump('revReplace options', options);
+
+      return this.gulp.src(this.config.source.glob, this.config.source.options).pipe(gulpif(this.config.debug, debug(this.debugOptions()))).pipe(revReplace(options)).pipe(this.gulp.dest(this.config.dest)).on('error', function (error) {
+        _this2.notifyError(error, done, watching);
+      });
+    }
+  }]);
+  return RevReplace;
+}(BaseRecipe);
+
+var Default$24 = {
+  debug: false,
+  minExtension: true, // replace extension .css with .min.css
   presetType: 'postProcessor',
   task: {
     name: 'cssNano'
@@ -2771,7 +2921,7 @@ var CssNano = function (_BaseRecipe) {
       configs[_key - 2] = arguments[_key];
     }
 
-    var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(CssNano).call(this, gulp, preset, extend.apply(undefined, [true, {}, Default$23].concat(configs))));
+    var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(CssNano).call(this, gulp, preset, extend.apply(undefined, [true, {}, Default$24].concat(configs))));
 
     _this.browserSync = BrowserSync.create();
     return _this;
@@ -2790,7 +2940,7 @@ var CssNano = function (_BaseRecipe) {
       var watching = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
 
 
-      return this.gulp.src(this.config.source.glob, this.config.source.options).pipe(gulpif(this.config.debug, debug(this.debugOptions()))).pipe(extReplace('.min.css')).pipe(cssnano(this.config.options)).pipe(this.gulp.dest(this.config.dest)).on('error', function (error) {
+      return this.gulp.src(this.config.source.glob, this.config.source.options).pipe(gulpif(this.config.debug, debug(this.debugOptions()))).pipe(gulpif(this.config.minExtension, extReplace('.min.css'))).pipe(cssnano(this.config.options)).pipe(this.gulp.dest(this.config.dest)).on('error', function (error) {
         _this2.notifyError(error, done, watching);
       }).pipe(this.browserSync.stream());
     }
@@ -2798,7 +2948,7 @@ var CssNano = function (_BaseRecipe) {
   return CssNano;
 }(BaseRecipe);
 
-var Default$24 = {
+var Default$25 = {
   debug: false,
   presetType: 'javascripts',
   task: {
@@ -2819,6 +2969,8 @@ var Mocha = function (_BaseRecipe) {
    */
 
   function Mocha(gulp, preset) {
+    var _Object$getPrototypeO;
+
     babelHelpers.classCallCheck(this, Mocha);
 
     for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
@@ -2826,7 +2978,7 @@ var Mocha = function (_BaseRecipe) {
     }
 
     // resolve watch cwd based on test cwd
-    return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Mocha).call(this, gulp, preset, extend.apply(undefined, [true, {}, Default$24, { watch: { options: { cwd: Preset.resolveConfig.apply(Preset, [preset, Default$24].concat(configs)).test.options.cwd } } }].concat(configs))));
+    return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(Mocha)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$25, { watch: { options: { cwd: Preset.resolveConfig.apply(Preset, [preset, Default$25].concat(configs)).test.options.cwd } } }].concat(configs)));
   }
 
   babelHelpers.createClass(Mocha, [{
@@ -2855,7 +3007,7 @@ var Mocha = function (_BaseRecipe) {
 /**
  *  This is the base for publish recipes using BuildControl
  */
-var Default$26 = {
+var Default$27 = {
 
   dir: 'build', // directory to assemble the files - make sure to add this to your .gitignore so you don't publish this to your source branch
   source: {
@@ -2898,7 +3050,7 @@ var BasePublish = function (_BaseRecipe) {
 
     // use the dir as the cwd to the BuildControl class
 
-    var _this = babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(BasePublish)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$26].concat(configs)));
+    var _this = babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(BasePublish)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$27].concat(configs)));
 
     _this.config.options = extend(true, { debug: _this.config.debug, cwd: _this.config.dir }, _this.config.options);
     return _this;
@@ -2907,7 +3059,7 @@ var BasePublish = function (_BaseRecipe) {
   return BasePublish;
 }(BaseRecipe);
 
-var Default$25 = {
+var Default$26 = {
   task: {
     name: 'prepublish',
     description: 'Checks tag name and ensures directory has all files committed.'
@@ -2941,7 +3093,7 @@ var Prepublish = function (_BasePublish) {
       configs[_key - 2] = arguments[_key];
     }
 
-    return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Prepublish).call(this, gulp, preset, extend.apply(undefined, [true, {}, Default$25].concat(configs))));
+    return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Prepublish).call(this, gulp, preset, extend.apply(undefined, [true, {}, Default$26].concat(configs))));
   }
 
   babelHelpers.createClass(Prepublish, [{
@@ -2977,7 +3129,7 @@ var Prepublish = function (_BasePublish) {
  *
  *  Have long running maintenance on an old version?  Publish to a different dist branch like { options: {branch: 'dist-v3'} }
  */
-var Default$27 = {
+var Default$28 = {
   //debug: true,
   npm: {
     bump: true,
@@ -3013,7 +3165,7 @@ var PublishBuild = function (_BasePublish) {
       configs[_key - 2] = arguments[_key];
     }
 
-    return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(PublishBuild)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$27].concat(configs)));
+    return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(PublishBuild)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$28].concat(configs)));
   }
 
   babelHelpers.createClass(PublishBuild, [{
@@ -3189,7 +3341,7 @@ var PublishBuild = function (_BasePublish) {
   return PublishBuild;
 }(BasePublish);
 
-var Default$28 = {
+var Default$29 = {
   task: {
     name: 'publishNpm',
     description: 'Publishes package on npm'
@@ -3221,7 +3373,7 @@ var PublishNpm = function (_BasePublish) {
       configs[_key - 2] = arguments[_key];
     }
 
-    return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(PublishNpm)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$28].concat(configs)));
+    return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(PublishNpm)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$29].concat(configs)));
   }
 
   babelHelpers.createClass(PublishNpm, [{
@@ -3239,7 +3391,7 @@ var PublishNpm = function (_BasePublish) {
  *  This recipe will keep your source branch clean but allow you to easily push your
  *  _gh_pages files to the gh-pages branch.
  */
-var Default$29 = {
+var Default$30 = {
   //debug: true,
   task: {
     name: 'publishGhPages',
@@ -3275,7 +3427,7 @@ var PublishGhPages = function (_BasePublish) {
       configs[_key - 2] = arguments[_key];
     }
 
-    return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(PublishGhPages)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$29].concat(configs)));
+    return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(PublishGhPages)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$30].concat(configs)));
   }
 
   babelHelpers.createClass(PublishGhPages, [{
@@ -3292,7 +3444,7 @@ var PublishGhPages = function (_BasePublish) {
   return PublishGhPages;
 }(BasePublish);
 
-var Default$30 = {
+var Default$31 = {
   watch: false,
   presetType: 'macro',
   task: {
@@ -3327,7 +3479,7 @@ var Jekyll = function (_BaseRecipe) {
       configs[_key - 2] = arguments[_key];
     }
 
-    return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(Jekyll)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$30].concat(configs)));
+    return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(Jekyll)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$31].concat(configs)));
   }
 
   babelHelpers.createClass(Jekyll, [{
@@ -3385,7 +3537,17 @@ var series = function series(gulp) {
   return series;
 };
 
-var Default$31 = {
+/**
+ *
+ */
+var tmpDir = function tmpDir() {
+  var options = arguments.length <= 0 || arguments[0] === undefined ? { prefix: 'gulp-pipeline_' } : arguments[0];
+
+  var tmpobj = tmp.dirSync(options);
+  return tmpobj.name;
+};
+
+var Default$32 = {
   debug: false,
   watch: false,
   presetType: 'macro',
@@ -3393,7 +3555,7 @@ var Default$31 = {
 };
 
 /**
- * Sleep the given ms value.
+ * Sleep the given ms value, for those quirky cases like when you need the filesystem to catch up.
  */
 var Sleep = function (_BaseRecipe) {
   babelHelpers.inherits(Sleep, _BaseRecipe);
@@ -3406,8 +3568,15 @@ var Sleep = function (_BaseRecipe) {
    */
 
   function Sleep(gulp, preset, sleep) {
+    var _Object$getPrototypeO;
+
     babelHelpers.classCallCheck(this, Sleep);
-    return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Sleep).call(this, gulp, preset, Default$31, { sleep: sleep }));
+
+    for (var _len = arguments.length, configs = Array(_len > 3 ? _len - 3 : 0), _key = 3; _key < _len; _key++) {
+      configs[_key - 3] = arguments[_key];
+    }
+
+    return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(Sleep)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$32, { sleep: sleep }].concat(configs)));
   }
 
   babelHelpers.createClass(Sleep, [{
@@ -3428,6 +3597,16 @@ var Sleep = function (_BaseRecipe) {
   }]);
   return Sleep;
 }(BaseRecipe);
+
+/**
+ * Simplified sleep() that uses the Sleep recipe
+ */
+var sleep = function sleep(gulp, ms) {
+  var c = new Sleep(gulp, {}, ms);
+  // set the display name so it shows up in the task list
+  c.taskFn.displayName = '<sleep>';
+  return c;
+};
 
 exports.Preset = Preset;
 exports.Rails = Rails;
@@ -3450,7 +3629,9 @@ exports.CleanStylesheets = CleanStylesheets;
 exports.CleanJavascripts = CleanJavascripts;
 exports.CleanDigest = CleanDigest;
 exports.Clean = Clean;
+exports.clean = clean;
 exports.Rev = Rev;
+exports.RevReplace = RevReplace;
 exports.CssNano = CssNano;
 exports.Mocha = Mocha;
 exports.Prepublish = Prepublish;
@@ -3460,5 +3641,7 @@ exports.PublishGhPages = PublishGhPages;
 exports.Jekyll = Jekyll;
 exports.series = series;
 exports.parallel = parallel;
+exports.tmpDir = tmpDir;
 exports.Sleep = Sleep;
+exports.sleep = sleep;
 //# sourceMappingURL=gulp-pipeline.cjs.js.map

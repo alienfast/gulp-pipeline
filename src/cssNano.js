@@ -8,6 +8,7 @@ import extReplace from 'gulp-ext-replace'
 
 export const Default = {
   debug: false,
+  minExtension: true, // replace extension .css with .min.css
   presetType: 'postProcessor',
   task: {
     name: 'cssNano'
@@ -54,7 +55,7 @@ const CssNano = class extends BaseRecipe {
 
     return this.gulp.src(this.config.source.glob, this.config.source.options)
       .pipe(gulpif(this.config.debug, debug(this.debugOptions())))
-      .pipe(extReplace('.min.css'))
+      .pipe(gulpif(this.config.minExtension, extReplace('.min.css')))
       .pipe(cssnano(this.config.options))
       .pipe(this.gulp.dest(this.config.dest))
       .on('error', (error) => {

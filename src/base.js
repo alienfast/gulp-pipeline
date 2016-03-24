@@ -16,7 +16,7 @@ const Base = class {
    */
   constructor(...configs) {
     this.config = extend(true, {}, Default, ...configs)
-    this.debug(`[${this.constructor.name}] using resolved config: ${stringify(this.config)}`)
+    //this.debugDump(`[${this.constructor.name}] using resolved config:`, this.config)
   }
 
   // ----------------------------------------------
@@ -48,10 +48,6 @@ const Base = class {
   notifyError(error, e) {
     this.log(error)
     throw e
-  }
-
-  debugOptions() {
-    return {title: `[${Util.colors.cyan('debug')}][${Util.colors.cyan(this.taskName())}]`}
   }
 }
 

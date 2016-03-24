@@ -58,34 +58,62 @@ const BaseRecipe = class extends BaseGulp {
     // generate primary task e.g. sass
 
     // set a fn for use by the task, also used by aggregate/series/parallel
-    this.taskFn = (done) => {
+    let taskFn = (done) => {
       //this.log(`Running task: ${Util.colors.green(name)}`)
 
       if (this.config.debug) {
-        this.debugDump(`Executing ${Util.colors.green(this.taskName())} with options:`, this.config.options)
+        this.debugDump(`Executing ${Util.colors.green(this.displayName())} with config`, this.config)
       }
       return this.run(done)
     }
 
-    if (this.config.task && this.config.task.name) {
-      let name = this.taskName()
+    // metadata for convenience so that gulp tasks show up with this instead of 'anonymous'
+    taskFn.displayName = this.displayName()
+
+    // assign it last so that displayName() can resolve this first as others may set it externally like <clean>
+    this.taskFn = taskFn
+
+    if (this.shouldRegisterTask()) {
+
+      // set the description
       if (this.createDescription !== undefined) {
         this.config.task.description = this.createDescription()
       }
 
-      this.debug(`Registering task: ${Util.colors.green(name)}`)
-
       // set metadata on fn for discovery by gulp
-      this.taskFn.displayName = name
       this.taskFn.description = this.config.task.description
 
-      // register the task
+
+      // register
+      let name = this.taskName()
+      this.debug(`Registering task: ${Util.colors.green(name)}`)
       this.gulp.task(name, this.taskFn)
+    }
+  }
+
+  shouldRegisterTask() {
+    return (this.config.task && this.config.task.name)
+  }
+
+  displayName() {
+    if (this.taskFn !== undefined && this.taskFn.displayName) {
+      return this.taskFn.displayName
+    }
+    else if (this.shouldRegisterTask()) {
+      return this.taskName()
+    }
+    else {
+      // metadata for convenience so that gulp tasks show up with this instead of 'anonymous'
+      return `<${this.constructor.name}>`
     }
   }
 
   logFinish(message = 'finished.') {
     this.log(`[${Util.colors.green(this.taskName())}] ${message}`)
+  }
+
+  debugOptions() { // this controls the gulp-debug log statement, created to mirror our #debug's log format
+    return {title: `[${Util.colors.cyan('debug')}][${Util.colors.cyan(this.constructor.name)}]`}
   }
 }
 

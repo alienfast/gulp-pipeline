@@ -1,6 +1,5 @@
 import BaseRecipe from './baseRecipe'
 import Preset from './preset'
-import extend from 'extend'
 import mocha from 'gulp-mocha'
 import debug from 'gulp-debug'
 import gulpif from 'gulp-if'
@@ -24,10 +23,10 @@ const Mocha = class extends BaseRecipe {
    */
   constructor(gulp, preset, ...configs) {
     // resolve watch cwd based on test cwd
-    super(gulp, preset, extend(true, {},
+    super(gulp, preset,
       Default,
       {watch: {options: {cwd: Preset.resolveConfig(preset, Default, ...configs).test.options.cwd}}},
-      ...configs))
+      ...configs)
   }
 
   createDescription() {

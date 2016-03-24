@@ -64,7 +64,7 @@ const Uglify = class extends BaseRecipe {
     if (this.config.concat.dest) {
 
       // run the concat scenario
-      this.debug(`concat dest: ${this.config.concat.dest}`)
+      this.debug(`concat dest: ${this.config.dest}/${this.config.concat.dest}`)
       return this.gulp.src(this.config.source.glob, this.config.source.options)
         .pipe(gulpif(this.config.debug, debug(this.debugOptions())))
         .pipe(concat(this.config.concat.dest))

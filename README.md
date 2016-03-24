@@ -29,7 +29,7 @@ See the [src](src) directory for a full list.  Common recipes:
 
 
 ## Distributions
-We eat our own dogfood.  All distributions are built and published by gulp-pipeline using [build-control](https://github.com/alienfast/build-control), you can find these on our [`dist` branch](tree/dist)
+We eat our own dogfood.  All distributions are built and published by gulp-pipeline using [build-control](https://github.com/alienfast/build-control), you can find these on our [`dist` branch](https://github.com/alienfast/gulp-pipeline/tree/dist).
 
 ## Usage
 

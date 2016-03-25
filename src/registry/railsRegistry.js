@@ -93,7 +93,7 @@ const RailsRegistry = class extends BaseRegistry {
     )
 
     // default then digest
-    new Aggregate(gulp, 'build',
+    new Aggregate(gulp, 'all',
       series(gulp,
         defaultRecipes,
         digest

@@ -3768,7 +3768,7 @@ define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'g
         clean(gulp, minifiedAssetsDir + '/**')));
 
         // default then digest
-        new Aggregate(gulp, 'build', series(gulp, defaultRecipes, digest));
+        new Aggregate(gulp, 'all', series(gulp, defaultRecipes, digest));
       }
     }]);
     return RailsRegistry;

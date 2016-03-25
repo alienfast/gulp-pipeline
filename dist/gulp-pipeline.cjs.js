@@ -3773,7 +3773,7 @@ var RailsRegistry = function (_BaseRegistry) {
       clean(gulp, minifiedAssetsDir + '/**')));
 
       // default then digest
-      new Aggregate(gulp, 'build', series(gulp, defaultRecipes, digest));
+      new Aggregate(gulp, 'all', series(gulp, defaultRecipes, digest));
     }
   }]);
   return RailsRegistry;

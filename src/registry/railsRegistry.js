@@ -1,12 +1,27 @@
 import BaseRegistry from './baseRegistry'
 
-
-import {Preset, Clean, CleanDigest, CssNano, Images, Sass, RollupIife, RollupCjs, ScssLint, EsLint, Rev, RevReplace, Uglify, Aggregate, parallel, series, tmpDir, clean} from '../index'
+import Preset from '../preset'
+import Clean from '../clean'
+import CleanDigest from '../cleanDigest'
+import CssNano from '../cssNano'
+import Images from '../images'
+import Sass from '../sass'
+import RollupIife from '../rollupIife'
+import RollupCjs from '../rollupCjs'
+import ScssLint from '../scssLint'
+import EsLint from '../eslint'
+import Rev from '../rev'
+import RevReplace from '../revReplace'
+import Uglify from '../uglify'
+import Aggregate from '../aggregate'
+import parallel from '../util/parallel'
+import series from '../util/series'
+import tmpDir from '../util/tmpDir'
+import clean from '../util/clean'
 
 // per class name defaults that can be overridden
 export const Default = {
-  preset: Preset.rails(),
-
+  // preset: -- mixed in at runtime in the constructor to avoid issues in non-rails projects
   global: {debug: false}, // mixed into every config i.e debug: true
 
   // Class-based configuration overrides:
@@ -25,7 +40,7 @@ const RailsRegistry = class extends BaseRegistry {
    * @param config - customized overrides of the Default, last one wins
    */
   constructor(...configs) {
-    super(Default, ...configs)
+    super(Default, {preset: Preset.rails()}, ...configs)
   }
 
   init(gulp) {

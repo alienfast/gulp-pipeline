@@ -4,7 +4,8 @@ export const Default = {
   presetType: 'stylesheets',
   task: {
     name: 'clean:stylesheets'
-  }
+  },
+  glob: '**/*.css'
 }
 
 const CleanStylesheets = class extends BaseClean {

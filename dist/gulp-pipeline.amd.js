@@ -1340,6 +1340,10 @@ define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'g
 
       // track recipes as taskFn so that aggregates can be included and resolved as part of other aggregates just like recipes
       _this.taskFn = recipes;
+
+      // track recipes as `recipes` like series/parallel so metadata can be discovered
+      //this.taskFn.recipes = recipes
+
       _this.registerTask(_this.taskName());
 
       if (_this.config.watch) {
@@ -1380,8 +1384,7 @@ define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'g
         var _this2 = this;
 
         // generate watch task
-        var watchableRecipes = this.watchableRecipes();
-        if (watchableRecipes.length < 1) {
+        if (this.watchableRecipes().length < 1) {
           this.debug('No watchable recipes for task: ' + Util.colors.green(taskName));
           return;
         }
@@ -1405,7 +1408,11 @@ define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'g
               var recipe = _step.value;
 
               var recipeName = Util.colors.grey('(' + (recipe.taskName() || recipe.constructor.name || 'anonymous') + ')');
-              _this2.log('[' + Util.colors.green(taskName) + ' ' + recipeName + '] watching ' + recipe.config.watch.options.cwd + ' for ' + recipe.config.watch.glob + '...');
+              var msg = '[' + Util.colors.green(taskName) + ' ' + recipeName + '] watching';
+              if (recipe.config.watch.options) {
+                msg += ' ' + recipe.config.watch.options.cwd + ' for ' + recipe.config.watch.glob + '...';
+              }
+              _this2.log(msg);
 
               // declare this in here so we can use different display names in the log
               var runFn = function runFn(done) {
@@ -1447,7 +1454,7 @@ define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'g
               });
             };
 
-            for (var _iterator = watchableRecipes[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+            for (var _iterator = _this2.watchableRecipes()[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
               _loop();
             }
           } catch (err) {
@@ -1474,12 +1481,45 @@ define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'g
       value: function flatten(list) {
         var _this3 = this;
 
-        return list.reduce(function (a, b) {
-          return(
-            // parallel and series set `.recipes` on the function as metadata
-            a.concat(typeof b === "function" && b.recipes ? _this3.flatten(b.recipes) : b)
-          );
-        }, []);
+        // parallel and series set `.recipes` on the function as metadata
+        var callback = function callback(prev, current) {
+          var item = current;
+
+          // Flatten any series/parallel
+          if (typeof current === "function" && current.recipes) {
+            _this3.debugDump('flatten function recipes', current.recipes);
+            item = _this3.flatten(current.recipes);
+          }
+          // Flatten any Aggregate object - exposes a taskFn (which should be a series/parallel)
+          else if (current.taskFn && current.taskFn.recipes) {
+              _this3.debugDump('flatten ' + current.constructor.name + ' with taskFn.recipes', current.taskFn.recipes);
+              item = _this3.flatten(current.taskFn.recipes);
+            }
+          //else {
+          //  if (current.taskFn) {
+          //    this.debugDump(`flatten something WITH taskFn`, current)
+          //
+          //    if(current.taskFn.recipes){
+          //      this.debugDump(`flatten something WITH taskFn.recipes`, current.taskFn.recipes)
+          //    }
+          //  }
+          //  else if (current.recipes) {
+          //    this.debugDump(`flatten something WITH recipes but not a fn`, current)
+          //  }
+          //  else if (current && current.constructor) {
+          //    this.debugDump(`flatten ${current.constructor.name} with no recipes`, current)
+          //  }
+          //  else if (Array.isArray(current)) {
+          //    this.debugDump(`flatten array with no recipes`, current)
+          //  }
+          //  else {
+          //    this.debugDump(`flatten ???`, current)
+          //  }
+          //}
+          return prev.concat(item);
+        };
+
+        return list.reduce(callback, []);
       }
     }, {
       key: 'flattenedRecipes',
@@ -1499,10 +1539,10 @@ define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'g
 
         try {
           for (var _iterator2 = this.flattenedRecipes()[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-            var recipe = _step2.value;
+            var _recipe = _step2.value;
 
-            if (typeof recipe !== "string" && typeof recipe !== "function" && recipe.config.watch) {
-              watchableRecipes.push(recipe);
+            if (typeof _recipe !== "string" && typeof _recipe !== "function" && _recipe.config.watch) {
+              watchableRecipes.push(_recipe);
             }
           }
         } catch (err) {
@@ -2587,30 +2627,31 @@ define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'g
     /**
      * Prefer to return the taskFn instead of a string, but return the string if that's all that is given to us.
      *
-     * @param recipe
+     * @param recipeOrAggregateOrString
      * @returns {*}
      */
 
 
     babelHelpers.createClass(Recipes, [{
       key: "toTask",
-      value: function toTask(recipe) {
-        var taskName = null;
-        if (typeof recipe === "string") {
+      value: function toTask(recipeOrAggregateOrString) {
+        var task = null;
+        if (typeof recipeOrAggregateOrString === "string") {
           // any given task name should be returned as-is
-          taskName = recipe;
-          this.debug("toTask(): " + taskName);
+          task = recipeOrAggregateOrString;
+          this.debug("toTask(): " + task);
         } else {
-          if (typeof recipe === "function") {
+          if (recipeOrAggregateOrString.taskFn) {
+            // recipes and aggregates expose a taskFn
+            task = recipeOrAggregateOrString.taskFn;
+          } else if (typeof recipeOrAggregateOrString === "function") {
             // any given fn should be return as-is i.e. series/parallel
-            taskName = recipe;
-          } else {
-            // any recipe should be converted to string task name
-            taskName = recipe.taskFn;
+            task = recipeOrAggregateOrString;
           }
-          this.debug("toTask(): " + (taskName.name || taskName.displayName));
+
+          this.debug("toTask(): " + (task.name || task.displayName));
         }
-        return taskName;
+        return task;
       }
 
       /**

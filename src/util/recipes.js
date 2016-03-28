@@ -9,28 +9,29 @@ const Recipes = class extends Base {
   /**
    * Prefer to return the taskFn instead of a string, but return the string if that's all that is given to us.
    *
-   * @param recipe
+   * @param recipeOrAggregateOrString
    * @returns {*}
    */
-  toTask(recipe) {
-    let taskName = null
-    if (typeof recipe === "string") {
+  toTask(recipeOrAggregateOrString) {
+    let task = null
+    if (typeof recipeOrAggregateOrString === "string") {
       // any given task name should be returned as-is
-      taskName = recipe
-      this.debug(`toTask(): ${taskName}`)
+      task = recipeOrAggregateOrString
+      this.debug(`toTask(): ${task}`)
     }
     else {
-      if (typeof recipe === "function") {
+      if (recipeOrAggregateOrString.taskFn) {
+        // recipes and aggregates expose a taskFn
+        task = recipeOrAggregateOrString.taskFn
+      }
+      else if (typeof recipeOrAggregateOrString === "function") {
         // any given fn should be return as-is i.e. series/parallel
-        taskName = recipe
+        task = recipeOrAggregateOrString
       }
-      else {
-        // any recipe should be converted to string task name
-        taskName = recipe.taskFn
-      }
-      this.debug(`toTask(): ${taskName.name || taskName.displayName}`)
+
+      this.debug(`toTask(): ${task.name || task.displayName}`)
     }
-    return taskName
+    return task
   }
 
   /**

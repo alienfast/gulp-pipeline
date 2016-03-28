@@ -4,7 +4,8 @@ export const Default = {
   presetType: 'javascripts',
   task: {
     name: 'clean:javascripts'
-  }
+  },
+  glob: '**/*.js'
 }
 
 const CleanJavascripts = class extends BaseClean {

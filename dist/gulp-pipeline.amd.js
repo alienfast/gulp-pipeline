@@ -2363,15 +2363,18 @@ define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'g
      */
 
     function BaseClean(gulp, preset) {
-      var _Object$getPrototypeO;
-
       babelHelpers.classCallCheck(this, BaseClean);
 
       for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
         configs[_key - 2] = arguments[_key];
       }
 
-      return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(BaseClean)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$17].concat(configs)));
+      var config = Preset.resolveConfig.apply(Preset, [preset, Default$17].concat(configs));
+      var destGlob = {}; // assume no glob - directory and contents will be deleted
+      if (config.glob) {
+        destGlob = { dest: config.dest + '/' + config.glob };
+      }
+      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(BaseClean).call(this, gulp, preset, config, destGlob));
     }
 
     babelHelpers.createClass(BaseClean, [{
@@ -2475,7 +2478,8 @@ define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'g
     presetType: 'stylesheets',
     task: {
       name: 'clean:stylesheets'
-    }
+    },
+    glob: '**/*.css'
   };
 
   var CleanStylesheets = function (_BaseClean) {
@@ -2508,7 +2512,8 @@ define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'g
     presetType: 'javascripts',
     task: {
       name: 'clean:javascripts'
-    }
+    },
+    glob: '**/*.js'
   };
 
   var CleanJavascripts = function (_BaseClean) {

@@ -1,4 +1,5 @@
 import BaseRecipe from './baseRecipe'
+import Preset from './preset'
 import del from 'del'
 
 export const Default = {
@@ -19,7 +20,12 @@ const BaseClean = class extends BaseRecipe {
    * @param configs - customized overrides for this recipe
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, Default, ...configs)
+    let config = Preset.resolveConfig(preset, Default, ...configs)
+    let destGlob = {} // assume no glob - directory and contents will be deleted
+    if(config.glob){
+      destGlob = {dest: `${config.dest}/${config.glob}`}
+    }
+    super(gulp, preset, config, destGlob)
   }
 
   createDescription(){

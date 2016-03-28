@@ -1852,7 +1852,12 @@ const BaseClean = class extends BaseRecipe {
    * @param configs - customized overrides for this recipe
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, Default$17, ...configs)
+    let config = Preset.resolveConfig(preset, Default$17, ...configs)
+    let destGlob = {} // assume no glob - directory and contents will be deleted
+    if(config.glob){
+      destGlob = {dest: `${config.dest}/${config.glob}`}
+    }
+    super(gulp, preset, config, destGlob)
   }
 
   createDescription(){
@@ -1915,7 +1920,8 @@ const Default$18 = {
   presetType: 'stylesheets',
   task: {
     name: 'clean:stylesheets'
-  }
+  },
+  glob: '**/*.css'
 }
 
 const CleanStylesheets = class extends BaseClean {
@@ -1935,7 +1941,8 @@ const Default$19 = {
   presetType: 'javascripts',
   task: {
     name: 'clean:javascripts'
-  }
+  },
+  glob: '**/*.js'
 }
 
 const CleanJavascripts = class extends BaseClean {

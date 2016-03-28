@@ -19,10 +19,13 @@ const BaseRecipe = class extends BaseGulp {
    */
   constructor(gulp, preset, ...configs) {
 
-    super(gulp, extend(true, {},
-      Default,
-      {baseDirectories: preset.baseDirectories},
-      Preset.resolveConfig(preset, ...configs)))
+    super(gulp,
+      extend(true, {},  // extend presets here since BaseGulp doesn't use preset.
+        Default,
+        {baseDirectories: preset.baseDirectories},
+        Preset.resolveConfig(preset, ...configs)
+      )
+    )
 
     // in case someone needs to inspect it later i.e. buildControl
     this.preset = preset

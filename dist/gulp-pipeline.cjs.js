@@ -100,6 +100,16 @@ babelHelpers.possibleConstructorReturn = function (self, call) {
   return call && (typeof call === "object" || typeof call === "function") ? call : self;
 };
 
+babelHelpers.toConsumableArray = function (arr) {
+  if (Array.isArray(arr)) {
+    for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
+
+    return arr2;
+  } else {
+    return Array.from(arr);
+  }
+};
+
 babelHelpers;
 
 var Ruby = function () {
@@ -468,7 +478,7 @@ var Base = function () {
     }
 
     this.config = extend.apply(undefined, [true, {}, Default$3].concat(configs));
-    //this.debugDump(`[${this.constructor.name}] using resolved config:`, this.config)
+    //this.debugDump(`[${this.constructor.name}] using resolved config`, this.config)
   }
 
   // ----------------------------------------------
@@ -749,7 +759,8 @@ var BaseRecipe = function (_BaseGulp) {
 
     // in case someone needs to inspect it later i.e. buildControl
 
-    var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(BaseRecipe).call(this, gulp, extend(true, {}, Default$1, { baseDirectories: preset.baseDirectories }, Preset.resolveConfig.apply(Preset, [preset].concat(configs)))));
+    var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(BaseRecipe).call(this, gulp, extend(true, {}, // extend presets here since BaseGulp doesn't use preset.
+    Default$1, { baseDirectories: preset.baseDirectories }, Preset.resolveConfig.apply(Preset, [preset].concat(configs)))));
 
     _this.preset = preset;
     _this.registerTask();
@@ -3657,8 +3668,38 @@ var BaseRegistry = function (_DefaultRegistry) {
   // ----------------------------------------------
   // protected
 
+  /**
+   * Class-based configuration overrides:
+   *  - these may be a single config hash or array of config hashes (last hash overrides earlier hashes)
+   *  - in some cases, passing false for the class name may be implemented as omitting the registration of the recipe (see implementation of #init for details)
+   *
+   *  @return -  array - one or more configs as an array, so usage below in init is a universal spread/splat
+   */
+
 
   babelHelpers.createClass(BaseRegistry, [{
+    key: 'classConfig',
+    value: function classConfig(clazz) {
+
+      var className = clazz.prototype.constructor.name;
+      this.debug('Resolving config for class: ' + className + '...');
+      var config = this.config[className];
+
+      this.debugDump('config', config);
+      if (config === undefined) {
+        config = [{}];
+      }
+
+      if (!Array.isArray(config)) {
+        config = [config];
+      }
+
+      // add global at the begining of the array
+      config.unshift(this.config.global);
+
+      return config;
+    }
+  }, {
     key: 'requireValue',
     value: function requireValue(value, name) {
       if (value === undefined || value == null) {
@@ -3699,7 +3740,14 @@ var BaseRegistry = function (_DefaultRegistry) {
 
 // per class name defaults that can be overridden
 var Default$33 = {
-  preset: Preset.rails()
+  // preset: -- mixed in at runtime in the constructor to avoid issues in non-rails projects
+  global: { debug: false }, // mixed into every config i.e debug: true
+
+  // Class-based configuration overrides:
+  //  - these may be a single config hash or array of config hashes (last hash overrides earlier hashes)
+  //  - in some cases, passing false for the class name may be implemented as omitting the registration of the recipe (see implementation of #init for details)
+  RollupIife: true, // absent any overrides, build iife
+  RollupCjs: false
 };
 
 /**
@@ -3722,7 +3770,7 @@ var RailsRegistry = function (_BaseRegistry) {
       configs[_key] = arguments[_key];
     }
 
-    return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(RailsRegistry)).call.apply(_Object$getPrototypeO, [this, Default$33].concat(configs)));
+    return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(RailsRegistry)).call.apply(_Object$getPrototypeO, [this, Default$33, { preset: Preset.rails() }].concat(configs)));
   }
 
   babelHelpers.createClass(RailsRegistry, [{
@@ -3730,7 +3778,32 @@ var RailsRegistry = function (_BaseRegistry) {
     value: function init(gulp) {
       var preset = this.config.preset;
 
-      var js = new Aggregate(gulp, 'js', series(gulp, new EsLint(gulp, preset), new RollupIife(gulp, preset, { options: { dest: 'application.js', moduleName: 'application' } }, this.config.RollupIife)));
+      // javascripts may have two different needs, one standard iife, and one cjs for rails engines
+      var jsRecipes = [];
+
+      // All rails apps need the iife which is ultimately the application.js.
+      //  Some rails engines may want it only for the purpose of ensuring that libraries can be included properly otherwise the build breaks (a good thing)
+      if (this.config.RollupIife) {
+        jsRecipes.push(new (Function.prototype.bind.apply(RollupIife, [null].concat([gulp, preset, {
+          options: {
+            dest: 'application.js',
+            moduleName: 'application'
+          }
+        }], babelHelpers.toConsumableArray(this.classConfig(RollupIife)))))());
+      }
+
+      // Rails apps probably don't need commonjs, so by default it is off.
+      //  Rails engines DO need commonjs, it is consumed by the rails app like any other node library.
+      if (this.config.RollupCjs) {
+        jsRecipes.push(new (Function.prototype.bind.apply(RollupCjs, [null].concat([gulp, preset, {
+          options: {
+            dest: 'application.cjs.js',
+            moduleName: 'application'
+          }
+        }], babelHelpers.toConsumableArray(this.classConfig(RollupCjs)))))());
+      }
+
+      var js = new Aggregate(gulp, 'js', series(gulp, new EsLint(gulp, preset), parallel.apply(undefined, [gulp].concat(jsRecipes))));
 
       var css = new Aggregate(gulp, 'css', series(gulp, new ScssLint(gulp, preset), new Sass(gulp, preset)));
 

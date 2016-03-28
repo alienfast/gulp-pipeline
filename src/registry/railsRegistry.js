@@ -1,11 +1,34 @@
 import BaseRegistry from './baseRegistry'
 
-
-import {Preset, Clean, CleanDigest, CssNano, Images, Sass, RollupIife, ScssLint, EsLint, Rev, RevReplace, Uglify, Aggregate, parallel, series, tmpDir, clean} from '../index'
+import Preset from '../preset'
+import Clean from '../clean'
+import CleanDigest from '../cleanDigest'
+import CssNano from '../cssNano'
+import Images from '../images'
+import Sass from '../sass'
+import RollupIife from '../rollupIife'
+import RollupCjs from '../rollupCjs'
+import ScssLint from '../scssLint'
+import EsLint from '../eslint'
+import Rev from '../rev'
+import RevReplace from '../revReplace'
+import Uglify from '../uglify'
+import Aggregate from '../aggregate'
+import parallel from '../util/parallel'
+import series from '../util/series'
+import tmpDir from '../util/tmpDir'
+import clean from '../util/clean'
 
 // per class name defaults that can be overridden
 export const Default = {
-  preset: Preset.rails()
+  // preset: -- mixed in at runtime in the constructor to avoid issues in non-rails projects
+  global: {debug: false}, // mixed into every config i.e debug: true
+
+  // Class-based configuration overrides:
+  //  - these may be a single config hash or array of config hashes (last hash overrides earlier hashes)
+  //  - in some cases, passing false for the class name may be implemented as omitting the registration of the recipe (see implementation of #init for details)
+  RollupIife: true, // absent any overrides, build iife
+  RollupCjs: false
 }
 
 /**
@@ -17,16 +40,47 @@ const RailsRegistry = class extends BaseRegistry {
    * @param config - customized overrides of the Default, last one wins
    */
   constructor(...configs) {
-    super(Default, ...configs)
+    super(Default, {preset: Preset.rails()}, ...configs)
   }
 
   init(gulp) {
-    const preset = this.config.preset
+    let preset = this.config.preset
+
+    // javascripts may have two different needs, one standard iife, and one cjs for rails engines
+    let jsRecipes = []
+
+    // All rails apps need the iife which is ultimately the application.js.
+    //  Some rails engines may want it only for the purpose of ensuring that libraries can be included properly otherwise the build breaks (a good thing)
+    if (this.config.RollupIife) {
+      jsRecipes.push(
+        new RollupIife(gulp, preset, {
+          options: {
+            dest: 'application.js',
+            moduleName: 'application'
+          }
+        }, ...this.classConfig(RollupIife))
+      )
+    }
+
+    // Rails apps probably don't need commonjs, so by default it is off.
+    //  Rails engines DO need commonjs, it is consumed by the rails app like any other node library.
+    if (this.config.RollupCjs) {
+      jsRecipes.push(
+        new RollupCjs(gulp, preset, {
+          options: {
+            dest: 'application.cjs.js',
+            moduleName: 'application'
+          }
+        }, ...this.classConfig(RollupCjs))
+      )
+    }
 
     const js = new Aggregate(gulp, 'js',
       series(gulp,
         new EsLint(gulp, preset),
-        new RollupIife(gulp, preset, {options: {dest: 'application.js', moduleName: 'application'}}, this.config.RollupIife)
+        parallel(gulp,
+          ...jsRecipes
+        )
       )
     )
 

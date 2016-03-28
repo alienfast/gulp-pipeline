@@ -344,7 +344,7 @@ const Base = class {
    */
   constructor(...configs) {
     this.config = extend(true, {}, Default$3, ...configs)
-    //this.debugDump(`[${this.constructor.name}] using resolved config:`, this.config)
+    //this.debugDump(`[${this.constructor.name}] using resolved config`, this.config)
   }
 
   // ----------------------------------------------
@@ -582,10 +582,13 @@ const BaseRecipe = class extends BaseGulp {
    */
   constructor(gulp, preset, ...configs) {
 
-    super(gulp, extend(true, {},
-      Default$1,
-      {baseDirectories: preset.baseDirectories},
-      Preset.resolveConfig(preset, ...configs)))
+    super(gulp,
+      extend(true, {},  // extend presets here since BaseGulp doesn't use preset.
+        Default$1,
+        {baseDirectories: preset.baseDirectories},
+        Preset.resolveConfig(preset, ...configs)
+      )
+    )
 
     // in case someone needs to inspect it later i.e. buildControl
     this.preset = preset
@@ -2753,6 +2756,35 @@ const BaseRegistry = class extends DefaultRegistry {
 
   // ----------------------------------------------
   // protected
+
+  /**
+   * Class-based configuration overrides:
+   *  - these may be a single config hash or array of config hashes (last hash overrides earlier hashes)
+   *  - in some cases, passing false for the class name may be implemented as omitting the registration of the recipe (see implementation of #init for details)
+   *
+   *  @return -  array - one or more configs as an array, so usage below in init is a universal spread/splat
+   */
+  classConfig(clazz) {
+
+    const className = clazz.prototype.constructor.name
+    this.debug(`Resolving config for class: ${className}...`)
+    let config = this.config[className]
+
+    this.debugDump(`config`, config)
+    if (config === undefined) {
+      config = [{}]
+    }
+
+    if (!Array.isArray(config)) {
+      config = [config]
+    }
+
+    // add global at the begining of the array
+    config.unshift(this.config.global)
+
+    return config
+  }
+
   requireValue(value, name) {
     if (value === undefined || value == null) {
       this.notifyError(`${name} must be defined, found: ${value}`)
@@ -2785,7 +2817,14 @@ const BaseRegistry = class extends DefaultRegistry {
 
 // per class name defaults that can be overridden
 const Default$33 = {
-  preset: Preset.rails()
+  // preset: -- mixed in at runtime in the constructor to avoid issues in non-rails projects
+  global: {debug: false}, // mixed into every config i.e debug: true
+
+  // Class-based configuration overrides:
+  //  - these may be a single config hash or array of config hashes (last hash overrides earlier hashes)
+  //  - in some cases, passing false for the class name may be implemented as omitting the registration of the recipe (see implementation of #init for details)
+  RollupIife: true, // absent any overrides, build iife
+  RollupCjs: false
 }
 
 /**
@@ -2797,16 +2836,47 @@ const RailsRegistry = class extends BaseRegistry {
    * @param config - customized overrides of the Default, last one wins
    */
   constructor(...configs) {
-    super(Default$33, ...configs)
+    super(Default$33, {preset: Preset.rails()}, ...configs)
   }
 
   init(gulp) {
-    const preset = this.config.preset
+    let preset = this.config.preset
+
+    // javascripts may have two different needs, one standard iife, and one cjs for rails engines
+    let jsRecipes = []
+
+    // All rails apps need the iife which is ultimately the application.js.
+    //  Some rails engines may want it only for the purpose of ensuring that libraries can be included properly otherwise the build breaks (a good thing)
+    if (this.config.RollupIife) {
+      jsRecipes.push(
+        new RollupIife(gulp, preset, {
+          options: {
+            dest: 'application.js',
+            moduleName: 'application'
+          }
+        }, ...this.classConfig(RollupIife))
+      )
+    }
+
+    // Rails apps probably don't need commonjs, so by default it is off.
+    //  Rails engines DO need commonjs, it is consumed by the rails app like any other node library.
+    if (this.config.RollupCjs) {
+      jsRecipes.push(
+        new RollupCjs(gulp, preset, {
+          options: {
+            dest: 'application.cjs.js',
+            moduleName: 'application'
+          }
+        }, ...this.classConfig(RollupCjs))
+      )
+    }
 
     const js = new Aggregate(gulp, 'js',
       series(gulp,
         new EsLint(gulp, preset),
-        new RollupIife(gulp, preset, {options: {dest: 'application.js', moduleName: 'application'}}, this.config.RollupIife)
+        parallel(gulp,
+          ...jsRecipes
+        )
       )
     )
 

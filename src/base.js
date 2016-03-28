@@ -16,7 +16,7 @@ const Base = class {
    */
   constructor(...configs) {
     this.config = extend(true, {}, Default, ...configs)
-    //this.debugDump(`[${this.constructor.name}] using resolved config:`, this.config)
+    //this.debugDump(`[${this.constructor.name}] using resolved config`, this.config)
   }
 
   // ----------------------------------------------

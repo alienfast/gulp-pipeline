@@ -1,11 +1,19 @@
 import BaseRegistry from './baseRegistry'
 
 
-import {Preset, Clean, CleanDigest, CssNano, Images, Sass, RollupIife, ScssLint, EsLint, Rev, RevReplace, Uglify, Aggregate, parallel, series, tmpDir, clean} from '../index'
+import {Preset, Clean, CleanDigest, CssNano, Images, Sass, RollupIife, RollupCjs, ScssLint, EsLint, Rev, RevReplace, Uglify, Aggregate, parallel, series, tmpDir, clean} from '../index'
 
 // per class name defaults that can be overridden
 export const Default = {
-  preset: Preset.rails()
+  preset: Preset.rails(),
+
+  global: {debug: false}, // mixed into every config i.e debug: true
+
+  // Class-based configuration overrides:
+  //  - these may be a single config hash or array of config hashes (last hash overrides earlier hashes)
+  //  - in some cases, passing false for the class name may be implemented as omitting the registration of the recipe (see implementation of #init for details)
+  RollupIife: true, // absent any overrides, build iife
+  RollupCjs: false
 }
 
 /**
@@ -21,12 +29,43 @@ const RailsRegistry = class extends BaseRegistry {
   }
 
   init(gulp) {
-    const preset = this.config.preset
+    let preset = this.config.preset
+
+    // javascripts may have two different needs, one standard iife, and one cjs for rails engines
+    let jsRecipes = []
+
+    // All rails apps need the iife which is ultimately the application.js.
+    //  Some rails engines may want it only for the purpose of ensuring that libraries can be included properly otherwise the build breaks (a good thing)
+    if (this.config.RollupIife) {
+      jsRecipes.push(
+        new RollupIife(gulp, preset, {
+          options: {
+            dest: 'application.js',
+            moduleName: 'application'
+          }
+        }, ...this.classConfig(RollupIife))
+      )
+    }
+
+    // Rails apps probably don't need commonjs, so by default it is off.
+    //  Rails engines DO need commonjs, it is consumed by the rails app like any other node library.
+    if (this.config.RollupCjs) {
+      jsRecipes.push(
+        new RollupCjs(gulp, preset, {
+          options: {
+            dest: 'application.cjs.js',
+            moduleName: 'application'
+          }
+        }, ...this.classConfig(RollupCjs))
+      )
+    }
 
     const js = new Aggregate(gulp, 'js',
       series(gulp,
         new EsLint(gulp, preset),
-        new RollupIife(gulp, preset, {options: {dest: 'application.js', moduleName: 'application'}}, this.config.RollupIife)
+        parallel(gulp,
+          ...jsRecipes
+        )
       )
     )
 

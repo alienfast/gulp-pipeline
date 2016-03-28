@@ -17,12 +17,16 @@ const Aggregate = class extends BaseGulp {
   constructor(gulp, taskName, recipes, ...configs) {
     super(gulp, Default, {task: {name: taskName}}, ...configs)
 
-    if(Array.isArray(recipes)){
+    if (Array.isArray(recipes)) {
       this.notifyError(`recipes must not be an array, but a function, series, or parallel, found: ${recipes}`)
     }
 
     // track recipes as taskFn so that aggregates can be included and resolved as part of other aggregates just like recipes
     this.taskFn = recipes
+
+    // track recipes as `recipes` like series/parallel so metadata can be discovered
+    //this.taskFn.recipes = recipes
+
     this.registerTask(this.taskName())
 
     if (this.config.watch) {
@@ -55,8 +59,7 @@ const Aggregate = class extends BaseGulp {
 
   registerWatchTask(taskName) {
     // generate watch task
-    let watchableRecipes = this.watchableRecipes()
-    if (watchableRecipes.length < 1) {
+    if (this.watchableRecipes().length < 1) {
       this.debug(`No watchable recipes for task: ${Util.colors.green(taskName)}`)
       return
     }
@@ -69,12 +72,15 @@ const Aggregate = class extends BaseGulp {
       this.taskFn.running = false
     })
 
-
     let watchFn = () => {
       // watch the watchable recipes and make them #run the series
-      for (let recipe of watchableRecipes) {
+      for (let recipe of this.watchableRecipes()) {
         let recipeName = Util.colors.grey(`(${recipe.taskName() || recipe.constructor.name || 'anonymous'})`)
-        this.log(`[${Util.colors.green(taskName)} ${recipeName}] watching ${recipe.config.watch.options.cwd} for ${recipe.config.watch.glob}...`)
+        let msg = `[${Util.colors.green(taskName)} ${recipeName}] watching`
+        if (recipe.config.watch.options) {
+          msg += ` ${recipe.config.watch.options.cwd} for ${recipe.config.watch.glob}...`
+        }
+        this.log(msg)
 
         // declare this in here so we can use different display names in the log
         let runFn = (done) => {
@@ -124,9 +130,47 @@ const Aggregate = class extends BaseGulp {
   }
 
   flatten(list) {
-    return list.reduce((a, b) =>
-      // parallel and series set `.recipes` on the function as metadata
-      a.concat((typeof b === "function" && b.recipes) ? this.flatten(b.recipes) : b), [])
+    // parallel and series set `.recipes` on the function as metadata
+    let callback = (prev, current) => {
+      let item = current
+
+      // Flatten any series/parallel
+      if (typeof current === "function" && current.recipes) {
+        this.debugDump(`flatten function recipes`, current.recipes)
+        item = this.flatten(current.recipes)
+      }
+      // Flatten any Aggregate object - exposes a taskFn (which should be a series/parallel)
+      else if(current.taskFn && current.taskFn.recipes){
+        this.debugDump(`flatten ${current.constructor.name} with taskFn.recipes`, current.taskFn.recipes)
+        item = this.flatten(current.taskFn.recipes)
+      }
+      //else {
+      //  if (current.taskFn) {
+      //    this.debugDump(`flatten something WITH taskFn`, current)
+      //
+      //    if(current.taskFn.recipes){
+      //      this.debugDump(`flatten something WITH taskFn.recipes`, current.taskFn.recipes)
+      //    }
+      //  }
+      //  else if (current.recipes) {
+      //    this.debugDump(`flatten something WITH recipes but not a fn`, current)
+      //  }
+      //  else if (current && current.constructor) {
+      //    this.debugDump(`flatten ${current.constructor.name} with no recipes`, current)
+      //  }
+      //  else if (Array.isArray(current)) {
+      //    this.debugDump(`flatten array with no recipes`, current)
+      //  }
+      //  else {
+      //    this.debugDump(`flatten ???`, current)
+      //  }
+      //}
+      return prev.concat(item)
+    }
+
+    return list.reduce(callback, [])
+
+
   }
 
   flattenedRecipes() {

@@ -46,5 +46,5 @@ export { default as Sleep } from './sleep'
 export { default as sleep } from './util/sleep'
 
 
-
 export { default as RailsRegistry } from './registry/railsRegistry'
+export { default as RailsEngineDummyRegistry } from './registry/railsEngineDummyRegistry'

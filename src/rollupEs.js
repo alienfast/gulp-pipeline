@@ -3,7 +3,6 @@ import { rollup } from 'rollup'
 //import BrowserSync from 'browser-sync'
 import extend from 'extend'
 import glob from 'glob'
-import stringify from 'stringify-object'
 import nodeResolve from 'rollup-plugin-node-resolve'
 import commonjs from 'rollup-plugin-commonjs'
 import process from 'process'
@@ -52,7 +51,7 @@ export const NodeResolve = {
       browser: true,
 
       // not all files you want to resolve are .js files
-      extensions: [ '.js', '.json' ]
+      extensions: ['.js', '.json']
     }
   }
 }
@@ -65,7 +64,7 @@ export const CommonJs = {
       //exclude: [ `${node_modules}/foo/**', `${node_modules}/bar/**` ],
 
       // search for files other than .js files (must already be transpiled by a previous plugin!)
-      extensions: [ '.js' ] // defaults to [ '.js' ]
+      extensions: ['.js'] // defaults to [ '.js' ]
     }
   }
 }
@@ -94,14 +93,14 @@ const RollupEs = class extends BaseRecipe {
     // plugins order: nodeResolve, commonjs, babel
 
     // Add commonjs before babel
-    if(this.config.commonjs.enabled) {
+    if (this.config.commonjs.enabled) {
       this.debug('Adding commonjs plugin')
       // add at the beginning
       this.config.options.plugins.unshift(commonjs(this.config.commonjs.options))
     }
 
     // Add nodeResolve before (commonjs &&|| babel)
-    if(this.config.nodeResolve.enabled) {
+    if (this.config.nodeResolve.enabled) {
       this.debug('Adding nodeResolve plugin')
       // add at the beginning
       this.config.options.plugins.unshift(nodeResolve(this.config.nodeResolve.options))
@@ -121,16 +120,16 @@ const RollupEs = class extends BaseRecipe {
     let entry = glob.sync(this.config.source.glob, this.config.source.options)
 
     if (!entry || entry.length <= 0) {
-      throw new Error(`Unable to resolveEntry() for source: ${stringify(this.config.source)} from ${process.cwd()}`)
+      throw new Error(`Unable to resolveEntry() for source: ${this.dump(this.config.source)} from ${process.cwd()}`)
     }
 
     if (entry.length > 1) {
-      throw new Error(`resolveEntry() should only find one entry point but found ${entry} for source: ${stringify(this.config.source)}`)
+      throw new Error(`resolveEntry() should only find one entry point but found ${entry} for source: ${this.dump(this.config.source)}`)
     }
     return entry[0]
   }
 
-  createDescription(){
+  createDescription() {
     return `Rollup ${this.config.source.options.cwd}/${this.config.source.glob} in the ${this.config.options.format} format to ${this.config.options.dest}`
   }
 
@@ -144,11 +143,7 @@ const RollupEs = class extends BaseRecipe {
       },
       this.config.options)
 
-    if(this.config.debug) {
-      let prunedOptions = extend(true, {}, options)
-      prunedOptions.plugins = `[ (count: ${this.config.options.plugins.length}) ]`
-      this.debug(`Executing rollup with options: ${stringify(prunedOptions)}`)
-    }
+    this.logDebugOptions(options)
 
     return rollup(options)
       .then((bundle) => {
@@ -158,6 +153,37 @@ const RollupEs = class extends BaseRecipe {
         error.plugin = 'rollup'
         this.notifyError(error, done, watching)
       })
+  }
+
+  /**
+   * This is rather elaborate, but useful.  It strings together the options used to run rollup for debugging purposes.
+   *
+   * @param options
+   */
+  logDebugOptions(options) {
+    if (!this.config.debug) {
+      return
+    }
+
+    let prunedOptions = extend(true, {}, options)
+    prunedOptions.plugins = 'x' // placeholder to replace
+
+    let plugins = `plugins: [ // (count: ${this.config.options.plugins.length})\n`
+    if (this.config.commonjs.enabled) {
+      plugins += `\t\tcommonjs(${this.dump(this.config.commonjs.options)}),\n`
+    }
+    if (this.config.nodeResolve.enabled) {
+      plugins += `\t\tnodeResolve(${this.dump(this.config.nodeResolve.options)}),\n`
+    }
+    if (this.config.babelOptions) {
+      plugins += `\t\tbabel(${this.dump(this.config.babelOptions)}),\n`
+    }
+    plugins += `],\n`
+
+
+    let display = this.dump(prunedOptions)
+    display = display.replace("plugins: 'x',", plugins)
+    this.debug(`Executing rollup with options: ${display}`)
   }
 }
 

@@ -1,17 +1,23 @@
 import RollupEs from './rollupEs'
+import Preset from './preset'
 import babel from 'rollup-plugin-babel';
 
 export const Default = {
   task: {
     name: 'rollup:cjs'
   },
+  presetType: 'javascripts',
+  babelOptions: {
+    babelrc: false,
+    presets: ['es2015-rollup']
+  },
   options: {
     //dest: '', // required
-    format: 'cjs',
-    plugins: [babel({
-      babelrc: false,
-      presets: ['es2015-rollup']
-    })]
+    format: 'cjs'
+    //plugins: [babel({
+    //  babelrc: false,
+    //  presets: ['es2015-rollup']
+    //})]
   },
   nodeResolve: {
     enabled: false // bundle a full package with dependencies?
@@ -35,7 +41,13 @@ const RollupCjs = class extends RollupEs {
    * @param configs - customized overrides for this recipe
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, Default, ...configs)
+    let config = Preset.resolveConfig(preset, Default, ...configs)
+    super(gulp, preset, Default, {
+        options: {
+          plugins: [babel(config.babelOptions)]
+        }
+      },
+      ...configs)
   }
 }
 

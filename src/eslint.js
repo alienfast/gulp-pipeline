@@ -15,7 +15,15 @@ export const Default = {
   source: {
     glob: '**/*.js'
   },
-  options: {}
+  options: {
+    // Files were being ignored
+    // ---------------------------
+    //  With gulp-pipeline setup, we are specific enough with cwd that we don't need to use a blanket
+    //  (default) .eslintignore file.  Turn off this behavior and lint anything we point at.
+    //  @see http://eslint.org/docs/developer-guide/nodejs-api#cliengine
+    warnFileIgnored: true,
+    ignore: false
+  }
 }
 
 const EsLint = class extends BaseRecipe {

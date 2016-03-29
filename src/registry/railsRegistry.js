@@ -49,17 +49,15 @@ const RailsRegistry = class extends BaseRegistry {
 
     const js = new Aggregate(gulp, 'js',
       series(gulp,
-        new EsLint(gulp, preset),
-        parallel(gulp,
-          ...this.rollups(gulp)
-        )
+        this.esLinters(gulp),
+        this.rollups(gulp)
       ),
       ...this.keyConfig('js')
     )
 
     const css = new Aggregate(gulp, 'css',
       series(gulp,
-        new ScssLint(gulp, preset),
+        this.scssLinters(gulp),
         new Sass(gulp, preset)
       ),
       ...this.keyConfig('css')
@@ -132,7 +130,15 @@ const RailsRegistry = class extends BaseRegistry {
     )
   }
 
-  rollups(gulp){
+  esLinters(gulp) {
+    return new EsLint(gulp, this.config.preset, ...this.classConfig(EsLint))
+  }
+
+  scssLinters(gulp){
+    return new ScssLint(gulp, this.config.preset, ...this.classConfig(ScssLint))
+  }
+
+  rollups(gulp) {
     let preset = this.config.preset
     // javascripts may have two different needs, one standard iife, and one cjs for rails engines
     let rollups = []
@@ -173,7 +179,10 @@ const RailsRegistry = class extends BaseRegistry {
         }, ...this.classConfig(RollupCjsBundled))
       )
     }
-    return rollups
+
+    return parallel(gulp,
+      ...rollups
+    )
   }
 }
 

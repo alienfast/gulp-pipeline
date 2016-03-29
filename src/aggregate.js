@@ -5,6 +5,9 @@ import Util from 'gulp-util'
 const Default = {
   debug: false,
   watch: true  // register a watch task that aggregates all watches and runs the full sequence
+
+  // watch can also specify an additional path i.e. spec/dummy app watching parent sources
+  // watch: { glob: '**/*.scss', options: { cwd: '../../' } }
 }
 
 const Aggregate = class extends BaseGulp {
@@ -75,59 +78,69 @@ const Aggregate = class extends BaseGulp {
     let watchFn = () => {
       // watch the watchable recipes and make them #run the series
       for (let recipe of this.watchableRecipes()) {
-        let recipeName = Util.colors.grey(`(${recipe.taskName() || recipe.constructor.name || 'anonymous'})`)
-        let msg = `[${Util.colors.green(taskName)} ${recipeName}] watching`
-        if (recipe.config.watch.options) {
-          msg += ` ${recipe.config.watch.options.cwd} for ${recipe.config.watch.glob}...`
-        }
-        this.log(msg)
+        this.addWatch(taskName, recipe)
+      }
 
-        // declare this in here so we can use different display names in the log
-        let runFn = (done) => {
-          // ensure that multiple watches do not run the entire set of recipes multiple times on a single change
-          if (this.taskFn.running) {
-            this.debug('Multiple matching watchers, skipping this one...')
-            done()
-            return
-          }
-          else {
-            this.debug('Allowing it to run....')
-            this.taskFn.running = true
-          }
-
-          let finishFn = () => {
-            this.log(`[${Util.colors.green(taskName)}] finished`)
-            this.taskFn.running = false
-          }
-
-          this.gulp.series(this.taskFn, finishFn, done)()
-        }
-        runFn.displayName = `${recipe.taskName()} watcher`
-
-        let watcher = this.gulp.watch(recipe.config.watch.glob, recipe.config.watch.options, runFn)
-        // add watchers for logging/information
-        watcher.on('add', (path) => {
-          if (!this.taskFn.running) {
-            this.log(`[${Util.colors.green(taskName)} ${recipeName}] ${path} was added, running...`)
-          }
-        })
-        watcher.on('change', (path) => {
-          if (!this.taskFn.running) {
-            this.log(`[${Util.colors.green(taskName)} ${recipeName}] ${path} was changed, running...`)
-          }
-        })
-        watcher.on('unlink', (path) => {
-          if (!this.taskFn.running) {
-            this.log(`[${Util.colors.green(taskName)} ${recipeName}] ${path} was deleted, running...`)
-          }
-        })
+      // this aggregate may be configured with additional watch
+      if(this.config.watch.glob){
+        this.addWatch(taskName, this)
       }
     }
-
 
     watchFn.description = this.createWatchHelpText()
     this.gulp.task(taskName, watchFn)
   }
+
+  addWatch(taskName, recipe) {
+    let recipeName = Util.colors.grey(`(${recipe.taskName() || recipe.constructor.name || 'anonymous'})`)
+    let logPrefix = `[${Util.colors.green(taskName)} ${recipeName}]`
+    let msg = `${logPrefix} watching`
+    if (recipe.config.watch.options) {
+      msg += ` ${recipe.config.watch.options.cwd} for ${recipe.config.watch.glob}...`
+    }
+    this.log(msg)
+
+    // declare this in here so we can use different display names in the log
+    let runFn = (done) => {
+      // ensure that multiple watches do not run the entire set of recipes multiple times on a single change
+      if (this.taskFn.running) {
+        this.debug('Multiple matching watchers, skipping this one...')
+        done()
+        return
+      }
+      else {
+        this.debug('Allowing it to run....')
+        this.taskFn.running = true
+      }
+
+      let finishFn = () => {
+        this.log(`${logPrefix} finished`)
+        this.taskFn.running = false
+      }
+
+      this.gulp.series(this.taskFn, finishFn, done)()
+    }
+    runFn.displayName = `${recipe.taskName()} watcher`
+
+    let watcher = this.gulp.watch(recipe.config.watch.glob, recipe.config.watch.options, runFn)
+    // add watchers for logging/information
+    watcher.on('add', (path) => {
+      if (!this.taskFn.running) {
+        this.log(`${logPrefix} ${path} was added, running...`)
+      }
+    })
+    watcher.on('change', (path) => {
+      if (!this.taskFn.running) {
+        this.log(`${logPrefix} ${path} was changed, running...`)
+      }
+    })
+    watcher.on('unlink', (path) => {
+      if (!this.taskFn.running) {
+        this.log(`${logPrefix} ${path} was deleted, running...`)
+      }
+    })
+  }
+
 
   flatten(list) {
     // parallel and series set `.recipes` on the function as metadata
@@ -140,7 +153,7 @@ const Aggregate = class extends BaseGulp {
         item = this.flatten(current.recipes)
       }
       // Flatten any Aggregate object - exposes a taskFn (which should be a series/parallel)
-      else if(current.taskFn && current.taskFn.recipes){
+      else if (current.taskFn && current.taskFn.recipes) {
         this.debugDump(`flatten ${current.constructor.name} with taskFn.recipes`, current.taskFn.recipes)
         item = this.flatten(current.taskFn.recipes)
       }

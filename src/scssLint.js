@@ -4,6 +4,7 @@ import scssLint from 'gulp-scss-lint'
 import scssLintStylish from 'gulp-scss-lint-stylish'
 import debug from 'gulp-debug'
 import gulpif from 'gulp-if'
+import findup from 'findup-sync'
 
 export const Default = {
   debug: false,
@@ -29,6 +30,17 @@ const ScssLint = class extends BaseRecipe {
    */
   constructor(gulp, preset, ...configs) {
     super(gulp, preset, extend(true, {}, Default, ...configs))
+
+    // If a config is not specified, emulate the eslint config behavior by looking up.
+    //  If there is a config at or above the source cwd, use it, otherwise leave null.
+    if(!this.config.options.config){
+
+      let configFile = findup('.scss-lint.yml', {cwd: this.config.source.options.cwd})
+      if(configFile){
+        this.log(`Using config: ${configFile}`)
+        this.config.options.config = configFile
+      }
+    }
   }
 
   createDescription(){

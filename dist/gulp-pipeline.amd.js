@@ -1320,7 +1320,20 @@ define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'g
         configs[_key - 2] = arguments[_key];
       }
 
-      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(ScssLint).call(this, gulp, preset, extend.apply(undefined, [true, {}, Default$7].concat(configs))));
+      // If a config is not specified, emulate the eslint config behavior by looking up.
+      //  If there is a config at or above the source cwd, use it, otherwise leave null.
+
+      var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(ScssLint).call(this, gulp, preset, extend.apply(undefined, [true, {}, Default$7].concat(configs))));
+
+      if (!_this.config.options.config) {
+
+        var configFile = findup('.scss-lint.yml', { cwd: _this.config.source.options.cwd });
+        if (configFile) {
+          _this.log('Using config: ' + configFile);
+          _this.config.options.config = configFile;
+        }
+      }
+      return _this;
     }
 
     babelHelpers.createClass(ScssLint, [{
@@ -3766,7 +3779,9 @@ define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'g
   };
 
   var Default$34 = {
-    debug: false
+    debug: false,
+    // preset: -- mixed in at runtime in the constructor to avoid issues in non-rails projects
+    global: { debug: false } // mixed into every config i.e debug: true
   };
 
   var BaseRegistry = function (_DefaultRegistry) {
@@ -3877,9 +3892,6 @@ define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'g
 
   // per class name defaults that can be overridden
   var Default$33 = {
-    // preset: -- mixed in at runtime in the constructor to avoid issues in non-rails projects
-    global: { debug: false }, // mixed into every config i.e debug: true
-
     // Class-based configuration overrides:
     //  - these may be a single config hash or array of config hashes (last hash overrides earlier hashes)
     //  - in some cases, passing false for the class name may be implemented as omitting the registration of the recipe (see implementation of #init for details)
@@ -4039,30 +4051,6 @@ define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'g
         configs[_key] = arguments[_key];
       }
 
-      // this method just added a watch path to the aggregates, but failed to re-lint the engine sources
-      //const config = extend(true, Default, {preset: Preset.rails()}, ...configs)
-      //const preset = config.preset
-      //
-      //let extras = {}
-      //if (config.js === undefined || !config.js.watch) {
-      //  extras.js = {
-      //    watch: {
-      //      glob: preset.javascripts.source.all,
-      //      options: {cwd: findup(preset.javascripts.source.options.cwd, {cwd: '..'})}
-      //    }
-      //  }
-      //}
-      //
-      //if (config.css === undefined || !config.css.watch) {
-      //  extras.css = {
-      //    watch: {
-      //      glob: preset.stylesheets.source.all,
-      //      options: {cwd: findup(preset.stylesheets.source.options.cwd, {cwd: '..'})}
-      //    }
-      //  }
-      //}
-      //
-      //super(Default, extras, config)
       return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(RailsEngineDummyRegistry)).call.apply(_Object$getPrototypeO, [this, Default$35].concat(configs)));
     }
 
@@ -4104,6 +4092,7 @@ define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'g
         };
 
         return parallel(gulp, babelHelpers.get(Object.getPrototypeOf(RailsEngineDummyRegistry.prototype), 'scssLinters', this).call(this, gulp), new ScssLint(gulp, this.config.preset, {
+          //debug: true,
           task: { name: 'scss:lint:engine' },
           source: engineCwd,
           watch: engineCwd

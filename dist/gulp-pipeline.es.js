@@ -1041,6 +1041,17 @@ const ScssLint = class extends BaseRecipe {
    */
   constructor(gulp, preset, ...configs) {
     super(gulp, preset, extend(true, {}, Default$7, ...configs))
+
+    // If a config is not specified, emulate the eslint config behavior by looking up.
+    //  If there is a config at or above the source cwd, use it, otherwise leave null.
+    if(!this.config.options.config){
+
+      let configFile = findup('.scss-lint.yml', {cwd: this.config.source.options.cwd})
+      if(configFile){
+        this.log(`Using config: ${configFile}`)
+        this.config.options.config = configFile
+      }
+    }
   }
 
   createDescription(){
@@ -2851,7 +2862,9 @@ const sleep = (gulp, ms) => {
 }
 
 const Default$34 = {
-  debug: false
+  debug: false,
+  // preset: -- mixed in at runtime in the constructor to avoid issues in non-rails projects
+  global: {debug: false} // mixed into every config i.e debug: true
 }
 
 const BaseRegistry = class extends DefaultRegistry {
@@ -2936,9 +2949,6 @@ const BaseRegistry = class extends DefaultRegistry {
 
 // per class name defaults that can be overridden
 const Default$33 = {
-  // preset: -- mixed in at runtime in the constructor to avoid issues in non-rails projects
-  global: {debug: false}, // mixed into every config i.e debug: true
-
   // Class-based configuration overrides:
   //  - these may be a single config hash or array of config hashes (last hash overrides earlier hashes)
   //  - in some cases, passing false for the class name may be implemented as omitting the registration of the recipe (see implementation of #init for details)
@@ -3114,31 +3124,6 @@ const RailsEngineDummyRegistry = class extends RailsRegistry {
    * @param config - customized overrides of the Default, last one wins
    */
   constructor(...configs) {
-
-    // this method just added a watch path to the aggregates, but failed to re-lint the engine sources
-    //const config = extend(true, Default, {preset: Preset.rails()}, ...configs)
-    //const preset = config.preset
-    //
-    //let extras = {}
-    //if (config.js === undefined || !config.js.watch) {
-    //  extras.js = {
-    //    watch: {
-    //      glob: preset.javascripts.source.all,
-    //      options: {cwd: findup(preset.javascripts.source.options.cwd, {cwd: '..'})}
-    //    }
-    //  }
-    //}
-    //
-    //if (config.css === undefined || !config.css.watch) {
-    //  extras.css = {
-    //    watch: {
-    //      glob: preset.stylesheets.source.all,
-    //      options: {cwd: findup(preset.stylesheets.source.options.cwd, {cwd: '..'})}
-    //    }
-    //  }
-    //}
-    //
-    //super(Default, extras, config)
     super(Default$35, ...configs)
   }
 
@@ -3177,6 +3162,7 @@ const RailsEngineDummyRegistry = class extends RailsRegistry {
     return parallel(gulp,
       super.scssLinters(gulp),
       new ScssLint(gulp, this.config.preset, {
+        //debug: true,
         task: {name: 'scss:lint:engine'},
         source: engineCwd,
         watch: engineCwd

@@ -38,7 +38,9 @@ const Base = class {
   }
 
   debugDump(msg, obj) {
-    this.debug(`${msg}:\n${this.dump(obj)}`)
+    if (this.config.debug) {
+      this.debug(`${msg}:\n${this.dump(obj)}`)
+    }
   }
 
   dump(obj) {

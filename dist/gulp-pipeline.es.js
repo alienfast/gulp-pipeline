@@ -366,7 +366,9 @@ const Base = class {
   }
 
   debugDump(msg, obj) {
-    this.debug(`${msg}:\n${this.dump(obj)}`)
+    if (this.config.debug) {
+      this.debug(`${msg}:\n${this.dump(obj)}`)
+    }
   }
 
   dump(obj) {
@@ -692,7 +694,15 @@ const Default = {
   source: {
     glob: '**/*.js'
   },
-  options: {}
+  options: {
+    // Files were being ignored
+    // ---------------------------
+    //  With gulp-pipeline setup, we are specific enough with cwd that we don't need to use a blanket
+    //  (default) .eslintignore file.  Turn off this behavior and lint anything we point at.
+    //  @see http://eslint.org/docs/developer-guide/nodejs-api#cliengine
+    warnFileIgnored: true,
+    ignore: false
+  }
 }
 
 const EsLint = class extends BaseRecipe {
@@ -1050,6 +1060,9 @@ const ScssLint = class extends BaseRecipe {
 const Default$8 = {
   debug: false,
   watch: true  // register a watch task that aggregates all watches and runs the full sequence
+
+  // watch can also specify an additional path i.e. spec/dummy app watching parent sources
+  // watch: { glob: '**/*.scss', options: { cwd: '../../' } }
 }
 
 const Aggregate = class extends BaseGulp {
@@ -1120,59 +1133,69 @@ const Aggregate = class extends BaseGulp {
     let watchFn = () => {
       // watch the watchable recipes and make them #run the series
       for (let recipe of this.watchableRecipes()) {
-        let recipeName = Util.colors.grey(`(${recipe.taskName() || recipe.constructor.name || 'anonymous'})`)
-        let msg = `[${Util.colors.green(taskName)} ${recipeName}] watching`
-        if (recipe.config.watch.options) {
-          msg += ` ${recipe.config.watch.options.cwd} for ${recipe.config.watch.glob}...`
-        }
-        this.log(msg)
+        this.addWatch(taskName, recipe)
+      }
 
-        // declare this in here so we can use different display names in the log
-        let runFn = (done) => {
-          // ensure that multiple watches do not run the entire set of recipes multiple times on a single change
-          if (this.taskFn.running) {
-            this.debug('Multiple matching watchers, skipping this one...')
-            done()
-            return
-          }
-          else {
-            this.debug('Allowing it to run....')
-            this.taskFn.running = true
-          }
-
-          let finishFn = () => {
-            this.log(`[${Util.colors.green(taskName)}] finished`)
-            this.taskFn.running = false
-          }
-
-          this.gulp.series(this.taskFn, finishFn, done)()
-        }
-        runFn.displayName = `${recipe.taskName()} watcher`
-
-        let watcher = this.gulp.watch(recipe.config.watch.glob, recipe.config.watch.options, runFn)
-        // add watchers for logging/information
-        watcher.on('add', (path) => {
-          if (!this.taskFn.running) {
-            this.log(`[${Util.colors.green(taskName)} ${recipeName}] ${path} was added, running...`)
-          }
-        })
-        watcher.on('change', (path) => {
-          if (!this.taskFn.running) {
-            this.log(`[${Util.colors.green(taskName)} ${recipeName}] ${path} was changed, running...`)
-          }
-        })
-        watcher.on('unlink', (path) => {
-          if (!this.taskFn.running) {
-            this.log(`[${Util.colors.green(taskName)} ${recipeName}] ${path} was deleted, running...`)
-          }
-        })
+      // this aggregate may be configured with additional watch
+      if(this.config.watch.glob){
+        this.addWatch(taskName, this)
       }
     }
-
 
     watchFn.description = this.createWatchHelpText()
     this.gulp.task(taskName, watchFn)
   }
+
+  addWatch(taskName, recipe) {
+    let recipeName = Util.colors.grey(`(${recipe.taskName() || recipe.constructor.name || 'anonymous'})`)
+    let logPrefix = `[${Util.colors.green(taskName)} ${recipeName}]`
+    let msg = `${logPrefix} watching`
+    if (recipe.config.watch.options) {
+      msg += ` ${recipe.config.watch.options.cwd} for ${recipe.config.watch.glob}...`
+    }
+    this.log(msg)
+
+    // declare this in here so we can use different display names in the log
+    let runFn = (done) => {
+      // ensure that multiple watches do not run the entire set of recipes multiple times on a single change
+      if (this.taskFn.running) {
+        this.debug('Multiple matching watchers, skipping this one...')
+        done()
+        return
+      }
+      else {
+        this.debug('Allowing it to run....')
+        this.taskFn.running = true
+      }
+
+      let finishFn = () => {
+        this.log(`${logPrefix} finished`)
+        this.taskFn.running = false
+      }
+
+      this.gulp.series(this.taskFn, finishFn, done)()
+    }
+    runFn.displayName = `${recipe.taskName()} watcher`
+
+    let watcher = this.gulp.watch(recipe.config.watch.glob, recipe.config.watch.options, runFn)
+    // add watchers for logging/information
+    watcher.on('add', (path) => {
+      if (!this.taskFn.running) {
+        this.log(`${logPrefix} ${path} was added, running...`)
+      }
+    })
+    watcher.on('change', (path) => {
+      if (!this.taskFn.running) {
+        this.log(`${logPrefix} ${path} was changed, running...`)
+      }
+    })
+    watcher.on('unlink', (path) => {
+      if (!this.taskFn.running) {
+        this.log(`${logPrefix} ${path} was deleted, running...`)
+      }
+    })
+  }
+
 
   flatten(list) {
     // parallel and series set `.recipes` on the function as metadata
@@ -1185,7 +1208,7 @@ const Aggregate = class extends BaseGulp {
         item = this.flatten(current.recipes)
       }
       // Flatten any Aggregate object - exposes a taskFn (which should be a series/parallel)
-      else if(current.taskFn && current.taskFn.recipes){
+      else if (current.taskFn && current.taskFn.recipes) {
         this.debugDump(`flatten ${current.constructor.name} with taskFn.recipes`, current.taskFn.recipes)
         item = this.flatten(current.taskFn.recipes)
       }
@@ -1280,7 +1303,7 @@ const NodeResolve = {
       browser: true,
 
       // not all files you want to resolve are .js files
-      extensions: [ '.js', '.json' ]
+      extensions: ['.js', '.json']
     }
   }
 }
@@ -1293,7 +1316,7 @@ const CommonJs = {
       //exclude: [ `${node_modules}/foo/**', `${node_modules}/bar/**` ],
 
       // search for files other than .js files (must already be transpiled by a previous plugin!)
-      extensions: [ '.js' ] // defaults to [ '.js' ]
+      extensions: ['.js'] // defaults to [ '.js' ]
     }
   }
 }
@@ -1322,14 +1345,14 @@ const RollupEs = class extends BaseRecipe {
     // plugins order: nodeResolve, commonjs, babel
 
     // Add commonjs before babel
-    if(this.config.commonjs.enabled) {
+    if (this.config.commonjs.enabled) {
       this.debug('Adding commonjs plugin')
       // add at the beginning
       this.config.options.plugins.unshift(commonjs(this.config.commonjs.options))
     }
 
     // Add nodeResolve before (commonjs &&|| babel)
-    if(this.config.nodeResolve.enabled) {
+    if (this.config.nodeResolve.enabled) {
       this.debug('Adding nodeResolve plugin')
       // add at the beginning
       this.config.options.plugins.unshift(nodeResolve(this.config.nodeResolve.options))
@@ -1349,16 +1372,16 @@ const RollupEs = class extends BaseRecipe {
     let entry = glob.sync(this.config.source.glob, this.config.source.options)
 
     if (!entry || entry.length <= 0) {
-      throw new Error(`Unable to resolveEntry() for source: ${stringify(this.config.source)} from ${process.cwd()}`)
+      throw new Error(`Unable to resolveEntry() for source: ${this.dump(this.config.source)} from ${process.cwd()}`)
     }
 
     if (entry.length > 1) {
-      throw new Error(`resolveEntry() should only find one entry point but found ${entry} for source: ${stringify(this.config.source)}`)
+      throw new Error(`resolveEntry() should only find one entry point but found ${entry} for source: ${this.dump(this.config.source)}`)
     }
     return entry[0]
   }
 
-  createDescription(){
+  createDescription() {
     return `Rollup ${this.config.source.options.cwd}/${this.config.source.glob} in the ${this.config.options.format} format to ${this.config.options.dest}`
   }
 
@@ -1372,11 +1395,7 @@ const RollupEs = class extends BaseRecipe {
       },
       this.config.options)
 
-    if(this.config.debug) {
-      let prunedOptions = extend(true, {}, options)
-      prunedOptions.plugins = `[ (count: ${this.config.options.plugins.length}) ]`
-      this.debug(`Executing rollup with options: ${stringify(prunedOptions)}`)
-    }
+    this.logDebugOptions(options)
 
     return rollup$1(options)
       .then((bundle) => {
@@ -1387,19 +1406,55 @@ const RollupEs = class extends BaseRecipe {
         this.notifyError(error, done, watching)
       })
   }
+
+  /**
+   * This is rather elaborate, but useful.  It strings together the options used to run rollup for debugging purposes.
+   *
+   * @param options
+   */
+  logDebugOptions(options) {
+    if (!this.config.debug) {
+      return
+    }
+
+    let prunedOptions = extend(true, {}, options)
+    prunedOptions.plugins = 'x' // placeholder to replace
+
+    let plugins = `plugins: [ // (count: ${this.config.options.plugins.length})\n`
+    if (this.config.commonjs.enabled) {
+      plugins += `\t\tcommonjs(${this.dump(this.config.commonjs.options)}),\n`
+    }
+    if (this.config.nodeResolve.enabled) {
+      plugins += `\t\tnodeResolve(${this.dump(this.config.nodeResolve.options)}),\n`
+    }
+    if (this.config.babelOptions) {
+      plugins += `\t\tbabel(${this.dump(this.config.babelOptions)}),\n`
+    }
+    plugins += `],\n`
+
+
+    let display = this.dump(prunedOptions)
+    display = display.replace("plugins: 'x',", plugins)
+    this.debug(`Executing rollup with options: ${display}`)
+  }
 }
 
 const Default$10 = {
   task: {
     name: 'rollup:cjs'
   },
+  presetType: 'javascripts',
+  babelOptions: {
+    babelrc: false,
+    presets: ['es2015-rollup']
+  },
   options: {
     //dest: '', // required
-    format: 'cjs',
-    plugins: [babel({
-      babelrc: false,
-      presets: ['es2015-rollup']
-    })]
+    format: 'cjs'
+    //plugins: [babel({
+    //  babelrc: false,
+    //  presets: ['es2015-rollup']
+    //})]
   },
   nodeResolve: {
     enabled: false // bundle a full package with dependencies?
@@ -1423,7 +1478,13 @@ const RollupCjs = class extends RollupEs {
    * @param configs - customized overrides for this recipe
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, Default$10, ...configs)
+    let config = Preset.resolveConfig(preset, Default$10, ...configs)
+    super(gulp, preset, Default$10, {
+        options: {
+          plugins: [babel(config.babelOptions)]
+        }
+      },
+      ...configs)
   }
 }
 
@@ -2810,17 +2871,23 @@ const BaseRegistry = class extends DefaultRegistry {
   // protected
 
   /**
-   * Class-based configuration overrides:
+   * Class-based configuration overrides.  Shortcut to #keyConfig with class name lookup.
+   */
+  classConfig(clazz) {
+    const className = clazz.prototype.constructor.name
+    return this.keyConfig(className)
+  }
+
+  /**
+   * config key-based configuration overrides:
    *  - these may be a single config hash or array of config hashes (last hash overrides earlier hashes)
    *  - in some cases, passing false for the class name may be implemented as omitting the registration of the recipe (see implementation of #init for details)
    *
    *  @return -  array - one or more configs as an array, so usage below in init is a universal spread/splat
    */
-  classConfig(clazz) {
-
-    const className = clazz.prototype.constructor.name
-    this.debug(`Resolving config for class: ${className}...`)
-    let config = this.config[className]
+  keyConfig(key) {
+    this.debug(`Resolving config for: ${key}...`)
+    let config = this.config[key]
 
     this.debugDump(`config`, config)
     if (config === undefined) {
@@ -2894,49 +2961,20 @@ const RailsRegistry = class extends BaseRegistry {
   init(gulp) {
     let preset = this.config.preset
 
-    // javascripts may have two different needs, one standard iife, and one cjs for rails engines
-    let jsRecipes = []
-
-    // All rails apps need the iife which is ultimately the application.js.
-    //  Some rails engines may want it only for the purpose of ensuring that libraries can be included properly otherwise the build breaks (a good thing)
-    if (this.config.RollupIife) {
-      jsRecipes.push(
-        new RollupIife(gulp, preset, {
-          options: {
-            dest: 'application.js',
-            moduleName: 'application'
-          }
-        }, ...this.classConfig(RollupIife))
-      )
-    }
-
-    // Rails apps probably don't need commonjs, so by default it is off.
-    //  Rails engines DO need commonjs, it is consumed by the rails app like any other node library.
-    if (this.config.RollupCjs) {
-      jsRecipes.push(
-        new RollupCjs(gulp, preset, {
-          options: {
-            dest: 'application.cjs.js',
-            moduleName: 'application'
-          }
-        }, ...this.classConfig(RollupCjs))
-      )
-    }
-
     const js = new Aggregate(gulp, 'js',
       series(gulp,
-        new EsLint(gulp, preset),
-        parallel(gulp,
-          ...jsRecipes
-        )
-      )
+        this.esLinters(gulp),
+        this.rollups(gulp)
+      ),
+      ...this.keyConfig('js')
     )
 
     const css = new Aggregate(gulp, 'css',
       series(gulp,
-        new ScssLint(gulp, preset),
+        this.scssLinters(gulp),
         new Sass(gulp, preset)
-      )
+      ),
+      ...this.keyConfig('css')
     )
 
     const defaultRecipes = new Aggregate(gulp, 'default',
@@ -2947,7 +2985,8 @@ const RailsRegistry = class extends BaseRegistry {
           js,
           css
         )
-      )
+      ),
+      ...this.keyConfig('default')
     )
 
     // Create the production assets
@@ -2957,7 +2996,7 @@ const RailsRegistry = class extends BaseRegistry {
 
 
     // digests need to be one task, tmpDir makes things interdependent
-    const digests = {debug: false, task: false, watch: false}
+    const digests = {task: false, watch: false}
 
     const digest = new Aggregate(gulp, 'digest',
       series(gulp,
@@ -2991,7 +3030,8 @@ const RailsRegistry = class extends BaseRegistry {
 
         // cleanup the temp files and folders
         clean(gulp, `${minifiedAssetsDir}/**`)
-      )
+      ),
+      ...this.keyConfig('digest')
     )
 
     // default then digest
@@ -2999,10 +3039,151 @@ const RailsRegistry = class extends BaseRegistry {
       series(gulp,
         defaultRecipes,
         digest
+      ),
+      ...this.keyConfig('all')
+    )
+  }
+
+  esLinters(gulp) {
+    return new EsLint(gulp, this.config.preset, ...this.classConfig(EsLint))
+  }
+
+  scssLinters(gulp){
+    return new ScssLint(gulp, this.config.preset, ...this.classConfig(ScssLint))
+  }
+
+  rollups(gulp) {
+    let preset = this.config.preset
+    // javascripts may have two different needs, one standard iife, and one cjs for rails engines
+    let rollups = []
+
+    // All rails apps need the iife which is ultimately the application.js.
+    //  Some rails engines may want it only for the purpose of ensuring that libraries can be included properly otherwise the build breaks (a good thing)
+    if (this.config.RollupIife) {
+      rollups.push(
+        new RollupIife(gulp, preset, {
+          options: {
+            dest: 'application.js',
+            moduleName: 'application'
+          }
+        }, ...this.classConfig(RollupIife))
       )
+    }
+
+    // Rails apps probably don't need commonjs, so by default it is off.
+    //  Rails engines DO need commonjs, it is consumed by the rails app like any other node library.
+    if (this.config.RollupCjs) {
+      rollups.push(
+        new RollupCjs(gulp, preset, {
+          options: {
+            dest: 'application.cjs.js',
+            moduleName: 'application'
+          }
+        }, ...this.classConfig(RollupCjs))
+      )
+    }
+
+    if (this.config.RollupCjsBundled) {
+      rollups.push(
+        new RollupCjsBundled(gulp, preset, {
+          options: {
+            dest: 'application.cjs-bundled.js',
+            moduleName: 'application'
+          }
+        }, ...this.classConfig(RollupCjsBundled))
+      )
+    }
+
+    return parallel(gulp,
+      ...rollups
     )
   }
 }
 
-export { Preset, Rails, EsLint, Uglify, Autoprefixer, Images, Sass, ScssLint, Aggregate, RollupEs, RollupCjs, RollupCjsBundled, RollupIife, RollupAmd, RollupUmd, Copy, CleanImages, CleanStylesheets, CleanJavascripts, CleanDigest, Clean, clean, Rev, RevReplace, CssNano, Mocha, Prepublish, PublishBuild, PublishNpm, PublishGhPages, Jekyll, series, parallel, tmpDirName, tmpDir, Sleep, sleep, RailsRegistry };
+const Default$35 = {}
+
+/**
+ * Simplified registry for RailsEngineDummy applications
+ *  - adds extra watches on engine js/css sources
+ *
+ * gulp.registry(new RailsEngineDummyRegistry(...configs))
+ */
+const RailsEngineDummyRegistry = class extends RailsRegistry {
+
+  /**
+   * @param config - customized overrides of the Default, last one wins
+   */
+  constructor(...configs) {
+
+    // this method just added a watch path to the aggregates, but failed to re-lint the engine sources
+    //const config = extend(true, Default, {preset: Preset.rails()}, ...configs)
+    //const preset = config.preset
+    //
+    //let extras = {}
+    //if (config.js === undefined || !config.js.watch) {
+    //  extras.js = {
+    //    watch: {
+    //      glob: preset.javascripts.source.all,
+    //      options: {cwd: findup(preset.javascripts.source.options.cwd, {cwd: '..'})}
+    //    }
+    //  }
+    //}
+    //
+    //if (config.css === undefined || !config.css.watch) {
+    //  extras.css = {
+    //    watch: {
+    //      glob: preset.stylesheets.source.all,
+    //      options: {cwd: findup(preset.stylesheets.source.options.cwd, {cwd: '..'})}
+    //    }
+    //  }
+    //}
+    //
+    //super(Default, extras, config)
+    super(Default$35, ...configs)
+  }
+
+  /**
+   * Add linter for engine source
+   * @param gulp
+   */
+  esLinters(gulp) {
+    const engineCwd = {
+      options: {
+        cwd: findup(this.config.preset.javascripts.source.options.cwd, {cwd: '..'})
+      }
+    }
+
+    return parallel(gulp,
+      super.esLinters(gulp),
+      new EsLint(gulp, this.config.preset, {
+        task: {name: 'eslint:engine'},
+        source: engineCwd,
+        watch: engineCwd
+      }) // lint the engine source
+    )
+  }
+
+  /**
+   * Add linter for engine source
+   * @param gulp
+   */
+  scssLinters(gulp) {
+    const engineCwd = {
+      options: {
+        cwd: findup(this.config.preset.stylesheets.source.options.cwd, {cwd: '..'})
+      }
+    }
+
+    return parallel(gulp,
+      super.scssLinters(gulp),
+      new ScssLint(gulp, this.config.preset, {
+        task: {name: 'scss:lint:engine'},
+        source: engineCwd,
+        watch: engineCwd
+      }) // lint the engine source
+    )
+  }
+}
+
+export { Preset, Rails, EsLint, Uglify, Autoprefixer, Images, Sass, ScssLint, Aggregate, RollupEs, RollupCjs, RollupCjsBundled, RollupIife, RollupAmd, RollupUmd, Copy, CleanImages, CleanStylesheets, CleanJavascripts, CleanDigest, Clean, clean, Rev, RevReplace, CssNano, Mocha, Prepublish, PublishBuild, PublishNpm, PublishGhPages, Jekyll, series, parallel, tmpDirName, tmpDir, Sleep, sleep, RailsRegistry, RailsEngineDummyRegistry };
 //# sourceMappingURL=gulp-pipeline.es.js.map

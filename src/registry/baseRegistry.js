@@ -24,17 +24,23 @@ const BaseRegistry = class extends DefaultRegistry {
   // protected
 
   /**
-   * Class-based configuration overrides:
+   * Class-based configuration overrides.  Shortcut to #keyConfig with class name lookup.
+   */
+  classConfig(clazz) {
+    const className = clazz.prototype.constructor.name
+    return this.keyConfig(className)
+  }
+
+  /**
+   * config key-based configuration overrides:
    *  - these may be a single config hash or array of config hashes (last hash overrides earlier hashes)
    *  - in some cases, passing false for the class name may be implemented as omitting the registration of the recipe (see implementation of #init for details)
    *
    *  @return -  array - one or more configs as an array, so usage below in init is a universal spread/splat
    */
-  classConfig(clazz) {
-
-    const className = clazz.prototype.constructor.name
-    this.debug(`Resolving config for class: ${className}...`)
-    let config = this.config[className]
+  keyConfig(key) {
+    this.debug(`Resolving config for: ${key}...`)
+    let config = this.config[key]
 
     this.debugDump(`config`, config)
     if (config === undefined) {

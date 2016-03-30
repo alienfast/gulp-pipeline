@@ -71,6 +71,31 @@ define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'g
     };
   }();
 
+  babelHelpers.get = function get(object, property, receiver) {
+    if (object === null) object = Function.prototype;
+    var desc = Object.getOwnPropertyDescriptor(object, property);
+
+    if (desc === undefined) {
+      var parent = Object.getPrototypeOf(object);
+
+      if (parent === null) {
+        return undefined;
+      } else {
+        return get(parent, property, receiver);
+      }
+    } else if ("value" in desc) {
+      return desc.value;
+    } else {
+      var getter = desc.get;
+
+      if (getter === undefined) {
+        return undefined;
+      }
+
+      return getter.call(receiver);
+    }
+  };
+
   babelHelpers.inherits = function (subClass, superClass) {
     if (typeof superClass !== "function" && superClass !== null) {
       throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
@@ -502,7 +527,9 @@ define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'g
     }, {
       key: 'debugDump',
       value: function debugDump(msg, obj) {
-        this.debug(msg + ':\n' + this.dump(obj));
+        if (this.config.debug) {
+          this.debug(msg + ':\n' + this.dump(obj));
+        }
       }
     }, {
       key: 'dump',
@@ -875,7 +902,15 @@ define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'g
     source: {
       glob: '**/*.js'
     },
-    options: {}
+    options: {
+      // Files were being ignored
+      // ---------------------------
+      //  With gulp-pipeline setup, we are specific enough with cwd that we don't need to use a blanket
+      //  (default) .eslintignore file.  Turn off this behavior and lint anything we point at.
+      //  @see http://eslint.org/docs/developer-guide/nodejs-api#cliengine
+      warnFileIgnored: true,
+      ignore: false
+    }
   };
 
   var EsLint = function (_BaseRecipe) {
@@ -1311,6 +1346,9 @@ define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'g
   var Default$8 = {
     debug: false,
     watch: true // register a watch task that aggregates all watches and runs the full sequence
+
+    // watch can also specify an additional path i.e. spec/dummy app watching parent sources
+    // watch: { glob: '**/*.scss', options: { cwd: '../../' } }
   };
 
   var Aggregate = function (_BaseGulp) {
@@ -1404,59 +1442,13 @@ define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'g
           var _iteratorError = undefined;
 
           try {
-            var _loop = function _loop() {
+            for (var _iterator = _this2.watchableRecipes()[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
               var recipe = _step.value;
 
-              var recipeName = Util.colors.grey('(' + (recipe.taskName() || recipe.constructor.name || 'anonymous') + ')');
-              var msg = '[' + Util.colors.green(taskName) + ' ' + recipeName + '] watching';
-              if (recipe.config.watch.options) {
-                msg += ' ' + recipe.config.watch.options.cwd + ' for ' + recipe.config.watch.glob + '...';
-              }
-              _this2.log(msg);
-
-              // declare this in here so we can use different display names in the log
-              var runFn = function runFn(done) {
-                // ensure that multiple watches do not run the entire set of recipes multiple times on a single change
-                if (_this2.taskFn.running) {
-                  _this2.debug('Multiple matching watchers, skipping this one...');
-                  done();
-                  return;
-                } else {
-                  _this2.debug('Allowing it to run....');
-                  _this2.taskFn.running = true;
-                }
-
-                var finishFn = function finishFn() {
-                  _this2.log('[' + Util.colors.green(taskName) + '] finished');
-                  _this2.taskFn.running = false;
-                };
-
-                _this2.gulp.series(_this2.taskFn, finishFn, done)();
-              };
-              runFn.displayName = recipe.taskName() + ' watcher';
-
-              var watcher = _this2.gulp.watch(recipe.config.watch.glob, recipe.config.watch.options, runFn);
-              // add watchers for logging/information
-              watcher.on('add', function (path) {
-                if (!_this2.taskFn.running) {
-                  _this2.log('[' + Util.colors.green(taskName) + ' ' + recipeName + '] ' + path + ' was added, running...');
-                }
-              });
-              watcher.on('change', function (path) {
-                if (!_this2.taskFn.running) {
-                  _this2.log('[' + Util.colors.green(taskName) + ' ' + recipeName + '] ' + path + ' was changed, running...');
-                }
-              });
-              watcher.on('unlink', function (path) {
-                if (!_this2.taskFn.running) {
-                  _this2.log('[' + Util.colors.green(taskName) + ' ' + recipeName + '] ' + path + ' was deleted, running...');
-                }
-              });
-            };
-
-            for (var _iterator = _this2.watchableRecipes()[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-              _loop();
+              _this2.addWatch(taskName, recipe);
             }
+
+            // this aggregate may be configured with additional watch
           } catch (err) {
             _didIteratorError = true;
             _iteratorError = err;
@@ -1471,15 +1463,71 @@ define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'g
               }
             }
           }
+
+          if (_this2.config.watch.glob) {
+            _this2.addWatch(taskName, _this2);
+          }
         };
 
         watchFn.description = this.createWatchHelpText();
         this.gulp.task(taskName, watchFn);
       }
     }, {
+      key: 'addWatch',
+      value: function addWatch(taskName, recipe) {
+        var _this3 = this;
+
+        var recipeName = Util.colors.grey('(' + (recipe.taskName() || recipe.constructor.name || 'anonymous') + ')');
+        var logPrefix = '[' + Util.colors.green(taskName) + ' ' + recipeName + ']';
+        var msg = logPrefix + ' watching';
+        if (recipe.config.watch.options) {
+          msg += ' ' + recipe.config.watch.options.cwd + ' for ' + recipe.config.watch.glob + '...';
+        }
+        this.log(msg);
+
+        // declare this in here so we can use different display names in the log
+        var runFn = function runFn(done) {
+          // ensure that multiple watches do not run the entire set of recipes multiple times on a single change
+          if (_this3.taskFn.running) {
+            _this3.debug('Multiple matching watchers, skipping this one...');
+            done();
+            return;
+          } else {
+            _this3.debug('Allowing it to run....');
+            _this3.taskFn.running = true;
+          }
+
+          var finishFn = function finishFn() {
+            _this3.log(logPrefix + ' finished');
+            _this3.taskFn.running = false;
+          };
+
+          _this3.gulp.series(_this3.taskFn, finishFn, done)();
+        };
+        runFn.displayName = recipe.taskName() + ' watcher';
+
+        var watcher = this.gulp.watch(recipe.config.watch.glob, recipe.config.watch.options, runFn);
+        // add watchers for logging/information
+        watcher.on('add', function (path) {
+          if (!_this3.taskFn.running) {
+            _this3.log(logPrefix + ' ' + path + ' was added, running...');
+          }
+        });
+        watcher.on('change', function (path) {
+          if (!_this3.taskFn.running) {
+            _this3.log(logPrefix + ' ' + path + ' was changed, running...');
+          }
+        });
+        watcher.on('unlink', function (path) {
+          if (!_this3.taskFn.running) {
+            _this3.log(logPrefix + ' ' + path + ' was deleted, running...');
+          }
+        });
+      }
+    }, {
       key: 'flatten',
       value: function flatten(list) {
-        var _this3 = this;
+        var _this4 = this;
 
         // parallel and series set `.recipes` on the function as metadata
         var callback = function callback(prev, current) {
@@ -1487,13 +1535,13 @@ define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'g
 
           // Flatten any series/parallel
           if (typeof current === "function" && current.recipes) {
-            _this3.debugDump('flatten function recipes', current.recipes);
-            item = _this3.flatten(current.recipes);
+            _this4.debugDump('flatten function recipes', current.recipes);
+            item = _this4.flatten(current.recipes);
           }
           // Flatten any Aggregate object - exposes a taskFn (which should be a series/parallel)
           else if (current.taskFn && current.taskFn.recipes) {
-              _this3.debugDump('flatten ' + current.constructor.name + ' with taskFn.recipes', current.taskFn.recipes);
-              item = _this3.flatten(current.taskFn.recipes);
+              _this4.debugDump('flatten ' + current.constructor.name + ' with taskFn.recipes', current.taskFn.recipes);
+              item = _this4.flatten(current.taskFn.recipes);
             }
           //else {
           //  if (current.taskFn) {
@@ -1539,10 +1587,10 @@ define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'g
 
         try {
           for (var _iterator2 = this.flattenedRecipes()[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-            var _recipe = _step2.value;
+            var recipe = _step2.value;
 
-            if (typeof _recipe !== "string" && typeof _recipe !== "function" && _recipe.config.watch) {
-              watchableRecipes.push(_recipe);
+            if (typeof recipe !== "string" && typeof recipe !== "function" && recipe.config.watch) {
+              watchableRecipes.push(recipe);
             }
           }
         } catch (err) {
@@ -1691,11 +1739,11 @@ define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'g
         var entry = glob.sync(this.config.source.glob, this.config.source.options);
 
         if (!entry || entry.length <= 0) {
-          throw new Error('Unable to resolveEntry() for source: ' + stringify(this.config.source) + ' from ' + process.cwd());
+          throw new Error('Unable to resolveEntry() for source: ' + this.dump(this.config.source) + ' from ' + process.cwd());
         }
 
         if (entry.length > 1) {
-          throw new Error('resolveEntry() should only find one entry point but found ' + entry + ' for source: ' + stringify(this.config.source));
+          throw new Error('resolveEntry() should only find one entry point but found ' + entry + ' for source: ' + this.dump(this.config.source));
         }
         return entry[0];
       }
@@ -1719,11 +1767,7 @@ define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'g
           }
         }, this.config.options);
 
-        if (this.config.debug) {
-          var prunedOptions = extend(true, {}, options);
-          prunedOptions.plugins = '[ (count: ' + this.config.options.plugins.length + ') ]';
-          this.debug('Executing rollup with options: ' + stringify(prunedOptions));
-        }
+        this.logDebugOptions(options);
 
         return rollup.rollup(options).then(function (bundle) {
           return bundle.write(options);
@@ -1731,6 +1775,39 @@ define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'g
           error.plugin = 'rollup';
           _this2.notifyError(error, done, watching);
         });
+      }
+
+      /**
+       * This is rather elaborate, but useful.  It strings together the options used to run rollup for debugging purposes.
+       *
+       * @param options
+       */
+
+    }, {
+      key: 'logDebugOptions',
+      value: function logDebugOptions(options) {
+        if (!this.config.debug) {
+          return;
+        }
+
+        var prunedOptions = extend(true, {}, options);
+        prunedOptions.plugins = 'x'; // placeholder to replace
+
+        var plugins = 'plugins: [ // (count: ' + this.config.options.plugins.length + ')\n';
+        if (this.config.commonjs.enabled) {
+          plugins += '\t\tcommonjs(' + this.dump(this.config.commonjs.options) + '),\n';
+        }
+        if (this.config.nodeResolve.enabled) {
+          plugins += '\t\tnodeResolve(' + this.dump(this.config.nodeResolve.options) + '),\n';
+        }
+        if (this.config.babelOptions) {
+          plugins += '\t\tbabel(' + this.dump(this.config.babelOptions) + '),\n';
+        }
+        plugins += '],\n';
+
+        var display = this.dump(prunedOptions);
+        display = display.replace("plugins: 'x',", plugins);
+        this.debug('Executing rollup with options: ' + display);
       }
     }]);
     return RollupEs;
@@ -1740,13 +1817,18 @@ define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'g
     task: {
       name: 'rollup:cjs'
     },
+    presetType: 'javascripts',
+    babelOptions: {
+      babelrc: false,
+      presets: ['es2015-rollup']
+    },
     options: {
       //dest: '', // required
-      format: 'cjs',
-      plugins: [babel({
-        babelrc: false,
-        presets: ['es2015-rollup']
-      })]
+      format: 'cjs'
+      //plugins: [babel({
+      //  babelrc: false,
+      //  presets: ['es2015-rollup']
+      //})]
     },
     nodeResolve: {
       enabled: false // bundle a full package with dependencies?
@@ -1781,7 +1863,12 @@ define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'g
         configs[_key - 2] = arguments[_key];
       }
 
-      return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(RollupCjs)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$10].concat(configs)));
+      var config = Preset.resolveConfig.apply(Preset, [preset, Default$10].concat(configs));
+      return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(RollupCjs)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$10, {
+        options: {
+          plugins: [babel(config.babelOptions)]
+        }
+      }].concat(configs)));
     }
 
     return RollupCjs;
@@ -3710,21 +3797,30 @@ define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'g
     // protected
 
     /**
-     * Class-based configuration overrides:
-     *  - these may be a single config hash or array of config hashes (last hash overrides earlier hashes)
-     *  - in some cases, passing false for the class name may be implemented as omitting the registration of the recipe (see implementation of #init for details)
-     *
-     *  @return -  array - one or more configs as an array, so usage below in init is a universal spread/splat
+     * Class-based configuration overrides.  Shortcut to #keyConfig with class name lookup.
      */
 
 
     babelHelpers.createClass(BaseRegistry, [{
       key: 'classConfig',
       value: function classConfig(clazz) {
-
         var className = clazz.prototype.constructor.name;
-        this.debug('Resolving config for class: ' + className + '...');
-        var config = this.config[className];
+        return this.keyConfig(className);
+      }
+
+      /**
+       * config key-based configuration overrides:
+       *  - these may be a single config hash or array of config hashes (last hash overrides earlier hashes)
+       *  - in some cases, passing false for the class name may be implemented as omitting the registration of the recipe (see implementation of #init for details)
+       *
+       *  @return -  array - one or more configs as an array, so usage below in init is a universal spread/splat
+       */
+
+    }, {
+      key: 'keyConfig',
+      value: function keyConfig(key) {
+        this.debug('Resolving config for: ' + key + '...');
+        var config = this.config[key];
 
         this.debugDump('config', config);
         if (config === undefined) {
@@ -3819,36 +3915,11 @@ define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'g
       value: function init(gulp) {
         var preset = this.config.preset;
 
-        // javascripts may have two different needs, one standard iife, and one cjs for rails engines
-        var jsRecipes = [];
+        var js = new (Function.prototype.bind.apply(Aggregate, [null].concat([gulp, 'js', series(gulp, this.esLinters(gulp), this.rollups(gulp))], babelHelpers.toConsumableArray(this.keyConfig('js')))))();
 
-        // All rails apps need the iife which is ultimately the application.js.
-        //  Some rails engines may want it only for the purpose of ensuring that libraries can be included properly otherwise the build breaks (a good thing)
-        if (this.config.RollupIife) {
-          jsRecipes.push(new (Function.prototype.bind.apply(RollupIife, [null].concat([gulp, preset, {
-            options: {
-              dest: 'application.js',
-              moduleName: 'application'
-            }
-          }], babelHelpers.toConsumableArray(this.classConfig(RollupIife)))))());
-        }
+        var css = new (Function.prototype.bind.apply(Aggregate, [null].concat([gulp, 'css', series(gulp, this.scssLinters(gulp), new Sass(gulp, preset))], babelHelpers.toConsumableArray(this.keyConfig('css')))))();
 
-        // Rails apps probably don't need commonjs, so by default it is off.
-        //  Rails engines DO need commonjs, it is consumed by the rails app like any other node library.
-        if (this.config.RollupCjs) {
-          jsRecipes.push(new (Function.prototype.bind.apply(RollupCjs, [null].concat([gulp, preset, {
-            options: {
-              dest: 'application.cjs.js',
-              moduleName: 'application'
-            }
-          }], babelHelpers.toConsumableArray(this.classConfig(RollupCjs)))))());
-        }
-
-        var js = new Aggregate(gulp, 'js', series(gulp, new EsLint(gulp, preset), parallel.apply(undefined, [gulp].concat(jsRecipes))));
-
-        var css = new Aggregate(gulp, 'css', series(gulp, new ScssLint(gulp, preset), new Sass(gulp, preset)));
-
-        var defaultRecipes = new Aggregate(gulp, 'default', series(gulp, new Clean(gulp, preset), parallel(gulp, new Images(gulp, preset), js, css)));
+        var defaultRecipes = new (Function.prototype.bind.apply(Aggregate, [null].concat([gulp, 'default', series(gulp, new Clean(gulp, preset), parallel(gulp, new Images(gulp, preset), js, css))], babelHelpers.toConsumableArray(this.keyConfig('default')))))();
 
         // Create the production assets
         var tmpDirObj = tmpDir();
@@ -3856,9 +3927,9 @@ define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'g
         this.debug('tmpDir for minified assets: ' + minifiedAssetsDir);
 
         // digests need to be one task, tmpDir makes things interdependent
-        var digests = { debug: false, task: false, watch: false };
+        var digests = { task: false, watch: false };
 
-        var digest = new Aggregate(gulp, 'digest', series(gulp, new CleanDigest(gulp, preset, digests),
+        var digest = new (Function.prototype.bind.apply(Aggregate, [null].concat([gulp, 'digest', series(gulp, new CleanDigest(gulp, preset, digests),
 
         // minify application.(css|js) to a tmp directory
         parallel(gulp, new Uglify(gulp, preset, digests, { dest: minifiedAssetsDir, concat: { dest: 'application.js' } }), new CssNano(gulp, preset, digests, { dest: minifiedAssetsDir, minExtension: false })),
@@ -3884,14 +3955,164 @@ define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'g
         new RevReplace(gulp, preset, digests),
 
         // cleanup the temp files and folders
-        clean(gulp, minifiedAssetsDir + '/**')));
+        clean(gulp, minifiedAssetsDir + '/**'))], babelHelpers.toConsumableArray(this.keyConfig('digest')))))();
 
         // default then digest
-        new Aggregate(gulp, 'all', series(gulp, defaultRecipes, digest));
+        new (Function.prototype.bind.apply(Aggregate, [null].concat([gulp, 'all', series(gulp, defaultRecipes, digest)], babelHelpers.toConsumableArray(this.keyConfig('all')))))();
+      }
+    }, {
+      key: 'esLinters',
+      value: function esLinters(gulp) {
+        return new (Function.prototype.bind.apply(EsLint, [null].concat([gulp, this.config.preset], babelHelpers.toConsumableArray(this.classConfig(EsLint)))))();
+      }
+    }, {
+      key: 'scssLinters',
+      value: function scssLinters(gulp) {
+        return new (Function.prototype.bind.apply(ScssLint, [null].concat([gulp, this.config.preset], babelHelpers.toConsumableArray(this.classConfig(ScssLint)))))();
+      }
+    }, {
+      key: 'rollups',
+      value: function rollups(gulp) {
+        var preset = this.config.preset;
+        // javascripts may have two different needs, one standard iife, and one cjs for rails engines
+        var rollups = [];
+
+        // All rails apps need the iife which is ultimately the application.js.
+        //  Some rails engines may want it only for the purpose of ensuring that libraries can be included properly otherwise the build breaks (a good thing)
+        if (this.config.RollupIife) {
+          rollups.push(new (Function.prototype.bind.apply(RollupIife, [null].concat([gulp, preset, {
+            options: {
+              dest: 'application.js',
+              moduleName: 'application'
+            }
+          }], babelHelpers.toConsumableArray(this.classConfig(RollupIife)))))());
+        }
+
+        // Rails apps probably don't need commonjs, so by default it is off.
+        //  Rails engines DO need commonjs, it is consumed by the rails app like any other node library.
+        if (this.config.RollupCjs) {
+          rollups.push(new (Function.prototype.bind.apply(RollupCjs, [null].concat([gulp, preset, {
+            options: {
+              dest: 'application.cjs.js',
+              moduleName: 'application'
+            }
+          }], babelHelpers.toConsumableArray(this.classConfig(RollupCjs)))))());
+        }
+
+        if (this.config.RollupCjsBundled) {
+          rollups.push(new (Function.prototype.bind.apply(RollupCjsBundled, [null].concat([gulp, preset, {
+            options: {
+              dest: 'application.cjs-bundled.js',
+              moduleName: 'application'
+            }
+          }], babelHelpers.toConsumableArray(this.classConfig(RollupCjsBundled)))))());
+        }
+
+        return parallel.apply(undefined, [gulp].concat(rollups));
       }
     }]);
     return RailsRegistry;
   }(BaseRegistry);
+
+  var Default$35 = {};
+
+  /**
+   * Simplified registry for RailsEngineDummy applications
+   *  - adds extra watches on engine js/css sources
+   *
+   * gulp.registry(new RailsEngineDummyRegistry(...configs))
+   */
+  var RailsEngineDummyRegistry = function (_RailsRegistry) {
+    babelHelpers.inherits(RailsEngineDummyRegistry, _RailsRegistry);
+
+
+    /**
+     * @param config - customized overrides of the Default, last one wins
+     */
+
+    function RailsEngineDummyRegistry() {
+      var _Object$getPrototypeO;
+
+      babelHelpers.classCallCheck(this, RailsEngineDummyRegistry);
+
+      for (var _len = arguments.length, configs = Array(_len), _key = 0; _key < _len; _key++) {
+        configs[_key] = arguments[_key];
+      }
+
+      // this method just added a watch path to the aggregates, but failed to re-lint the engine sources
+      //const config = extend(true, Default, {preset: Preset.rails()}, ...configs)
+      //const preset = config.preset
+      //
+      //let extras = {}
+      //if (config.js === undefined || !config.js.watch) {
+      //  extras.js = {
+      //    watch: {
+      //      glob: preset.javascripts.source.all,
+      //      options: {cwd: findup(preset.javascripts.source.options.cwd, {cwd: '..'})}
+      //    }
+      //  }
+      //}
+      //
+      //if (config.css === undefined || !config.css.watch) {
+      //  extras.css = {
+      //    watch: {
+      //      glob: preset.stylesheets.source.all,
+      //      options: {cwd: findup(preset.stylesheets.source.options.cwd, {cwd: '..'})}
+      //    }
+      //  }
+      //}
+      //
+      //super(Default, extras, config)
+      return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(RailsEngineDummyRegistry)).call.apply(_Object$getPrototypeO, [this, Default$35].concat(configs)));
+    }
+
+    /**
+     * Add linter for engine source
+     * @param gulp
+     */
+
+
+    babelHelpers.createClass(RailsEngineDummyRegistry, [{
+      key: 'esLinters',
+      value: function esLinters(gulp) {
+        var engineCwd = {
+          options: {
+            cwd: findup(this.config.preset.javascripts.source.options.cwd, { cwd: '..' })
+          }
+        };
+
+        return parallel(gulp, babelHelpers.get(Object.getPrototypeOf(RailsEngineDummyRegistry.prototype), 'esLinters', this).call(this, gulp), new EsLint(gulp, this.config.preset, {
+          task: { name: 'eslint:engine' },
+          source: engineCwd,
+          watch: engineCwd
+        }) // lint the engine source
+        );
+      }
+
+      /**
+       * Add linter for engine source
+       * @param gulp
+       */
+
+    }, {
+      key: 'scssLinters',
+      value: function scssLinters(gulp) {
+        var engineCwd = {
+          options: {
+            cwd: findup(this.config.preset.stylesheets.source.options.cwd, { cwd: '..' })
+          }
+        };
+
+        return parallel(gulp, babelHelpers.get(Object.getPrototypeOf(RailsEngineDummyRegistry.prototype), 'scssLinters', this).call(this, gulp), new ScssLint(gulp, this.config.preset, {
+          task: { name: 'scss:lint:engine' },
+          source: engineCwd,
+          watch: engineCwd
+        }) // lint the engine source
+        );
+      }
+    }]);
+    return RailsEngineDummyRegistry;
+  }(RailsRegistry);
 
   exports.Preset = Preset;
   exports.Rails = Rails;
@@ -3931,6 +4152,7 @@ define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'g
   exports.Sleep = Sleep;
   exports.sleep = sleep;
   exports.RailsRegistry = RailsRegistry;
+  exports.RailsEngineDummyRegistry = RailsEngineDummyRegistry;
 
 });
 //# sourceMappingURL=gulp-pipeline.amd.js.map

@@ -8,6 +8,7 @@ import Images from '../images'
 import Sass from '../sass'
 import RollupIife from '../rollupIife'
 import RollupCjs from '../rollupCjs'
+import RollupCjsBundled from '../rollupCjsBundled'
 import ScssLint from '../scssLint'
 import EsLint from '../eslint'
 import Rev from '../rev'
@@ -46,49 +47,20 @@ const RailsRegistry = class extends BaseRegistry {
   init(gulp) {
     let preset = this.config.preset
 
-    // javascripts may have two different needs, one standard iife, and one cjs for rails engines
-    let jsRecipes = []
-
-    // All rails apps need the iife which is ultimately the application.js.
-    //  Some rails engines may want it only for the purpose of ensuring that libraries can be included properly otherwise the build breaks (a good thing)
-    if (this.config.RollupIife) {
-      jsRecipes.push(
-        new RollupIife(gulp, preset, {
-          options: {
-            dest: 'application.js',
-            moduleName: 'application'
-          }
-        }, ...this.classConfig(RollupIife))
-      )
-    }
-
-    // Rails apps probably don't need commonjs, so by default it is off.
-    //  Rails engines DO need commonjs, it is consumed by the rails app like any other node library.
-    if (this.config.RollupCjs) {
-      jsRecipes.push(
-        new RollupCjs(gulp, preset, {
-          options: {
-            dest: 'application.cjs.js',
-            moduleName: 'application'
-          }
-        }, ...this.classConfig(RollupCjs))
-      )
-    }
-
     const js = new Aggregate(gulp, 'js',
       series(gulp,
-        new EsLint(gulp, preset),
-        parallel(gulp,
-          ...jsRecipes
-        )
-      )
+        this.esLinters(gulp),
+        this.rollups(gulp)
+      ),
+      ...this.keyConfig('js')
     )
 
     const css = new Aggregate(gulp, 'css',
       series(gulp,
-        new ScssLint(gulp, preset),
+        this.scssLinters(gulp),
         new Sass(gulp, preset)
-      )
+      ),
+      ...this.keyConfig('css')
     )
 
     const defaultRecipes = new Aggregate(gulp, 'default',
@@ -99,7 +71,8 @@ const RailsRegistry = class extends BaseRegistry {
           js,
           css
         )
-      )
+      ),
+      ...this.keyConfig('default')
     )
 
     // Create the production assets
@@ -109,7 +82,7 @@ const RailsRegistry = class extends BaseRegistry {
 
 
     // digests need to be one task, tmpDir makes things interdependent
-    const digests = {debug: false, task: false, watch: false}
+    const digests = {task: false, watch: false}
 
     const digest = new Aggregate(gulp, 'digest',
       series(gulp,
@@ -143,7 +116,8 @@ const RailsRegistry = class extends BaseRegistry {
 
         // cleanup the temp files and folders
         clean(gulp, `${minifiedAssetsDir}/**`)
-      )
+      ),
+      ...this.keyConfig('digest')
     )
 
     // default then digest
@@ -151,7 +125,63 @@ const RailsRegistry = class extends BaseRegistry {
       series(gulp,
         defaultRecipes,
         digest
+      ),
+      ...this.keyConfig('all')
+    )
+  }
+
+  esLinters(gulp) {
+    return new EsLint(gulp, this.config.preset, ...this.classConfig(EsLint))
+  }
+
+  scssLinters(gulp){
+    return new ScssLint(gulp, this.config.preset, ...this.classConfig(ScssLint))
+  }
+
+  rollups(gulp) {
+    let preset = this.config.preset
+    // javascripts may have two different needs, one standard iife, and one cjs for rails engines
+    let rollups = []
+
+    // All rails apps need the iife which is ultimately the application.js.
+    //  Some rails engines may want it only for the purpose of ensuring that libraries can be included properly otherwise the build breaks (a good thing)
+    if (this.config.RollupIife) {
+      rollups.push(
+        new RollupIife(gulp, preset, {
+          options: {
+            dest: 'application.js',
+            moduleName: 'application'
+          }
+        }, ...this.classConfig(RollupIife))
       )
+    }
+
+    // Rails apps probably don't need commonjs, so by default it is off.
+    //  Rails engines DO need commonjs, it is consumed by the rails app like any other node library.
+    if (this.config.RollupCjs) {
+      rollups.push(
+        new RollupCjs(gulp, preset, {
+          options: {
+            dest: 'application.cjs.js',
+            moduleName: 'application'
+          }
+        }, ...this.classConfig(RollupCjs))
+      )
+    }
+
+    if (this.config.RollupCjsBundled) {
+      rollups.push(
+        new RollupCjsBundled(gulp, preset, {
+          options: {
+            dest: 'application.cjs-bundled.js',
+            moduleName: 'application'
+          }
+        }, ...this.classConfig(RollupCjsBundled))
+      )
+    }
+
+    return parallel(gulp,
+      ...rollups
     )
   }
 }

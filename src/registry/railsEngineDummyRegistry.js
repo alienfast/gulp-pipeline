@@ -18,31 +18,6 @@ const RailsEngineDummyRegistry = class extends RailsRegistry {
    * @param config - customized overrides of the Default, last one wins
    */
   constructor(...configs) {
-
-    // this method just added a watch path to the aggregates, but failed to re-lint the engine sources
-    //const config = extend(true, Default, {preset: Preset.rails()}, ...configs)
-    //const preset = config.preset
-    //
-    //let extras = {}
-    //if (config.js === undefined || !config.js.watch) {
-    //  extras.js = {
-    //    watch: {
-    //      glob: preset.javascripts.source.all,
-    //      options: {cwd: findup(preset.javascripts.source.options.cwd, {cwd: '..'})}
-    //    }
-    //  }
-    //}
-    //
-    //if (config.css === undefined || !config.css.watch) {
-    //  extras.css = {
-    //    watch: {
-    //      glob: preset.stylesheets.source.all,
-    //      options: {cwd: findup(preset.stylesheets.source.options.cwd, {cwd: '..'})}
-    //    }
-    //  }
-    //}
-    //
-    //super(Default, extras, config)
     super(Default, ...configs)
   }
 

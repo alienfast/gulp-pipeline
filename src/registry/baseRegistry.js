@@ -4,7 +4,9 @@ import stringify from 'stringify-object'
 import DefaultRegistry from 'undertaker-registry'
 
 export const Default = {
-  debug: false
+  debug: false,
+  // preset: -- mixed in at runtime in the constructor to avoid issues in non-rails projects
+  global: {debug: false} // mixed into every config i.e debug: true
 }
 
 const BaseRegistry = class extends DefaultRegistry {

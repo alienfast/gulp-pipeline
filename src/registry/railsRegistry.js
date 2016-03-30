@@ -22,9 +22,6 @@ import clean from '../util/clean'
 
 // per class name defaults that can be overridden
 export const Default = {
-  // preset: -- mixed in at runtime in the constructor to avoid issues in non-rails projects
-  global: {debug: false}, // mixed into every config i.e debug: true
-
   // Class-based configuration overrides:
   //  - these may be a single config hash or array of config hashes (last hash overrides earlier hashes)
   //  - in some cases, passing false for the class name may be implemented as omitting the registration of the recipe (see implementation of #init for details)

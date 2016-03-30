@@ -56,6 +56,7 @@ const RailsEngineDummyRegistry = class extends RailsRegistry {
     return parallel(gulp,
       super.scssLinters(gulp),
       new ScssLint(gulp, this.config.preset, {
+        //debug: true,
         task: {name: 'scss:lint:engine'},
         source: engineCwd,
         watch: engineCwd

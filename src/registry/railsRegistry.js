@@ -82,7 +82,7 @@ const RailsRegistry = class extends BaseRegistry {
 
 
     // digests need to be one task, tmpDir makes things interdependent
-    const digests = {debug: false, task: false, watch: false}
+    const digests = {task: false, watch: false}
 
     const digest = new Aggregate(gulp, 'digest',
       series(gulp,

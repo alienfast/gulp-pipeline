@@ -3900,7 +3900,9 @@
     //  - these may be a single config hash or array of config hashes (last hash overrides earlier hashes)
     //  - in some cases, passing false for the class name may be implemented as omitting the registration of the recipe (see implementation of #init for details)
     RollupIife: true, // absent any overrides, build iife
-    RollupCjs: false
+    RollupCjs: false,
+    RollupAmd: false,
+    RollupUmd: false
   };
 
   /**
@@ -3999,7 +4001,7 @@
           rollups.push(new (Function.prototype.bind.apply(RollupIife, [null].concat([gulp, preset, {
             options: {
               dest: 'application.js',
-              moduleName: 'application'
+              moduleName: 'App'
             }
           }], babelHelpers.toConsumableArray(this.classConfig(RollupIife)))))());
         }
@@ -4010,7 +4012,7 @@
           rollups.push(new (Function.prototype.bind.apply(RollupCjs, [null].concat([gulp, preset, {
             options: {
               dest: 'application.cjs.js',
-              moduleName: 'application'
+              moduleName: 'App'
             }
           }], babelHelpers.toConsumableArray(this.classConfig(RollupCjs)))))());
         }
@@ -4019,9 +4021,27 @@
           rollups.push(new (Function.prototype.bind.apply(RollupCjsBundled, [null].concat([gulp, preset, {
             options: {
               dest: 'application.cjs-bundled.js',
-              moduleName: 'application'
+              moduleName: 'App'
             }
           }], babelHelpers.toConsumableArray(this.classConfig(RollupCjsBundled)))))());
+        }
+
+        if (this.config.RollupUmd) {
+          rollups.push(new (Function.prototype.bind.apply(RollupUmd, [null].concat([gulp, preset, {
+            options: {
+              dest: 'application.umd.js',
+              moduleName: 'App'
+            }
+          }], babelHelpers.toConsumableArray(this.classConfig(RollupUmd)))))());
+        }
+
+        if (this.config.RollupAmd) {
+          rollups.push(new (Function.prototype.bind.apply(RollupAmd, [null].concat([gulp, preset, {
+            options: {
+              dest: 'application.amd.js',
+              moduleName: 'App'
+            }
+          }], babelHelpers.toConsumableArray(this.classConfig(RollupAmd)))))());
         }
 
         return parallel.apply(undefined, [gulp].concat(rollups));

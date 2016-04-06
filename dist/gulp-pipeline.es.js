@@ -2953,7 +2953,9 @@ const Default$33 = {
   //  - these may be a single config hash or array of config hashes (last hash overrides earlier hashes)
   //  - in some cases, passing false for the class name may be implemented as omitting the registration of the recipe (see implementation of #init for details)
   RollupIife: true, // absent any overrides, build iife
-  RollupCjs: false
+  RollupCjs: false,
+  RollupAmd: false,
+  RollupUmd: false
 }
 
 /**
@@ -3074,7 +3076,7 @@ const RailsRegistry = class extends BaseRegistry {
         new RollupIife(gulp, preset, {
           options: {
             dest: 'application.js',
-            moduleName: 'application'
+            moduleName: 'App'
           }
         }, ...this.classConfig(RollupIife))
       )
@@ -3087,7 +3089,7 @@ const RailsRegistry = class extends BaseRegistry {
         new RollupCjs(gulp, preset, {
           options: {
             dest: 'application.cjs.js',
-            moduleName: 'application'
+            moduleName: 'App'
           }
         }, ...this.classConfig(RollupCjs))
       )
@@ -3098,9 +3100,31 @@ const RailsRegistry = class extends BaseRegistry {
         new RollupCjsBundled(gulp, preset, {
           options: {
             dest: 'application.cjs-bundled.js',
-            moduleName: 'application'
+            moduleName: 'App'
           }
         }, ...this.classConfig(RollupCjsBundled))
+      )
+    }
+
+    if (this.config.RollupUmd) {
+      rollups.push(
+        new RollupUmd(gulp, preset, {
+          options: {
+            dest: 'application.umd.js',
+            moduleName: 'App'
+          }
+        }, ...this.classConfig(RollupUmd))
+      )
+    }
+
+    if (this.config.RollupAmd) {
+      rollups.push(
+        new RollupAmd(gulp, preset, {
+          options: {
+            dest: 'application.amd.js',
+            moduleName: 'App'
+          }
+        }, ...this.classConfig(RollupAmd))
       )
     }
 

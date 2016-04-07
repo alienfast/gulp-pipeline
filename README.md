@@ -48,7 +48,7 @@ This creates all the tasks you need, view them with `gulp --tasks`.  Notable tas
 
 - `gulp` runs the `default` task which builds all assets for development
 - `gulp default:watch` will watch all asset sources and run `default` - use this one while developing
-- `gulp build` runs `default` then `digest` which is a full clean build with revisioned assets for production
+- `gulp all` runs `default` then `digest` which is a full clean build with revisioned assets for production
 
 ### NPM ES2015 package sample 
 

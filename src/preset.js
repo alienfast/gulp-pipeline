@@ -11,7 +11,7 @@ const Baseline = {
   javascripts: {
     source: {
       glob: 'index.js',
-      options: {cwd: 'src'},
+      options: {cwd: 'js'},
       all: '**/*' // include all files, may have yml, sh, json, in addition to js
     },
     test: {
@@ -20,19 +20,19 @@ const Baseline = {
     },
     watch: {
       glob: '**/*.js',
-      options: {cwd: 'src'}
+      options: {cwd: 'js'}
     },
     dest: 'dist'
   },
   stylesheets: {
     source: {
       glob: ['*.scss', '!_*.scss'],  // do not compile all files, only non-underscored files
-      options: {cwd: 'src'},
+      options: {cwd: 'scss'},
       all: '**/*.scss'
     },
     watch: {
       glob: '**/*.scss',
-      options: {cwd: 'src'}
+      options: {cwd: 'scss'}
     },
     dest: 'dist'
   },
@@ -48,20 +48,16 @@ const Baseline = {
   }
 }
 
-const PresetNodeSrc = {}
+const PresetNodeSrc = {
+  javascripts: {
+    source: { options: {cwd: 'src'}},
+    watch: {options: {cwd: 'src'}}
+  }
+}
 
 const PresetNodeLib = {
   javascripts: {
     source: { options: {cwd: 'lib'}},
-    watch: {options: {cwd: 'lib'}}
-    //test: {options: {cwd: 'test'}}
-  },
-  stylesheets: {
-    source: {options: {cwd: 'lib'}},
-    watch: {options: {cwd: 'lib'}}
-  },
-  images: {
-    source: {options: {cwd: 'lib'}},
     watch: {options: {cwd: 'lib'}}
   }
 }

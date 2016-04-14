@@ -602,8 +602,8 @@ const BaseRecipe = class extends BaseGulp {
       this.watchFn = () => {
         this.log(`[${Util.colors.green(name)}] watching ${this.config.watch.glob} ${stringify(this.config.watch.options)}...`)
 
-        return this.gulp.watch(this.config.watch.glob, this.config.watch.options, (event) => {
-          this.log(`File ${event.path} was ${event.type}, running ${this.taskName()}...`);
+        return this.gulp.watch(this.config.watch.glob, this.config.watch.options, () => {
+          this.log(`Watched file changed, running ${this.taskName()}...`);
           return Promise
             .resolve(this.run(null, true))
             .then(() => this.logFinish())

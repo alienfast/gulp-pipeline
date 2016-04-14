@@ -803,8 +803,8 @@
             _this2.watchFn = function () {
               _this2.log('[' + Util.colors.green(name) + '] watching ' + _this2.config.watch.glob + ' ' + stringify(_this2.config.watch.options) + '...');
 
-              return _this2.gulp.watch(_this2.config.watch.glob, _this2.config.watch.options, function (event) {
-                _this2.log('File ' + event.path + ' was ' + event.type + ', running ' + _this2.taskName() + '...');
+              return _this2.gulp.watch(_this2.config.watch.glob, _this2.config.watch.options, function () {
+                _this2.log('Watched file changed, running ' + _this2.taskName() + '...');
                 return Promise.resolve(_this2.run(null, true)).then(function () {
                   return _this2.logFinish();
                 });

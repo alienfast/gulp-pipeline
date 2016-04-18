@@ -41,6 +41,7 @@ import rev from 'gulp-rev';
 import revReplace from 'gulp-rev-replace';
 import cssnano from 'gulp-cssnano';
 import mocha from 'gulp-mocha';
+import mochaPhantomJS from 'gulp-mocha-phantomjs';
 import { BuildControl, Npm } from 'build-control';
 import pathIsAbsolute from 'path-is-absolute';
 import tmp from 'tmp';
@@ -2401,16 +2402,12 @@ const CssNano = class extends BaseRecipe {
   }
 }
 
-const Default$25 = {
+const Default$26 = {
   debug: false,
-  presetType: 'javascripts',
-  task: {
-    name: 'mocha'
-  },
-  options: {}
+  presetType: 'javascripts'
 }
 
-const Mocha = class extends BaseRecipe {
+const BaseMocha = class extends BaseRecipe {
 
   /**
    *
@@ -2421,19 +2418,80 @@ const Mocha = class extends BaseRecipe {
   constructor(gulp, preset, ...configs) {
     // resolve watch cwd based on test cwd
     super(gulp, preset,
-      Default$25,
-      {watch: {options: {cwd: Preset.resolveConfig(preset, Default$25, ...configs).test.options.cwd}}},
+      Default$26,
+      {watch: {options: {cwd: Preset.resolveConfig(preset, Default$26, ...configs).test.options.cwd}}},
       ...configs)
   }
 
   createDescription() {
     return `Tests ${this.config.test.options.cwd}/${this.config.test.glob}`
   }
+}
+
+const Default$25 = {
+  task: {
+    name: 'mocha'
+  },
+  options: {
+    reporter: 'nyan'
+  }
+}
+
+const Mocha = class extends BaseMocha {
+
+  /**
+   *
+   * @param gulp - gulp instance
+   * @param preset - base preset configuration - either one from preset.js or a custom hash
+   * @param configs - customized overrides for this recipe
+   */
+  constructor(gulp, preset, ...configs) {
+    super(gulp, preset, Default$25, ...configs)
+  }
 
   run(done, watching = false) {
     let bundle = this.gulp.src(this.config.test.glob, this.config.test.options)
       .pipe(gulpif(this.config.debug, debug(this.debugOptions())))
-      .pipe(mocha({reporter: 'nyan'})) // gulp-mocha needs filepaths so you can't have any plugins before it
+      .pipe(mocha(this.config.options)) // gulp-mocha needs filepaths so you can't have any plugins before it
+      .on('error', (error) => {
+        this.notifyError(error, done, watching)
+      })
+
+    return bundle
+  }
+}
+
+const Default$27 = {
+  test: {
+    glob: 'testrunner.html'
+  },
+  task: {
+    name: 'mocha:phantomjs'
+  },
+  options: {
+    reporter: 'nyan'
+  }
+}
+
+/*
+WARNING: Using this means using a browser, and if your tests are written in ES2015 you need to use rollup first!
+*/
+const MochaPhantomJs = class extends BaseMocha {
+
+  /**
+   *
+   * @param gulp - gulp instance
+   * @param preset - base preset configuration - either one from preset.js or a custom hash
+   * @param configs - customized overrides for this recipe
+   */
+  constructor(gulp, preset, ...configs) {
+    super(gulp, preset, Default$27, ...configs)
+  }
+
+  run(done, watching = false) {
+    let bundle = this.gulp.src(this.config.test.glob, this.config.test.options)
+      .pipe(gulpif(this.config.debug, debug(this.debugOptions())))
+      .pipe(mochaPhantomJS(this.config.options))
       .on('error', (error) => {
         this.notifyError(error, done, watching)
       })
@@ -2445,7 +2503,7 @@ const Mocha = class extends BaseRecipe {
 /**
  *  This is the base for publish recipes using BuildControl
  */
-const Default$27 = {
+const Default$29 = {
 
   dir: 'build', // directory to assemble the files - make sure to add this to your .gitignore so you don't publish this to your source branch
   source: {
@@ -2475,14 +2533,14 @@ const BasePublish = class extends BaseRecipe {
    * @param config - customized overrides
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, Default$27, ...configs)
+    super(gulp, preset, Default$29, ...configs)
 
     // use the dir as the cwd to the BuildControl class
     this.config.options = extend(true, {debug: this.config.debug, cwd: this.config.dir}, this.config.options)
   }
 }
 
-const Default$26 = {
+const Default$28 = {
   task: {
     name: 'prepublish',
     description: 'Checks tag name and ensures directory has all files committed.'
@@ -2507,7 +2565,7 @@ const Prepublish = class extends BasePublish {
    * @param config - customized overrides
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, extend(true, {}, Default$26, ...configs))
+    super(gulp, preset, extend(true, {}, Default$28, ...configs))
   }
 
   run(done) {
@@ -2539,7 +2597,7 @@ const Prepublish = class extends BasePublish {
  *
  *  Have long running maintenance on an old version?  Publish to a different dist branch like { options: {branch: 'dist-v3'} }
  */
-const Default$28 = {
+const Default$30 = {
   //debug: true,
   npm: {
     bump: true,
@@ -2570,7 +2628,7 @@ const PublishBuild = class extends BasePublish {
    * @param config - customized overrides
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, Default$28, ...configs)
+    super(gulp, preset, Default$30, ...configs)
   }
 
   run(done) {
@@ -2652,7 +2710,7 @@ const PublishBuild = class extends BasePublish {
   }
 }
 
-const Default$29 = {
+const Default$31 = {
   task: {
     name: 'publish:npm',
     description: 'Publishes package on npm'
@@ -2673,7 +2731,7 @@ const PublishNpm = class extends BasePublish {
    * @param config - customized overrides
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, Default$29, ...configs)
+    super(gulp, preset, Default$31, ...configs)
   }
 
   run(done) {
@@ -2687,7 +2745,7 @@ const PublishNpm = class extends BasePublish {
  *  This recipe will keep your source branch clean but allow you to easily push your
  *  _gh_pages files to the gh-pages branch.
  */
-const Default$30 = {
+const Default$32 = {
   //debug: true,
   task: {
     name: 'publish:gh-pages',
@@ -2712,7 +2770,7 @@ const PublishGhPages = class extends BasePublish {
    * @param config - customized overrides
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, Default$30, ...configs)
+    super(gulp, preset, Default$32, ...configs)
   }
 
   run(done) {
@@ -2725,7 +2783,7 @@ const PublishGhPages = class extends BasePublish {
   }
 }
 
-const Default$31 = {
+const Default$33 = {
   watch: false,
   presetType: 'macro',
   task: {
@@ -2749,7 +2807,7 @@ const Jekyll = class extends BaseRecipe {
    * @param config - customized overrides
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, Default$31, ...configs)
+    super(gulp, preset, Default$33, ...configs)
   }
 
   run(done) {
@@ -2815,7 +2873,7 @@ const tmpDirName = (options = {prefix: 'gulp-pipeline_'}) => {
   return tmpDir(options).name
 }
 
-const Default$32 = {
+const Default$34 = {
   debug: false,
   watch: false,
   presetType: 'macro',
@@ -2833,7 +2891,7 @@ const Sleep = class extends BaseRecipe {
    * @param config - customized overrides
    */
   constructor(gulp, preset, sleep, ...configs) {
-    super(gulp, preset, Default$32, {sleep: sleep}, ...configs)
+    super(gulp, preset, Default$34, {sleep: sleep}, ...configs)
   }
 
   createDescription(){
@@ -2857,7 +2915,7 @@ const sleep = (gulp, ms) => {
   return c
 }
 
-const Default$34 = {
+const Default$36 = {
   debug: false,
   // preset: -- mixed in at runtime in the constructor to avoid issues in non-rails projects
   global: {debug: false} // mixed into every config i.e debug: true
@@ -2872,7 +2930,7 @@ const BaseRegistry = class extends DefaultRegistry {
    */
   constructor(...configs) {
     super()
-    this.config = extend(true, {}, Default$34, ...configs)
+    this.config = extend(true, {}, Default$36, ...configs)
     this.debugDump(`[${this.constructor.name}] using resolved config:`, this.config)
   }
 
@@ -2944,7 +3002,7 @@ const BaseRegistry = class extends DefaultRegistry {
 }
 
 // per class name defaults that can be overridden
-const Default$33 = {
+const Default$35 = {
   // Class-based configuration overrides:
   //  - these may be a single config hash or array of config hashes (last hash overrides earlier hashes)
   //  - in some cases, passing false for the class name may be implemented as omitting the registration of the recipe (see implementation of #init for details)
@@ -2963,7 +3021,7 @@ const RailsRegistry = class extends BaseRegistry {
    * @param config - customized overrides of the Default, last one wins
    */
   constructor(...configs) {
-    super(Default$33, {preset: Preset.rails()}, ...configs)
+    super(Default$35, {preset: Preset.rails()}, ...configs)
   }
 
   init(gulp) {
@@ -3130,7 +3188,7 @@ const RailsRegistry = class extends BaseRegistry {
   }
 }
 
-const Default$35 = {}
+const Default$37 = {}
 
 /**
  * Simplified registry for RailsEngineDummy applications
@@ -3144,7 +3202,7 @@ const RailsEngineDummyRegistry = class extends RailsRegistry {
    * @param config - customized overrides of the Default, last one wins
    */
   constructor(...configs) {
-    super(Default$35, ...configs)
+    super(Default$37, ...configs)
   }
 
   /**
@@ -3191,5 +3249,5 @@ const RailsEngineDummyRegistry = class extends RailsRegistry {
   }
 }
 
-export { Preset, Rails, EsLint, Uglify, Autoprefixer, Images, Sass, ScssLint, Aggregate, RollupEs, RollupCjs, RollupCjsBundled, RollupIife, RollupAmd, RollupUmd, Copy, CleanImages, CleanStylesheets, CleanJavascripts, CleanDigest, Clean, clean, Rev, RevReplace, CssNano, Mocha, Prepublish, PublishBuild, PublishNpm, PublishGhPages, Jekyll, series, parallel, tmpDirName, tmpDir, Sleep, sleep, RailsRegistry, RailsEngineDummyRegistry };
+export { Preset, Rails, EsLint, Uglify, Autoprefixer, Images, Sass, ScssLint, Aggregate, RollupEs, RollupCjs, RollupCjsBundled, RollupIife, RollupAmd, RollupUmd, Copy, CleanImages, CleanStylesheets, CleanJavascripts, CleanDigest, Clean, clean, Rev, RevReplace, CssNano, Mocha, MochaPhantomJs, Prepublish, PublishBuild, PublishNpm, PublishGhPages, Jekyll, series, parallel, tmpDirName, tmpDir, Sleep, sleep, RailsRegistry, RailsEngineDummyRegistry };
 //# sourceMappingURL=gulp-pipeline.es.js.map

@@ -1,8 +1,8 @@
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('extend'), require('path'), require('fs'), require('glob'), require('cross-spawn'), require('jsonfile'), require('gulp-util'), require('stringify-object'), require('console'), require('gulp-notify'), require('shelljs'), require('gulp-eslint'), require('gulp-debug'), require('gulp-if'), require('gulp-uglify'), require('gulp-sourcemaps'), require('gulp-concat'), require('gulp-ext-replace'), require('gulp-autoprefixer'), require('browser-sync'), require('gulp-changed'), require('gulp-imagemin'), require('merge-stream'), require('gulp-sass'), require('findup-sync'), require('gulp-scss-lint'), require('gulp-scss-lint-stylish'), require('rollup'), require('rollup-plugin-node-resolve'), require('rollup-plugin-commonjs'), require('process'), require('rollup-plugin-babel'), require('fs-extra'), require('file-sync-cmp'), require('iconv-lite'), require('buffer'), require('chalk'), require('glob-all'), require('del'), require('gulp-rev'), require('gulp-rev-replace'), require('gulp-cssnano'), require('gulp-mocha'), require('build-control'), require('path-is-absolute'), require('tmp'), require('undertaker-registry')) :
-  typeof define === 'function' && define.amd ? define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'gulp-util', 'stringify-object', 'console', 'gulp-notify', 'shelljs', 'gulp-eslint', 'gulp-debug', 'gulp-if', 'gulp-uglify', 'gulp-sourcemaps', 'gulp-concat', 'gulp-ext-replace', 'gulp-autoprefixer', 'browser-sync', 'gulp-changed', 'gulp-imagemin', 'merge-stream', 'gulp-sass', 'findup-sync', 'gulp-scss-lint', 'gulp-scss-lint-stylish', 'rollup', 'rollup-plugin-node-resolve', 'rollup-plugin-commonjs', 'process', 'rollup-plugin-babel', 'fs-extra', 'file-sync-cmp', 'iconv-lite', 'buffer', 'chalk', 'glob-all', 'del', 'gulp-rev', 'gulp-rev-replace', 'gulp-cssnano', 'gulp-mocha', 'build-control', 'path-is-absolute', 'tmp', 'undertaker-registry'], factory) :
-  (factory((global.gulpPipeline = global.gulpPipeline || {}),global.extend,global.path,global.fs,global.glob,global.spawn,global.jsonfile,global.Util,global.stringify,global.console,global.notify,global.shelljs,global.eslint,global.debug,global.gulpif,global.uglify,global.sourcemaps,global.concat,global.extReplace,global.autoprefixer,global.BrowserSync,global.changed,global.imagemin,global.merge,global.sass,global.findup,global.scssLint,global.scssLintStylish,global.rollup,global.nodeResolve,global.commonjs,global.process,global.babel,global.fs$1,global.fileSyncCmp,global.iconv,global.buffer,global.chalk,global.globAll,global.del,global.rev,global.revReplace,global.cssnano,global.mocha,global.buildControl,global.pathIsAbsolute,global.tmp,global.DefaultRegistry));
-}(this, function (exports,extend,path,fs,glob,spawn,jsonfile,Util,stringify,console,notify,shelljs,eslint,debug,gulpif,uglify,sourcemaps,concat,extReplace,autoprefixer,BrowserSync,changed,imagemin,merge,sass,findup,scssLint,scssLintStylish,rollup,nodeResolve,commonjs,process,babel,fs$1,fileSyncCmp,iconv,buffer,chalk,globAll,del,rev,revReplace,cssnano,mocha,buildControl,pathIsAbsolute,tmp,DefaultRegistry) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('extend'), require('path'), require('fs'), require('glob'), require('cross-spawn'), require('jsonfile'), require('gulp-util'), require('stringify-object'), require('console'), require('gulp-notify'), require('shelljs'), require('gulp-eslint'), require('gulp-debug'), require('gulp-if'), require('gulp-uglify'), require('gulp-sourcemaps'), require('gulp-concat'), require('gulp-ext-replace'), require('gulp-autoprefixer'), require('browser-sync'), require('gulp-changed'), require('gulp-imagemin'), require('merge-stream'), require('gulp-sass'), require('findup-sync'), require('gulp-scss-lint'), require('gulp-scss-lint-stylish'), require('rollup'), require('rollup-plugin-node-resolve'), require('rollup-plugin-commonjs'), require('process'), require('rollup-plugin-babel'), require('fs-extra'), require('file-sync-cmp'), require('iconv-lite'), require('buffer'), require('chalk'), require('glob-all'), require('del'), require('gulp-rev'), require('gulp-rev-replace'), require('gulp-cssnano'), require('gulp-mocha'), require('gulp-mocha-phantomjs'), require('build-control'), require('path-is-absolute'), require('tmp'), require('undertaker-registry')) :
+  typeof define === 'function' && define.amd ? define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'gulp-util', 'stringify-object', 'console', 'gulp-notify', 'shelljs', 'gulp-eslint', 'gulp-debug', 'gulp-if', 'gulp-uglify', 'gulp-sourcemaps', 'gulp-concat', 'gulp-ext-replace', 'gulp-autoprefixer', 'browser-sync', 'gulp-changed', 'gulp-imagemin', 'merge-stream', 'gulp-sass', 'findup-sync', 'gulp-scss-lint', 'gulp-scss-lint-stylish', 'rollup', 'rollup-plugin-node-resolve', 'rollup-plugin-commonjs', 'process', 'rollup-plugin-babel', 'fs-extra', 'file-sync-cmp', 'iconv-lite', 'buffer', 'chalk', 'glob-all', 'del', 'gulp-rev', 'gulp-rev-replace', 'gulp-cssnano', 'gulp-mocha', 'gulp-mocha-phantomjs', 'build-control', 'path-is-absolute', 'tmp', 'undertaker-registry'], factory) :
+  (factory((global.gulpPipeline = global.gulpPipeline || {}),global.extend,global.path,global.fs,global.glob,global.spawn,global.jsonfile,global.Util,global.stringify,global.console,global.notify,global.shelljs,global.eslint,global.debug,global.gulpif,global.uglify,global.sourcemaps,global.concat,global.extReplace,global.autoprefixer,global.BrowserSync,global.changed,global.imagemin,global.merge,global.sass,global.findup,global.scssLint,global.scssLintStylish,global.rollup,global.nodeResolve,global.commonjs,global.process,global.babel,global.fs$1,global.fileSyncCmp,global.iconv,global.buffer,global.chalk,global.globAll,global.del,global.rev,global.revReplace,global.cssnano,global.mocha,global.mochaPhantomJS,global.buildControl,global.pathIsAbsolute,global.tmp,global.DefaultRegistry));
+}(this, function (exports,extend,path,fs,glob,spawn,jsonfile,Util,stringify,console,notify,shelljs,eslint,debug,gulpif,uglify,sourcemaps,concat,extReplace,autoprefixer,BrowserSync,changed,imagemin,merge,sass,findup,scssLint,scssLintStylish,rollup,nodeResolve,commonjs,process,babel,fs$1,fileSyncCmp,iconv,buffer,chalk,globAll,del,rev,revReplace,cssnano,mocha,mochaPhantomJS,buildControl,pathIsAbsolute,tmp,DefaultRegistry) { 'use strict';
 
   extend = 'default' in extend ? extend['default'] : extend;
   path = 'default' in path ? path['default'] : path;
@@ -45,6 +45,7 @@
   revReplace = 'default' in revReplace ? revReplace['default'] : revReplace;
   cssnano = 'default' in cssnano ? cssnano['default'] : cssnano;
   mocha = 'default' in mocha ? mocha['default'] : mocha;
+  mochaPhantomJS = 'default' in mochaPhantomJS ? mochaPhantomJS['default'] : mochaPhantomJS;
   pathIsAbsolute = 'default' in pathIsAbsolute ? pathIsAbsolute['default'] : pathIsAbsolute;
   tmp = 'default' in tmp ? tmp['default'] : tmp;
   DefaultRegistry = 'default' in DefaultRegistry ? DefaultRegistry['default'] : DefaultRegistry;
@@ -3106,17 +3107,55 @@
     return CssNano;
   }(BaseRecipe);
 
-  var Default$25 = {
+  var Default$26 = {
     debug: false,
-    presetType: 'javascripts',
+    presetType: 'javascripts'
+  };
+
+  var BaseMocha = function (_BaseRecipe) {
+    babelHelpers.inherits(BaseMocha, _BaseRecipe);
+
+
+    /**
+     *
+     * @param gulp - gulp instance
+     * @param preset - base preset configuration - either one from preset.js or a custom hash
+     * @param configs - customized overrides for this recipe
+     */
+
+    function BaseMocha(gulp, preset) {
+      var _Object$getPrototypeO;
+
+      babelHelpers.classCallCheck(this, BaseMocha);
+
+      for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+        configs[_key - 2] = arguments[_key];
+      }
+
+      // resolve watch cwd based on test cwd
+      return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(BaseMocha)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$26, { watch: { options: { cwd: Preset.resolveConfig.apply(Preset, [preset, Default$26].concat(configs)).test.options.cwd } } }].concat(configs)));
+    }
+
+    babelHelpers.createClass(BaseMocha, [{
+      key: 'createDescription',
+      value: function createDescription() {
+        return 'Tests ' + this.config.test.options.cwd + '/' + this.config.test.glob;
+      }
+    }]);
+    return BaseMocha;
+  }(BaseRecipe);
+
+  var Default$25 = {
     task: {
       name: 'mocha'
     },
-    options: {}
+    options: {
+      reporter: 'nyan'
+    }
   };
 
-  var Mocha = function (_BaseRecipe) {
-    babelHelpers.inherits(Mocha, _BaseRecipe);
+  var Mocha = function (_BaseMocha) {
+    babelHelpers.inherits(Mocha, _BaseMocha);
 
 
     /**
@@ -3135,23 +3174,17 @@
         configs[_key - 2] = arguments[_key];
       }
 
-      // resolve watch cwd based on test cwd
-      return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(Mocha)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$25, { watch: { options: { cwd: Preset.resolveConfig.apply(Preset, [preset, Default$25].concat(configs)).test.options.cwd } } }].concat(configs)));
+      return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(Mocha)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$25].concat(configs)));
     }
 
     babelHelpers.createClass(Mocha, [{
-      key: 'createDescription',
-      value: function createDescription() {
-        return 'Tests ' + this.config.test.options.cwd + '/' + this.config.test.glob;
-      }
-    }, {
       key: 'run',
       value: function run(done) {
         var _this2 = this;
 
         var watching = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
 
-        var bundle = this.gulp.src(this.config.test.glob, this.config.test.options).pipe(gulpif(this.config.debug, debug(this.debugOptions()))).pipe(mocha({ reporter: 'nyan' })) // gulp-mocha needs filepaths so you can't have any plugins before it
+        var bundle = this.gulp.src(this.config.test.glob, this.config.test.options).pipe(gulpif(this.config.debug, debug(this.debugOptions()))).pipe(mocha(this.config.options)) // gulp-mocha needs filepaths so you can't have any plugins before it
         .on('error', function (error) {
           _this2.notifyError(error, done, watching);
         });
@@ -3160,12 +3193,67 @@
       }
     }]);
     return Mocha;
-  }(BaseRecipe);
+  }(BaseMocha);
+
+  var Default$27 = {
+    test: {
+      glob: 'testrunner.html'
+    },
+    task: {
+      name: 'mocha:phantomjs'
+    },
+    options: {
+      reporter: 'nyan'
+    }
+  };
+
+  /*
+  WARNING: Using this means using a browser, and if your tests are written in ES2015 you need to use rollup first!
+  */
+  var MochaPhantomJs = function (_BaseMocha) {
+    babelHelpers.inherits(MochaPhantomJs, _BaseMocha);
+
+
+    /**
+     *
+     * @param gulp - gulp instance
+     * @param preset - base preset configuration - either one from preset.js or a custom hash
+     * @param configs - customized overrides for this recipe
+     */
+
+    function MochaPhantomJs(gulp, preset) {
+      var _Object$getPrototypeO;
+
+      babelHelpers.classCallCheck(this, MochaPhantomJs);
+
+      for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+        configs[_key - 2] = arguments[_key];
+      }
+
+      return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(MochaPhantomJs)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$27].concat(configs)));
+    }
+
+    babelHelpers.createClass(MochaPhantomJs, [{
+      key: 'run',
+      value: function run(done) {
+        var _this2 = this;
+
+        var watching = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
+
+        var bundle = this.gulp.src(this.config.test.glob, this.config.test.options).pipe(gulpif(this.config.debug, debug(this.debugOptions()))).pipe(mochaPhantomJS(this.config.options)).on('error', function (error) {
+          _this2.notifyError(error, done, watching);
+        });
+
+        return bundle;
+      }
+    }]);
+    return MochaPhantomJs;
+  }(BaseMocha);
 
   /**
    *  This is the base for publish recipes using BuildControl
    */
-  var Default$27 = {
+  var Default$29 = {
 
     dir: 'build', // directory to assemble the files - make sure to add this to your .gitignore so you don't publish this to your source branch
     source: {
@@ -3208,7 +3296,7 @@
 
       // use the dir as the cwd to the BuildControl class
 
-      var _this = babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(BasePublish)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$27].concat(configs)));
+      var _this = babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(BasePublish)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$29].concat(configs)));
 
       _this.config.options = extend(true, { debug: _this.config.debug, cwd: _this.config.dir }, _this.config.options);
       return _this;
@@ -3217,7 +3305,7 @@
     return BasePublish;
   }(BaseRecipe);
 
-  var Default$26 = {
+  var Default$28 = {
     task: {
       name: 'prepublish',
       description: 'Checks tag name and ensures directory has all files committed.'
@@ -3251,7 +3339,7 @@
         configs[_key - 2] = arguments[_key];
       }
 
-      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Prepublish).call(this, gulp, preset, extend.apply(undefined, [true, {}, Default$26].concat(configs))));
+      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Prepublish).call(this, gulp, preset, extend.apply(undefined, [true, {}, Default$28].concat(configs))));
     }
 
     babelHelpers.createClass(Prepublish, [{
@@ -3287,7 +3375,7 @@
    *
    *  Have long running maintenance on an old version?  Publish to a different dist branch like { options: {branch: 'dist-v3'} }
    */
-  var Default$28 = {
+  var Default$30 = {
     //debug: true,
     npm: {
       bump: true,
@@ -3323,7 +3411,7 @@
         configs[_key - 2] = arguments[_key];
       }
 
-      return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(PublishBuild)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$28].concat(configs)));
+      return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(PublishBuild)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$30].concat(configs)));
     }
 
     babelHelpers.createClass(PublishBuild, [{
@@ -3499,7 +3587,7 @@
     return PublishBuild;
   }(BasePublish);
 
-  var Default$29 = {
+  var Default$31 = {
     task: {
       name: 'publish:npm',
       description: 'Publishes package on npm'
@@ -3531,7 +3619,7 @@
         configs[_key - 2] = arguments[_key];
       }
 
-      return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(PublishNpm)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$29].concat(configs)));
+      return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(PublishNpm)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$31].concat(configs)));
     }
 
     babelHelpers.createClass(PublishNpm, [{
@@ -3549,7 +3637,7 @@
    *  This recipe will keep your source branch clean but allow you to easily push your
    *  _gh_pages files to the gh-pages branch.
    */
-  var Default$30 = {
+  var Default$32 = {
     //debug: true,
     task: {
       name: 'publish:gh-pages',
@@ -3585,7 +3673,7 @@
         configs[_key - 2] = arguments[_key];
       }
 
-      return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(PublishGhPages)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$30].concat(configs)));
+      return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(PublishGhPages)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$32].concat(configs)));
     }
 
     babelHelpers.createClass(PublishGhPages, [{
@@ -3602,7 +3690,7 @@
     return PublishGhPages;
   }(BasePublish);
 
-  var Default$31 = {
+  var Default$33 = {
     watch: false,
     presetType: 'macro',
     task: {
@@ -3637,7 +3725,7 @@
         configs[_key - 2] = arguments[_key];
       }
 
-      return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(Jekyll)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$31].concat(configs)));
+      return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(Jekyll)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$33].concat(configs)));
     }
 
     babelHelpers.createClass(Jekyll, [{
@@ -3717,7 +3805,7 @@
     return tmpDir(options).name;
   };
 
-  var Default$32 = {
+  var Default$34 = {
     debug: false,
     watch: false,
     presetType: 'macro',
@@ -3746,7 +3834,7 @@
         configs[_key - 3] = arguments[_key];
       }
 
-      return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(Sleep)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$32, { sleep: sleep }].concat(configs)));
+      return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(Sleep)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$34, { sleep: sleep }].concat(configs)));
     }
 
     babelHelpers.createClass(Sleep, [{
@@ -3778,7 +3866,7 @@
     return c;
   };
 
-  var Default$34 = {
+  var Default$36 = {
     debug: false,
     // preset: -- mixed in at runtime in the constructor to avoid issues in non-rails projects
     global: { debug: false } // mixed into every config i.e debug: true
@@ -3803,7 +3891,7 @@
         configs[_key] = arguments[_key];
       }
 
-      _this.config = extend.apply(undefined, [true, {}, Default$34].concat(configs));
+      _this.config = extend.apply(undefined, [true, {}, Default$36].concat(configs));
       _this.debugDump('[' + _this.constructor.name + '] using resolved config:', _this.config);
       return _this;
     }
@@ -3891,7 +3979,7 @@
   }(DefaultRegistry);
 
   // per class name defaults that can be overridden
-  var Default$33 = {
+  var Default$35 = {
     // Class-based configuration overrides:
     //  - these may be a single config hash or array of config hashes (last hash overrides earlier hashes)
     //  - in some cases, passing false for the class name may be implemented as omitting the registration of the recipe (see implementation of #init for details)
@@ -3921,7 +4009,7 @@
         configs[_key] = arguments[_key];
       }
 
-      return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(RailsRegistry)).call.apply(_Object$getPrototypeO, [this, Default$33, { preset: Preset.rails() }].concat(configs)));
+      return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(RailsRegistry)).call.apply(_Object$getPrototypeO, [this, Default$35, { preset: Preset.rails() }].concat(configs)));
     }
 
     babelHelpers.createClass(RailsRegistry, [{
@@ -4046,7 +4134,7 @@
     return RailsRegistry;
   }(BaseRegistry);
 
-  var Default$35 = {};
+  var Default$37 = {};
 
   /**
    * Simplified registry for RailsEngineDummy applications
@@ -4071,7 +4159,7 @@
         configs[_key] = arguments[_key];
       }
 
-      return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(RailsEngineDummyRegistry)).call.apply(_Object$getPrototypeO, [this, Default$35].concat(configs)));
+      return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(RailsEngineDummyRegistry)).call.apply(_Object$getPrototypeO, [this, Default$37].concat(configs)));
     }
 
     /**
@@ -4149,6 +4237,7 @@
   exports.RevReplace = RevReplace;
   exports.CssNano = CssNano;
   exports.Mocha = Mocha;
+  exports.MochaPhantomJs = MochaPhantomJs;
   exports.Prepublish = Prepublish;
   exports.PublishBuild = PublishBuild;
   exports.PublishNpm = PublishNpm;

@@ -1,18 +1,24 @@
 import BaseMocha from './baseMocha'
-import mocha from 'gulp-mocha'
+import mochaPhantomJS from 'gulp-mocha-phantomjs'
 import debug from 'gulp-debug'
 import gulpif from 'gulp-if'
 
 export const Default = {
+  test: {
+    glob: 'testrunner.html'
+  },
   task: {
-    name: 'mocha'
+    name: 'mocha:phantomjs'
   },
   options: {
     reporter: 'nyan'
   }
 }
 
-const Mocha = class extends BaseMocha {
+/*
+WARNING: Using this means using a browser, and if your tests are written in ES2015 you need to use rollup first!
+*/
+const MochaPhantomJs = class extends BaseMocha {
 
   /**
    *
@@ -27,7 +33,7 @@ const Mocha = class extends BaseMocha {
   run(done, watching = false) {
     let bundle = this.gulp.src(this.config.test.glob, this.config.test.options)
       .pipe(gulpif(this.config.debug, debug(this.debugOptions())))
-      .pipe(mocha(this.config.options)) // gulp-mocha needs filepaths so you can't have any plugins before it
+      .pipe(mochaPhantomJS(this.config.options))
       .on('error', (error) => {
         this.notifyError(error, done, watching)
       })
@@ -36,4 +42,4 @@ const Mocha = class extends BaseMocha {
   }
 }
 
-export default Mocha
+export default MochaPhantomJs

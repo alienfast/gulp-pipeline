@@ -30,6 +30,7 @@ export { default as RevReplace } from './revReplace'
 export { default as CssNano } from './cssNano'
 
 export { default as Mocha } from './mocha'
+export { default as MochaPhantomJs } from './mochaPhantomJs'
 
 export { default as Prepublish } from './prepublish'
 export { default as PublishBuild } from './publishBuild'

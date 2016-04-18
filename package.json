@@ -1,6 +1,6 @@
 {
   "name": "gulp-pipeline",
-  "version": "4.0.28",
+  "version": "4.0.29",
   "description": "Meta gulp plugin recipes modularized as ES6 classes. Fully configurable. Fully extensible. Full pipeline in a few lines of code.",
   "main": "dist/gulp-pipeline.cjs.js",
   "jsnext:main": "src/index.js",
@@ -35,13 +35,13 @@
     "babel-preset-es2015": "^6.6.0",
     "babel-preset-es2015-rollup": "^1.1.1",
     "babelify": "^7.2.0",
-    "browser-sync": "^2.11.2",
+    "browser-sync": "^2.12.3",
     "build-control": "^0.3.6",
     "del": "^2.2.0",
     "extend": "^3.0.0",
     "file-sync-cmp": "^0.1.1",
     "findup-sync": "^0.4.0",
-    "fs-extra": "^0.26.7",
+    "fs-extra": "^0.28.0",
     "glob-all": "^3.0.1",
     "gulp-autoprefixer": "^3.1.0",
     "gulp-changed": "^1.3.0",
@@ -64,7 +64,7 @@
     "gulp-uglify": "^1.5.3",
     "gulp-util": "^3.0.7",
     "iconv-lite": "^0.4.13",
-    "jsonfile": "^2.2.3",
+    "jsonfile": "^2.3.0",
     "merge-stream": "^1.0.0",
     "rollup": "^0.25.8",
     "rollup-plugin-babel": "^2.4.0",
@@ -75,8 +75,7 @@
     "tmp": "0.0.28",
     "undertaker-registry": "^1.0.0",
     "vinyl-buffer": "^1.0.0",
-    "vinyl-source-stream": "^1.1.0",
-    "watchify": "^3.7.0"
+    "vinyl-source-stream": "^1.1.0"
   },
   "devDependencies": {
     "babel-eslint": ">=6.0.2",

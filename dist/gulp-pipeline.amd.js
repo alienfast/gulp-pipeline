@@ -1,4 +1,4 @@
-define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'gulp-util', 'stringify-object', 'console', 'gulp-notify', 'shelljs', 'gulp-eslint', 'gulp-debug', 'gulp-if', 'gulp-uglify', 'gulp-sourcemaps', 'gulp-concat', 'gulp-ext-replace', 'gulp-autoprefixer', 'browser-sync', 'gulp-changed', 'gulp-imagemin', 'merge-stream', 'gulp-sass', 'findup-sync', 'gulp-scss-lint', 'gulp-scss-lint-stylish', 'rollup', 'rollup-plugin-node-resolve', 'rollup-plugin-commonjs', 'process', 'rollup-plugin-babel', 'fs-extra', 'file-sync-cmp', 'iconv-lite', 'buffer', 'chalk', 'glob-all', 'del', 'gulp-rev', 'gulp-rev-replace', 'gulp-cssnano', 'gulp-mocha', 'gulp-mocha-phantomjs', 'build-control', 'path-is-absolute', 'tmp', 'undertaker-registry'], function (exports, extend, path, fs, glob, spawn, jsonfile, Util, stringify, console, notify, shelljs, eslint, debug, gulpif, uglify, sourcemaps, concat, extReplace, autoprefixer, BrowserSync, changed, imagemin, merge, sass, findup, scssLint, scssLintStylish, rollup, nodeResolve, commonjs, process, babel, fs$1, fileSyncCmp, iconv, buffer, chalk, globAll, del, rev, revReplace, cssnano, mocha, mochaPhantomJS, buildControl, pathIsAbsolute, tmp, DefaultRegistry) { 'use strict';
+define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'gulp-util', 'stringify-object', 'console', 'gulp-notify', 'shelljs', 'gulp-eslint', 'gulp-debug', 'gulp-if', 'gulp-uglify', 'gulp-sourcemaps', 'gulp-concat', 'gulp-ext-replace', 'gulp-autoprefixer', 'browser-sync', 'gulp-changed', 'gulp-imagemin', 'merge-stream', 'gulp-sass', 'findup-sync', 'gulp-scss-lint', 'gulp-scss-lint-stylish', 'rollup', 'rollup-plugin-node-resolve', 'rollup-plugin-commonjs', 'process', 'rollup-plugin-babel', 'fs-extra', 'file-sync-cmp', 'iconv-lite', 'buffer', 'chalk', 'glob-all', 'del', 'gulp-rev', 'gulp-rev-replace', 'gulp-replace', 'gulp-cssnano', 'gulp-mocha', 'gulp-mocha-phantomjs', 'build-control', 'path-is-absolute', 'tmp', 'undertaker-registry'], function (exports, extend, path, fs, glob, spawn, jsonfile, Util, stringify, console, notify, shelljs, eslint, debug, gulpif, uglify, sourcemaps, concat, extReplace, autoprefixer, BrowserSync, changed, imagemin, merge, sass, findup, scssLint, scssLintStylish, rollup, nodeResolve, commonjs, process, babel, fs$1, fileSyncCmp, iconv, buffer, chalk, globAll, del, rev, revReplace, replace, cssnano, mocha, mochaPhantomJS, buildControl, pathIsAbsolute, tmp, DefaultRegistry) { 'use strict';
 
   extend = 'default' in extend ? extend['default'] : extend;
   path = 'default' in path ? path['default'] : path;
@@ -39,6 +39,7 @@ define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'g
   del = 'default' in del ? del['default'] : del;
   rev = 'default' in rev ? rev['default'] : rev;
   revReplace = 'default' in revReplace ? revReplace['default'] : revReplace;
+  replace = 'default' in replace ? replace['default'] : replace;
   cssnano = 'default' in cssnano ? cssnano['default'] : cssnano;
   mocha = 'default' in mocha ? mocha['default'] : mocha;
   mochaPhantomJS = 'default' in mochaPhantomJS ? mochaPhantomJS['default'] : mochaPhantomJS;
@@ -3052,6 +3053,7 @@ define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'g
     },
     options: {
       //autoprefixer: false // assume this is done with Sass recipe
+      // sourcemap: false
     }
   };
 
@@ -3095,7 +3097,10 @@ define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'g
         var watching = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
 
 
-        return this.gulp.src(this.config.source.glob, this.config.source.options).pipe(gulpif(this.config.debug, debug(this.debugOptions()))).pipe(gulpif(this.config.minExtension, extReplace('.min.css'))).pipe(cssnano(this.config.options)).pipe(this.gulp.dest(this.config.dest)).on('error', function (error) {
+        return this.gulp.src(this.config.source.glob, this.config.source.options).pipe(gulpif(this.config.debug, debug(this.debugOptions()))).pipe(gulpif(this.config.minExtension, extReplace('.min.css')))
+        // whack the sourcemap otherwise it gives us "Unsupported source map encoding charset=utf8;base64"
+        // ...we don't want it in the min file anyway
+        .pipe(replace(/\/\*# sourceMappingURL=.*\*\//g, '')).pipe(cssnano(this.config.options)).pipe(this.gulp.dest(this.config.dest)).on('error', function (error) {
           _this2.notifyError(error, done, watching);
         }).pipe(this.browserSync.stream());
       }

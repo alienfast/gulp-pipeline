@@ -43,6 +43,7 @@ var globAll = _interopDefault(require('glob-all'));
 var del = _interopDefault(require('del'));
 var rev = _interopDefault(require('gulp-rev'));
 var revReplace = _interopDefault(require('gulp-rev-replace'));
+var replace = _interopDefault(require('gulp-replace'));
 var cssnano = _interopDefault(require('gulp-cssnano'));
 var mocha = _interopDefault(require('gulp-mocha'));
 var mochaPhantomJS = _interopDefault(require('gulp-mocha-phantomjs'));
@@ -3057,6 +3058,7 @@ var Default$24 = {
   },
   options: {
     //autoprefixer: false // assume this is done with Sass recipe
+    // sourcemap: false
   }
 };
 
@@ -3100,7 +3102,10 @@ var CssNano = function (_BaseRecipe) {
       var watching = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
 
 
-      return this.gulp.src(this.config.source.glob, this.config.source.options).pipe(gulpif(this.config.debug, debug(this.debugOptions()))).pipe(gulpif(this.config.minExtension, extReplace('.min.css'))).pipe(cssnano(this.config.options)).pipe(this.gulp.dest(this.config.dest)).on('error', function (error) {
+      return this.gulp.src(this.config.source.glob, this.config.source.options).pipe(gulpif(this.config.debug, debug(this.debugOptions()))).pipe(gulpif(this.config.minExtension, extReplace('.min.css')))
+      // whack the sourcemap otherwise it gives us "Unsupported source map encoding charset=utf8;base64"
+      // ...we don't want it in the min file anyway
+      .pipe(replace(/\/\*# sourceMappingURL=.*\*\//g, '')).pipe(cssnano(this.config.options)).pipe(this.gulp.dest(this.config.dest)).on('error', function (error) {
         _this2.notifyError(error, done, watching);
       }).pipe(this.browserSync.stream());
     }

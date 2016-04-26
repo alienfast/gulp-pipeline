@@ -3,6 +3,7 @@ import BrowserSync from 'browser-sync'
 import debug from 'gulp-debug'
 import extend from 'extend'
 import gulpif from 'gulp-if'
+import replace from 'gulp-replace'
 import cssnano from 'gulp-cssnano'
 import extReplace from 'gulp-ext-replace'
 
@@ -28,6 +29,7 @@ export const Default = {
   },
   options: {
     //autoprefixer: false // assume this is done with Sass recipe
+    // sourcemap: false
   }
 }
 
@@ -56,6 +58,9 @@ const CssNano = class extends BaseRecipe {
     return this.gulp.src(this.config.source.glob, this.config.source.options)
       .pipe(gulpif(this.config.debug, debug(this.debugOptions())))
       .pipe(gulpif(this.config.minExtension, extReplace('.min.css')))
+      // whack the sourcemap otherwise it gives us "Unsupported source map encoding charset=utf8;base64"
+      // ...we don't want it in the min file anyway
+      .pipe(replace(/\/\*# sourceMappingURL=.*\*\//g, ''))
       .pipe(cssnano(this.config.options))
       .pipe(this.gulp.dest(this.config.dest))
       .on('error', (error) => {

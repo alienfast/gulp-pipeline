@@ -1051,7 +1051,7 @@ define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'g
             throw new Error('Should only find one file but found ' + files.length + ' for source: ' + this.dump(this.config.source) + '.  Use the concat: {dest: \'output.min.js\' } configuration for multiple files concatenated with uglify.  Files found: ' + this.dump(files));
           }
 
-          return this.gulp.src(this.config.source.glob, this.config.source.options).pipe(gulpif(this.config.debug, debug(this.debugOptions()))).pipe(extReplace('.min.js'))
+          return this.gulp.src(this.config.source.glob, this.config.source.options).pipe(gulpif(this.config.debug, debug(this.debugOptions()))).pipe(extReplace('.min.js', /.js$/)) // needs to be end-of-line regex so we don't messup paths with '.js' in the names.
 
           // identical to above
           .pipe(sourcemaps.init()).pipe(uglify(this.config.options)).on('error', function (error) {

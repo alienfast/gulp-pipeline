@@ -88,7 +88,7 @@ const Uglify = class extends BaseRecipe {
 
       return this.gulp.src(this.config.source.glob, this.config.source.options)
         .pipe(gulpif(this.config.debug, debug(this.debugOptions())))
-        .pipe(extReplace('.min.js'))
+        .pipe(extReplace('.min.js', /.js$/))  // needs to be end-of-line regex so we don't messup paths with '.js' in the names.
 
         // identical to above
         .pipe(sourcemaps.init())

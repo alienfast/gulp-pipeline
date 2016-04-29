@@ -17,7 +17,7 @@ const pathSeparatorRe = /[\/\\]/g;
  *  @credit to grunt for the grunt.file implementation. See license for attribution.
  */
 const FileImplementation = class extends Base {
-  constructor(config = {}) {
+  constructor(config = {debug: false}) {
     super({encoding: "utf8"}, config)
   }
 
@@ -118,6 +118,7 @@ const FileImplementation = class extends Base {
    * @param mode
    */
   mkdir(dirpath, mode) {
+    this.debug(`mkdir ${dirpath}:`)
     // Set directory mode in a strict-mode-friendly way.
     if (mode == null) {
       mode = parseInt('0777', 8) & (~process.umask())
@@ -127,11 +128,15 @@ const FileImplementation = class extends Base {
       let subpath = path.resolve(parts)
       if (!this.exists(subpath)) {
         try {
+          this.debug(`\tfs.mkdirSync(${subpath}, ${mode})`)
           fs.mkdirSync(subpath, mode)
         }
         catch (e) {
           this.notifyError(`Unable to create directory ${subpath} (Error code: ${e.code}).`, e)
         }
+      }
+      else{
+        this.debug(`\t${subpath} already exists`)
       }
       return parts
     }, '')
@@ -147,7 +152,9 @@ const FileImplementation = class extends Base {
 
   exists(...args) {
     let filepath = path.join(...args)
-    return fs.existsSync(filepath)
+    let result = fs.existsSync(filepath)
+    this.debug(`exists(${filepath})? ${result}`)
+    return result
   }
 
   isDir(...args) {

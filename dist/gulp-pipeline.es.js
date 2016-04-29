@@ -1622,7 +1622,7 @@ const pathSeparatorRe = /[\/\\]/g;
  *  @credit to grunt for the grunt.file implementation. See license for attribution.
  */
 const FileImplementation = class extends Base {
-  constructor(config = {}) {
+  constructor(config = {debug: false}) {
     super({encoding: "utf8"}, config)
   }
 
@@ -1723,6 +1723,7 @@ const FileImplementation = class extends Base {
    * @param mode
    */
   mkdir(dirpath, mode) {
+    this.debug(`mkdir ${dirpath}:`)
     // Set directory mode in a strict-mode-friendly way.
     if (mode == null) {
       mode = parseInt('0777', 8) & (~process.umask())
@@ -1732,11 +1733,15 @@ const FileImplementation = class extends Base {
       let subpath = path.resolve(parts)
       if (!this.exists(subpath)) {
         try {
+          this.debug(`\tfs.mkdirSync(${subpath}, ${mode})`)
           fs$1.mkdirSync(subpath, mode)
         }
         catch (e) {
           this.notifyError(`Unable to create directory ${subpath} (Error code: ${e.code}).`, e)
         }
+      }
+      else{
+        this.debug(`\t${subpath} already exists`)
       }
       return parts
     }, '')
@@ -1752,7 +1757,9 @@ const FileImplementation = class extends Base {
 
   exists(...args) {
     let filepath = path.join(...args)
-    return fs$1.existsSync(filepath)
+    let result = fs$1.existsSync(filepath)
+    this.debug(`exists(${filepath})? ${result}`)
+    return result
   }
 
   isDir(...args) {
@@ -2513,7 +2520,17 @@ const Default$29 = {
   dir: 'build', // directory to assemble the files - make sure to add this to your .gitignore so you don't publish this to your source branch
   source: {
     types: ['javascripts', 'stylesheets'], // source types to resolve from preset and copy into the build directory pushing to the dist branch
-    files: ['package.json', 'bower.json', 'LICENSE*', 'dist'] // any additional file patterns to copy to `dir`
+    files: ['.travis.yml', 'package.json', 'bower.json', 'LICENSE*', 'dist'] // any additional file patterns to copy to `dir`
+    /*
+     # NOTE: we need .travis.yml so that travis-ci will process the ignore branches
+     *  add the following:
+     *
+     *   # remove the dist branch and dist tags from travis builds
+     *   branches:
+     *    except:
+     *       - dist
+     *       - /^v(\d+\.)?(\d+\.)?(\*|\d+)$/
+     */
   },
   watch: false,
   presetType: 'macro',
@@ -2601,6 +2618,15 @@ const Prepublish = class extends BasePublish {
  *  to the `dist` branch.  Now you have clean separation of source and dist.
  *
  *  Have long running maintenance on an old version?  Publish to a different dist branch like { options: {branch: 'dist-v3'} }
+ *
+ *  Travis-CI note: add the following:
+ *
+ *   # remove the dist branch and dist tags from travis builds
+ *   branches:
+ *    except:
+ *       - dist
+ *       - /^v(\d+\.)?(\d+\.)?(\*|\d+)$/
+ *
  */
 const Default$30 = {
   //debug: true,

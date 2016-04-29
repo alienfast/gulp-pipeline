@@ -2069,7 +2069,7 @@
     babelHelpers.inherits(FileImplementation, _Base);
 
     function FileImplementation() {
-      var config = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+      var config = arguments.length <= 0 || arguments[0] === undefined ? { debug: false } : arguments[0];
       babelHelpers.classCallCheck(this, FileImplementation);
       return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(FileImplementation).call(this, { encoding: "utf8" }, config));
     }
@@ -2181,6 +2181,7 @@
       value: function mkdir(dirpath, mode) {
         var _this2 = this;
 
+        this.debug('mkdir ' + dirpath + ':');
         // Set directory mode in a strict-mode-friendly way.
         if (mode == null) {
           mode = parseInt('0777', 8) & ~process.umask();
@@ -2190,10 +2191,13 @@
           var subpath = path.resolve(parts);
           if (!_this2.exists(subpath)) {
             try {
+              _this2.debug('\tfs.mkdirSync(' + subpath + ', ' + mode + ')');
               fs$1.mkdirSync(subpath, mode);
             } catch (e) {
               _this2.notifyError('Unable to create directory ' + subpath + ' (Error code: ' + e.code + ').', e);
             }
+          } else {
+            _this2.debug('\t' + subpath + ' already exists');
           }
           return parts;
         }, '');
@@ -2213,7 +2217,9 @@
       key: 'exists',
       value: function exists() {
         var filepath = path.join.apply(path, arguments);
-        return fs$1.existsSync(filepath);
+        var result = fs$1.existsSync(filepath);
+        this.debug('exists(' + filepath + ')? ' + result);
+        return result;
       }
     }, {
       key: 'isDir',
@@ -3263,7 +3269,17 @@
     dir: 'build', // directory to assemble the files - make sure to add this to your .gitignore so you don't publish this to your source branch
     source: {
       types: ['javascripts', 'stylesheets'], // source types to resolve from preset and copy into the build directory pushing to the dist branch
-      files: ['package.json', 'bower.json', 'LICENSE*', 'dist'] // any additional file patterns to copy to `dir`
+      files: ['.travis.yml', 'package.json', 'bower.json', 'LICENSE*', 'dist'] // any additional file patterns to copy to `dir`
+      /*
+       # NOTE: we need .travis.yml so that travis-ci will process the ignore branches
+       *  add the following:
+       *
+       *   # remove the dist branch and dist tags from travis builds
+       *   branches:
+       *    except:
+       *       - dist
+       *       - /^v(\d+\.)?(\d+\.)?(\*|\d+)$/
+       */
     },
     watch: false,
     presetType: 'macro',
@@ -3379,6 +3395,15 @@
    *  to the `dist` branch.  Now you have clean separation of source and dist.
    *
    *  Have long running maintenance on an old version?  Publish to a different dist branch like { options: {branch: 'dist-v3'} }
+   *
+   *  Travis-CI note: add the following:
+   *
+   *   # remove the dist branch and dist tags from travis builds
+   *   branches:
+   *    except:
+   *       - dist
+   *       - /^v(\d+\.)?(\d+\.)?(\*|\d+)$/
+   *
    */
   var Default$30 = {
     //debug: true,

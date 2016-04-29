@@ -27,14 +27,14 @@ import glob from 'glob'
  *  to the `dist` branch.  Now you have clean separation of source and dist.
  *
  *  Have long running maintenance on an old version?  Publish to a different dist branch like { options: {branch: 'dist-v3'} }
- *  
+ *
  *  Travis-CI note: add the following:
- *  
+ *
  *   # remove the dist branch and dist tags from travis builds
  *   branches:
  *    except:
  *       - dist
- *       - /^v[0-9]/
+ *       - /^v(\d+\.)?(\d+\.)?(\*|\d+)$/
  *
  */
 const Default = {

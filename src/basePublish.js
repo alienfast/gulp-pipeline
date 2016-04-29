@@ -9,7 +9,17 @@ export const Default = {
   dir: 'build', // directory to assemble the files - make sure to add this to your .gitignore so you don't publish this to your source branch
   source: {
     types: ['javascripts', 'stylesheets'], // source types to resolve from preset and copy into the build directory pushing to the dist branch
-    files: ['package.json', 'bower.json', 'LICENSE*', 'dist'] // any additional file patterns to copy to `dir`
+    files: ['.travis.yml', 'package.json', 'bower.json', 'LICENSE*', 'dist'] // any additional file patterns to copy to `dir`
+    /*
+     # NOTE: we need .travis.yml so that travis-ci will process the ignore branches
+     *  add the following:
+     *
+     *   # remove the dist branch and dist tags from travis builds
+     *   branches:
+     *    except:
+     *       - dist
+     *       - /^v(\d+\.)?(\d+\.)?(\*|\d+)$/
+     */
   },
   watch: false,
   presetType: 'macro',

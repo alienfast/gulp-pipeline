@@ -6,7 +6,7 @@ git:
 branches:
   except:
     - dist
-    - /^v[0-9]/
+    - /^v(\d+\.)?(\d+\.)?(\*|\d+)$/
 
 language: node_js
 node_js:

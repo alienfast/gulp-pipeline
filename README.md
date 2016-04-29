@@ -1,3 +1,5 @@
+[![NPM version][npm-image]][npm-url] [![Build Status][travis-image]][travis-url]
+
 # gulp-pipeline
 Gulp 4 recipes modularized as ES2015 classes. Fully configurable. Fully extensible. Full pipeline in a few lines of code.
 
@@ -193,3 +195,8 @@ No problem, just start with the `#baseline` and add your overrides such as the f
 - VigetLabs for their blog post _[Gulp on Rails: Replacing the Asset Pipeline](https://viget.com/extend/gulp-rails-asset-pipeline)_ and [gulp-rails-pipeline starter project](https://github.com/vigetlabs/gulp-rails-pipeline)
 - Argency for their blog post _[Gulp - a modern approach to asset pipeline for Rails developers](http://blog.arkency.com/2015/03/gulp-modern-approach-to-asset-pipeline-for-rails-developers/)_ 
 - Bugsnag for their blog post _[Replacing the Rails asset pipeline with Gulp: Using Gulp to compile and cache our assets](http://blog.bugsnag.com/replacing-the-rails-asset-pipeline-with-gulp)_
+
+[npm-url]: https://www.npmjs.com/package/gulp-pipeline
+[npm-image]: https://img.shields.io/npm/v/gulp-pipeline.svg
+[travis-url]: https://travis-ci.org/alienfast/gulp-pipeline
+[travis-image]: https://img.shields.io/travis/alienfast/gulp-pipeline.svg

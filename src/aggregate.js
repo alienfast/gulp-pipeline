@@ -99,12 +99,12 @@ const Aggregate = class extends BaseGulp {
     globs = unique(globs)
     this.debugDump('globs', globs)
 
-    let watchFn = (done) => {
+    let watchFn = () => {
       this.log(`${coloredTask} watching ${globs.join(', ')}`)
       let watcher = this.gulp.watch(globs, {}, this.taskFn)
-      watcher.on('error', (a, b) => {
-        this.notifyError(`${coloredTask} ${error}`)
-      })
+      // watcher.on('error', (error) => {
+      //   this.notifyError(`${coloredTask} ${error}`)
+      // })
 
       watcher.on('add', (path) => {
         if (!this.taskFn.running) {

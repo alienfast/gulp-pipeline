@@ -350,7 +350,7 @@
     postProcessor: {
       source: { options: { cwd: 'dist' } },
       watch: { options: { cwd: 'dist' } },
-      dest: 'dist/digest'
+      dest: 'dist'
     }
   };
 

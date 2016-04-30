@@ -346,7 +346,7 @@ define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'g
     postProcessor: {
       source: { options: { cwd: 'dist' } },
       watch: { options: { cwd: 'dist' } },
-      dest: 'dist/digest'
+      dest: 'dist'
     }
   };
 

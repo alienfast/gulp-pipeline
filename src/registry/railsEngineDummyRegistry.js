@@ -2,7 +2,7 @@ import RailsRegistry from './railsRegistry'
 import EsLint from '../eslint'
 import ScssLint from '../scssLint'
 import parallel from '../util/parallel'
-import findup from 'findup-sync'
+import File from '../util/file'
 
 export const Default = {}
 
@@ -28,7 +28,7 @@ const RailsEngineDummyRegistry = class extends RailsRegistry {
   esLinters(gulp) {
     const engineCwd = {
       options: {
-        cwd: findup(this.config.preset.javascripts.source.options.cwd, {cwd: '..'})
+        cwd: File.findup(this.config.preset.javascripts.source.options.cwd, {cwd: '..'})
       }
     }
 
@@ -49,7 +49,7 @@ const RailsEngineDummyRegistry = class extends RailsRegistry {
   scssLinters(gulp) {
     const engineCwd = {
       options: {
-        cwd: findup(this.config.preset.stylesheets.source.options.cwd, {cwd: '..'})
+        cwd: File.findup(this.config.preset.stylesheets.source.options.cwd, {cwd: '..'})
       }
     }
 

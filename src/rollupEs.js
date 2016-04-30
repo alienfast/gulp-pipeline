@@ -6,8 +6,8 @@ import glob from 'glob'
 import nodeResolve from 'rollup-plugin-node-resolve'
 import commonjs from 'rollup-plugin-commonjs'
 import process from 'process'
-import findup from 'findup-sync'
-const node_modules = findup('node_modules')
+import File from './util/file'
+const node_modules = File.findup('node_modules')
 
 
 export const Default = {

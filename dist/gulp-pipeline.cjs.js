@@ -26,19 +26,19 @@ var changed = _interopDefault(require('gulp-changed'));
 var imagemin = _interopDefault(require('gulp-imagemin'));
 var merge = _interopDefault(require('merge-stream'));
 var sass = _interopDefault(require('gulp-sass'));
-var findup = _interopDefault(require('findup-sync'));
+var fs$1 = _interopDefault(require('fs-extra'));
+var fileSyncCmp = _interopDefault(require('file-sync-cmp'));
+var process = _interopDefault(require('process'));
+var iconv = _interopDefault(require('iconv-lite'));
+var buffer = require('buffer');
+var _findup = _interopDefault(require('findup-sync'));
 var scssLint = _interopDefault(require('gulp-scss-lint'));
 var scssLintStylish = _interopDefault(require('gulp-scss-lint-stylish'));
 var unique = _interopDefault(require('array-unique'));
 var rollup = require('rollup');
 var nodeResolve = _interopDefault(require('rollup-plugin-node-resolve'));
 var commonjs = _interopDefault(require('rollup-plugin-commonjs'));
-var process = _interopDefault(require('process'));
 var babel = _interopDefault(require('rollup-plugin-babel'));
-var fs$1 = _interopDefault(require('fs-extra'));
-var fileSyncCmp = _interopDefault(require('file-sync-cmp'));
-var iconv = _interopDefault(require('iconv-lite'));
-var buffer = require('buffer');
 var chalk = _interopDefault(require('chalk'));
 var globAll = _interopDefault(require('glob-all'));
 var del = _interopDefault(require('del'));
@@ -1221,7 +1221,270 @@ var Images = function (_BaseRecipe) {
   return Images;
 }(BaseRecipe);
 
-var node_modules = findup('node_modules');
+var isWindows = process.platform === 'win32';
+var pathSeparatorRe = /[\/\\]/g;
+
+/**
+ * Implementation can use our base class, but is exposed as static methods in the exported File class
+ *
+ * TODO: reducing the amount of code by using other maintained libraries would be fantastic.  Worst case, break most of this into it's own library?
+ *
+ *  @credit to grunt for the grunt.file implementation. See license for attribution.
+ */
+var FileImplementation = function (_Base) {
+  babelHelpers.inherits(FileImplementation, _Base);
+
+  function FileImplementation() {
+    var config = arguments.length <= 0 || arguments[0] === undefined ? { debug: false } : arguments[0];
+    babelHelpers.classCallCheck(this, FileImplementation);
+    return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(FileImplementation).call(this, { encoding: "utf8" }, config));
+  }
+
+  babelHelpers.createClass(FileImplementation, [{
+    key: 'findup',
+    value: function findup(glob) {
+      var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+      var fullPath = arguments.length <= 2 || arguments[2] === undefined ? true : arguments[2];
+
+      var f = _findup(glob, options);
+      if (f && fullPath) {
+        return path.resolve(f);
+      } else {
+        return f;
+      }
+    }
+
+    // Read a file, optionally processing its content, then write the output.
+
+  }, {
+    key: 'copy',
+    value: function copy(srcpath, destpath, options) {
+      if (!options) {
+        options = {};
+      }
+      // If a process function was specified, process the file's source.
+
+      // If the file will be processed, use the encoding as-specified. Otherwise, use an encoding of null to force the file to be read/written as a Buffer.
+      var readWriteOptions = options.process ? options : { encoding: null };
+
+      var contents = this.read(srcpath, readWriteOptions);
+      if (options.process) {
+        this.debug('Processing source...');
+        try {
+          contents = options.process(contents, srcpath);
+        } catch (e) {
+          this.notifyError('Error while executing process function on ' + srcpath + '.', e);
+        }
+      }
+      // Abort copy if the process function returns false.
+      if (contents === false) {
+        this.debug('Write aborted, no contents.');
+      } else {
+        this.write(destpath, contents, readWriteOptions);
+      }
+    }
+  }, {
+    key: 'syncTimestamp',
+    value: function syncTimestamp(src, dest) {
+      var stat = fs$1.lstatSync(src);
+      if (path.basename(src) !== path.basename(dest)) {
+        return;
+      }
+
+      if (stat.isFile() && !fileSyncCmp.equalFiles(src, dest)) {
+        return;
+      }
+
+      var fd = fs$1.openSync(dest, isWindows ? 'r+' : 'r');
+      fs$1.futimesSync(fd, stat.atime, stat.mtime);
+      fs$1.closeSync(fd);
+    }
+  }, {
+    key: 'write',
+    value: function write(filepath, contents, options) {
+      if (!options) {
+        options = {};
+      }
+      // Create path, if necessary.
+      this.mkdir(path.dirname(filepath));
+      try {
+        // If contents is already a Buffer, don't try to encode it. If no encoding was specified, use the default.
+        if (!buffer.Buffer.isBuffer(contents)) {
+          contents = iconv.encode(contents, options.encoding || this.config.encoding);
+        }
+        // Actually write this.
+        fs$1.writeFileSync(filepath, contents);
+
+        return true;
+      } catch (e) {
+        this.notifyError('Unable to write ' + filepath + ' file (Error code: ' + e.code + ').', e);
+      }
+    }
+
+    // Read a file, return its contents.
+
+  }, {
+    key: 'read',
+    value: function read(filepath, options) {
+      if (!options) {
+        options = {};
+      }
+      var contents = void 0;
+      this.debug('Reading ' + filepath + '...');
+      try {
+        contents = fs$1.readFileSync(String(filepath));
+        // If encoding is not explicitly null, convert from encoded buffer to a
+        // string. If no encoding was specified, use the default.
+        if (options.encoding !== null) {
+          contents = iconv.decode(contents, options.encoding || this.config.encoding);
+          // Strip any BOM that might exist.
+          if (!this.config.preserveBOM && contents.charCodeAt(0) === 0xFEFF) {
+            contents = contents.substring(1);
+          }
+        }
+
+        return contents;
+      } catch (e) {
+        this.notifyError('Unable to read "' + filepath + '" file (Error code: ' + e.code + ').', e);
+      }
+    }
+
+    /**
+     * Like mkdir -p. Create a directory and any intermediary directories.
+     * @param dirpath
+     * @param mode
+     */
+
+  }, {
+    key: 'mkdir',
+    value: function mkdir(dirpath, mode) {
+      var _this2 = this;
+
+      this.debug('mkdir ' + dirpath + ':');
+      // Set directory mode in a strict-mode-friendly way.
+      if (mode == null) {
+        mode = parseInt('0777', 8) & ~process.umask();
+      }
+      dirpath.split(pathSeparatorRe).reduce(function (parts, part) {
+        parts += part + '/';
+        var subpath = path.resolve(parts);
+        if (!_this2.exists(subpath)) {
+          try {
+            _this2.debug('\tfs.mkdirSync(' + subpath + ', ' + mode + ')');
+            fs$1.mkdirSync(subpath, mode);
+          } catch (e) {
+            _this2.notifyError('Unable to create directory ' + subpath + ' (Error code: ' + e.code + ').', e);
+          }
+        } else {
+          _this2.debug('\t' + subpath + ' already exists');
+        }
+        return parts;
+      }, '');
+    }
+
+    /**
+     * Match a filepath or filepaths against one or more wildcard patterns.
+     * @returns true if any of the patterns match.
+     */
+
+  }, {
+    key: 'isMatch',
+    value: function isMatch() {
+      return this.match.apply(this, arguments).length > 0;
+    }
+  }, {
+    key: 'exists',
+    value: function exists() {
+      var filepath = path.join.apply(path, arguments);
+      var result = fs$1.existsSync(filepath);
+      this.debug('exists(' + filepath + ')? ' + result);
+      return result;
+    }
+  }, {
+    key: 'isDir',
+    value: function isDir() {
+      var filepath = path.join.apply(path, arguments);
+      return this.exists(filepath) && fs$1.statSync(filepath).isDirectory();
+    }
+  }, {
+    key: 'detectDestType',
+    value: function detectDestType(dest) {
+      if (dest.endsWith('/')) {
+        return 'directory';
+      } else {
+        return 'file';
+      }
+    }
+  }]);
+  return FileImplementation;
+}(Base);
+
+var File = function () {
+  function File() {
+    babelHelpers.classCallCheck(this, File);
+  }
+
+  babelHelpers.createClass(File, null, [{
+    key: 'findup',
+    value: function findup(glob) {
+      var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+      var fullPath = arguments.length <= 2 || arguments[2] === undefined ? true : arguments[2];
+
+      return instance.findup(glob, options, fullPath);
+    }
+  }, {
+    key: 'copy',
+    value: function copy(srcpath, destpath, options) {
+      return instance.copy(srcpath, destpath, options);
+    }
+  }, {
+    key: 'syncTimestamp',
+    value: function syncTimestamp(src, dest) {
+      return instance.syncTimestamp(src, dest);
+    }
+  }, {
+    key: 'write',
+    value: function write(filepath, contents, options) {
+      return instance.write(filepath, contents, options);
+    }
+  }, {
+    key: 'read',
+    value: function read(filepath, options) {
+      return instance.read(filepath, options);
+    }
+  }, {
+    key: 'isDir',
+    value: function isDir() {
+      return instance.isDir.apply(instance, arguments);
+    }
+  }, {
+    key: 'mkdir',
+    value: function mkdir(dirpath, mode) {
+      return instance.mkdir(dirpath, mode);
+    }
+  }, {
+    key: 'isMatch',
+    value: function isMatch() {
+      return instance.isMatch.apply(instance, arguments);
+    }
+  }, {
+    key: 'exists',
+    value: function exists() {
+      return instance.exists.apply(instance, arguments);
+    }
+  }, {
+    key: 'detectDestType',
+    value: function detectDestType(dest) {
+      return instance.detectDestType(dest);
+    }
+  }]);
+  return File;
+}();
+
+//  singleton
+var instance = new FileImplementation();
+
+var node_modules = File.findup('node_modules');
 
 var Default$6 = {
   debug: false,
@@ -1331,7 +1594,7 @@ var ScssLint = function (_BaseRecipe) {
 
     if (!_this.config.options.config) {
 
-      var configFile = findup('.scss-lint.yml', { cwd: _this.config.source.options.cwd });
+      var configFile = File.findup('.scss-lint.yml', { cwd: _this.config.source.options.cwd });
       if (configFile) {
         _this.log('Using config: ' + configFile);
         _this.config.options.config = configFile;
@@ -1640,7 +1903,7 @@ var Aggregate = function (_BaseGulp) {
   return Aggregate;
 }(BaseGulp);
 
-var node_modules$1 = findup('node_modules');
+var node_modules$1 = File.findup('node_modules');
 
 var Default$9 = {
   debug: false,
@@ -2065,248 +2328,6 @@ var RollupUmd = function (_RollupCjs) {
 
   return RollupUmd;
 }(RollupCjs);
-
-var isWindows = process.platform === 'win32';
-var pathSeparatorRe = /[\/\\]/g;
-
-/**
- * Implementation can use our base class, but is exposed as static methods in the exported File class
- *
- * TODO: reducing the amount of code by using other maintained libraries would be fantastic.  Worst case, break most of this into it's own library?
- *
- *  @credit to grunt for the grunt.file implementation. See license for attribution.
- */
-var FileImplementation = function (_Base) {
-  babelHelpers.inherits(FileImplementation, _Base);
-
-  function FileImplementation() {
-    var config = arguments.length <= 0 || arguments[0] === undefined ? { debug: false } : arguments[0];
-    babelHelpers.classCallCheck(this, FileImplementation);
-    return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(FileImplementation).call(this, { encoding: "utf8" }, config));
-  }
-
-  // Read a file, optionally processing its content, then write the output.
-
-
-  babelHelpers.createClass(FileImplementation, [{
-    key: 'copy',
-    value: function copy(srcpath, destpath, options) {
-      if (!options) {
-        options = {};
-      }
-      // If a process function was specified, process the file's source.
-
-      // If the file will be processed, use the encoding as-specified. Otherwise, use an encoding of null to force the file to be read/written as a Buffer.
-      var readWriteOptions = options.process ? options : { encoding: null };
-
-      var contents = this.read(srcpath, readWriteOptions);
-      if (options.process) {
-        this.debug('Processing source...');
-        try {
-          contents = options.process(contents, srcpath);
-        } catch (e) {
-          this.notifyError('Error while executing process function on ' + srcpath + '.', e);
-        }
-      }
-      // Abort copy if the process function returns false.
-      if (contents === false) {
-        this.debug('Write aborted, no contents.');
-      } else {
-        this.write(destpath, contents, readWriteOptions);
-      }
-    }
-  }, {
-    key: 'syncTimestamp',
-    value: function syncTimestamp(src, dest) {
-      var stat = fs$1.lstatSync(src);
-      if (path.basename(src) !== path.basename(dest)) {
-        return;
-      }
-
-      if (stat.isFile() && !fileSyncCmp.equalFiles(src, dest)) {
-        return;
-      }
-
-      var fd = fs$1.openSync(dest, isWindows ? 'r+' : 'r');
-      fs$1.futimesSync(fd, stat.atime, stat.mtime);
-      fs$1.closeSync(fd);
-    }
-  }, {
-    key: 'write',
-    value: function write(filepath, contents, options) {
-      if (!options) {
-        options = {};
-      }
-      // Create path, if necessary.
-      this.mkdir(path.dirname(filepath));
-      try {
-        // If contents is already a Buffer, don't try to encode it. If no encoding was specified, use the default.
-        if (!buffer.Buffer.isBuffer(contents)) {
-          contents = iconv.encode(contents, options.encoding || this.config.encoding);
-        }
-        // Actually write this.
-        fs$1.writeFileSync(filepath, contents);
-
-        return true;
-      } catch (e) {
-        this.notifyError('Unable to write ' + filepath + ' file (Error code: ' + e.code + ').', e);
-      }
-    }
-
-    // Read a file, return its contents.
-
-  }, {
-    key: 'read',
-    value: function read(filepath, options) {
-      if (!options) {
-        options = {};
-      }
-      var contents = void 0;
-      this.debug('Reading ' + filepath + '...');
-      try {
-        contents = fs$1.readFileSync(String(filepath));
-        // If encoding is not explicitly null, convert from encoded buffer to a
-        // string. If no encoding was specified, use the default.
-        if (options.encoding !== null) {
-          contents = iconv.decode(contents, options.encoding || this.config.encoding);
-          // Strip any BOM that might exist.
-          if (!this.config.preserveBOM && contents.charCodeAt(0) === 0xFEFF) {
-            contents = contents.substring(1);
-          }
-        }
-
-        return contents;
-      } catch (e) {
-        this.notifyError('Unable to read "' + filepath + '" file (Error code: ' + e.code + ').', e);
-      }
-    }
-
-    /**
-     * Like mkdir -p. Create a directory and any intermediary directories.
-     * @param dirpath
-     * @param mode
-     */
-
-  }, {
-    key: 'mkdir',
-    value: function mkdir(dirpath, mode) {
-      var _this2 = this;
-
-      this.debug('mkdir ' + dirpath + ':');
-      // Set directory mode in a strict-mode-friendly way.
-      if (mode == null) {
-        mode = parseInt('0777', 8) & ~process.umask();
-      }
-      dirpath.split(pathSeparatorRe).reduce(function (parts, part) {
-        parts += part + '/';
-        var subpath = path.resolve(parts);
-        if (!_this2.exists(subpath)) {
-          try {
-            _this2.debug('\tfs.mkdirSync(' + subpath + ', ' + mode + ')');
-            fs$1.mkdirSync(subpath, mode);
-          } catch (e) {
-            _this2.notifyError('Unable to create directory ' + subpath + ' (Error code: ' + e.code + ').', e);
-          }
-        } else {
-          _this2.debug('\t' + subpath + ' already exists');
-        }
-        return parts;
-      }, '');
-    }
-
-    /**
-     * Match a filepath or filepaths against one or more wildcard patterns.
-     * @returns true if any of the patterns match.
-     */
-
-  }, {
-    key: 'isMatch',
-    value: function isMatch() {
-      return this.match.apply(this, arguments).length > 0;
-    }
-  }, {
-    key: 'exists',
-    value: function exists() {
-      var filepath = path.join.apply(path, arguments);
-      var result = fs$1.existsSync(filepath);
-      this.debug('exists(' + filepath + ')? ' + result);
-      return result;
-    }
-  }, {
-    key: 'isDir',
-    value: function isDir() {
-      var filepath = path.join.apply(path, arguments);
-      return this.exists(filepath) && fs$1.statSync(filepath).isDirectory();
-    }
-  }, {
-    key: 'detectDestType',
-    value: function detectDestType(dest) {
-      if (dest.endsWith('/')) {
-        return 'directory';
-      } else {
-        return 'file';
-      }
-    }
-  }]);
-  return FileImplementation;
-}(Base);
-
-var File = function () {
-  function File() {
-    babelHelpers.classCallCheck(this, File);
-  }
-
-  babelHelpers.createClass(File, null, [{
-    key: 'copy',
-    value: function copy(srcpath, destpath, options) {
-      return instance.copy(srcpath, destpath, options);
-    }
-  }, {
-    key: 'syncTimestamp',
-    value: function syncTimestamp(src, dest) {
-      return instance.syncTimestamp(src, dest);
-    }
-  }, {
-    key: 'write',
-    value: function write(filepath, contents, options) {
-      return instance.write(filepath, contents, options);
-    }
-  }, {
-    key: 'read',
-    value: function read(filepath, options) {
-      return instance.read(filepath, options);
-    }
-  }, {
-    key: 'isDir',
-    value: function isDir() {
-      return instance.isDir.apply(instance, arguments);
-    }
-  }, {
-    key: 'mkdir',
-    value: function mkdir(dirpath, mode) {
-      return instance.mkdir(dirpath, mode);
-    }
-  }, {
-    key: 'isMatch',
-    value: function isMatch() {
-      return instance.isMatch.apply(instance, arguments);
-    }
-  }, {
-    key: 'exists',
-    value: function exists() {
-      return instance.exists.apply(instance, arguments);
-    }
-  }, {
-    key: 'detectDestType',
-    value: function detectDestType(dest) {
-      return instance.detectDestType(dest);
-    }
-  }]);
-  return File;
-}();
-
-//  singleton
-var instance = new FileImplementation();
 
 var Default$15 = {
   debug: false,
@@ -4214,7 +4235,7 @@ var RailsEngineDummyRegistry = function (_RailsRegistry) {
     value: function esLinters(gulp) {
       var engineCwd = {
         options: {
-          cwd: findup(this.config.preset.javascripts.source.options.cwd, { cwd: '..' })
+          cwd: File.findup(this.config.preset.javascripts.source.options.cwd, { cwd: '..' })
         }
       };
 
@@ -4236,7 +4257,7 @@ var RailsEngineDummyRegistry = function (_RailsRegistry) {
     value: function scssLinters(gulp) {
       var engineCwd = {
         options: {
-          cwd: findup(this.config.preset.stylesheets.source.options.cwd, { cwd: '..' })
+          cwd: File.findup(this.config.preset.stylesheets.source.options.cwd, { cwd: '..' })
         }
       };
 
@@ -4284,6 +4305,7 @@ exports.PublishBuild = PublishBuild;
 exports.PublishNpm = PublishNpm;
 exports.PublishGhPages = PublishGhPages;
 exports.Jekyll = Jekyll;
+exports.File = File;
 exports.series = series;
 exports.parallel = parallel;
 exports.tmpDirName = tmpDirName;

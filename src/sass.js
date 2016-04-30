@@ -8,8 +8,8 @@ import sass from 'gulp-sass'
 import sourcemaps from 'gulp-sourcemaps'
 import gulpif from 'gulp-if'
 
-import findup from 'findup-sync'
-const node_modules = findup('node_modules')
+import File from './util/file'
+const node_modules = File.findup('node_modules')
 
 export const Default = {
   debug: false,

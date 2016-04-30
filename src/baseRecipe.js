@@ -38,13 +38,13 @@ const BaseRecipe = class extends BaseGulp {
       // generate watch task e.g. sass:watch
       let name = this.watchTaskName()
       this.debug(`Registering task: ${Util.colors.green(name)}`)
-      this.watchFn = () => {
+      this.watchFn = (done) => {
         this.log(`[${Util.colors.green(name)}] watching ${this.config.watch.glob} ${stringify(this.config.watch.options)}...`)
 
         return this.gulp.watch(this.config.watch.glob, this.config.watch.options, () => {
           this.log(`Watched file changed, running ${this.taskName()}...`);
           return Promise
-            .resolve(this.run(null, true))
+            .resolve(this.run(done, true))
             .then(() => this.logFinish())
         })
       }

@@ -25,6 +25,7 @@ import sass from 'gulp-sass';
 import findup from 'findup-sync';
 import scssLint from 'gulp-scss-lint';
 import scssLintStylish from 'gulp-scss-lint-stylish';
+import unique from 'array-unique';
 import { rollup } from 'rollup';
 import nodeResolve from 'rollup-plugin-node-resolve';
 import commonjs from 'rollup-plugin-commonjs';
@@ -601,13 +602,13 @@ const BaseRecipe = class extends BaseGulp {
       // generate watch task e.g. sass:watch
       let name = this.watchTaskName()
       this.debug(`Registering task: ${Util.colors.green(name)}`)
-      this.watchFn = () => {
+      this.watchFn = (done) => {
         this.log(`[${Util.colors.green(name)}] watching ${this.config.watch.glob} ${stringify(this.config.watch.options)}...`)
 
         return this.gulp.watch(this.config.watch.glob, this.config.watch.options, () => {
           this.log(`Watched file changed, running ${this.taskName()}...`);
           return Promise
-            .resolve(this.run(null, true))
+            .resolve(this.run(done, true))
             .then(() => this.logFinish())
         })
       }
@@ -1069,9 +1070,6 @@ const ScssLint = class extends BaseRecipe {
 const Default$8 = {
   debug: false,
   watch: true  // register a watch task that aggregates all watches and runs the full sequence
-
-  // watch can also specify an additional path i.e. spec/dummy app watching parent sources
-  // watch: { glob: '**/*.scss', options: { cwd: '../../' } }
 }
 
 const Aggregate = class extends BaseGulp {
@@ -1124,14 +1122,32 @@ const Aggregate = class extends BaseGulp {
     this.taskFn.description = this.createHelpText()
   }
 
-  registerWatchTask(taskName) {
+  watchToGlobs(recipe) {
+    // glob could be array
+    let fullGlobs = []
+    if(recipe.config.watch.glob === undefined){
+      return fullGlobs
+    }
+    let globs = recipe.config.watch.glob
+    if(!Array.isArray(recipe.config.watch.glob)){
+      globs = [recipe.config.watch.glob]
+    }
+
+    for(let glob of globs) {
+      fullGlobs.push(`${recipe.config.watch.options.cwd}/${glob}`)
+    }
+    return fullGlobs
+  }
+
+  registerWatchTask(watchTaskName) {
+    let coloredTask = `${Util.colors.green(watchTaskName)}`
     // generate watch task
     if (this.watchableRecipes().length < 1) {
-      this.debug(`No watchable recipes for task: ${Util.colors.green(taskName)}`)
+      this.debug(`No watchable recipes for task: ${coloredTask}`)
       return
     }
 
-    this.debug(`Registering task: ${Util.colors.green(taskName)}`)
+    this.debug(`Registering task: ${coloredTask}`)
 
     // on error ensure that we reset the flag so that it runs again
     this.gulp.on('error', () => {
@@ -1139,72 +1155,45 @@ const Aggregate = class extends BaseGulp {
       this.taskFn.running = false
     })
 
-    let watchFn = () => {
-      // watch the watchable recipes and make them #run the series
-      for (let recipe of this.watchableRecipes()) {
-        this.addWatch(taskName, recipe)
-      }
+    // aggregate all globs into an array for a single watch fn call
+    let globs = []
+    for (let recipe of this.watchableRecipes()) {
+      globs = globs.concat(this.watchToGlobs(recipe))
+    }
 
-      // this aggregate may be configured with additional watch
-      if(this.config.watch.glob){
-        this.addWatch(taskName, this)
-      }
+    globs = unique(globs)
+    this.debugDump('globs', globs)
+
+    let watchFn = () => {
+      this.log(`${coloredTask} watching ${globs.join(', ')}`)
+      let watcher = this.gulp.watch(globs, {}, this.taskFn)
+      // watcher.on('error', (error) => {
+      //   this.notifyError(`${coloredTask} ${error}`)
+      // })
+
+      watcher.on('add', (path) => {
+        if (!this.taskFn.running) {
+          this.log(`${coloredTask} ${path} was added, running...`)
+        }
+      })
+
+      watcher.on('change', (path) => {
+        if (!this.taskFn.running) {
+          this.log(`${coloredTask} ${path} was changed, running...`)
+        }
+      })
+      watcher.on('unlink', (path) => {
+        if (!this.taskFn.running) {
+          this.log(`${coloredTask} ${path} was deleted, running...`)
+        }
+      })
+
+      return watcher
     }
 
     watchFn.description = this.createWatchHelpText()
-    this.gulp.task(taskName, watchFn)
+    return this.gulp.task(watchTaskName, watchFn)
   }
-
-  addWatch(taskName, recipe) {
-    let recipeName = Util.colors.grey(`(${recipe.taskName() || recipe.constructor.name || 'anonymous'})`)
-    let logPrefix = `[${Util.colors.green(taskName)} ${recipeName}]`
-    let msg = `${logPrefix} watching`
-    if (recipe.config.watch.options) {
-      msg += ` ${recipe.config.watch.options.cwd} for ${recipe.config.watch.glob}...`
-    }
-    this.log(msg)
-
-    // declare this in here so we can use different display names in the log
-    let runFn = (done) => {
-      // ensure that multiple watches do not run the entire set of recipes multiple times on a single change
-      if (this.taskFn.running) {
-        this.debug('Multiple matching watchers, skipping this one...')
-        done()
-        return
-      }
-      else {
-        this.debug('Allowing it to run....')
-        this.taskFn.running = true
-      }
-
-      let finishFn = () => {
-        this.log(`${logPrefix} finished`)
-        this.taskFn.running = false
-      }
-
-      this.gulp.series(this.taskFn, finishFn, done)()
-    }
-    runFn.displayName = `${recipe.taskName()} watcher`
-
-    let watcher = this.gulp.watch(recipe.config.watch.glob, recipe.config.watch.options, runFn)
-    // add watchers for logging/information
-    watcher.on('add', (path) => {
-      if (!this.taskFn.running) {
-        this.log(`${logPrefix} ${path} was added, running...`)
-      }
-    })
-    watcher.on('change', (path) => {
-      if (!this.taskFn.running) {
-        this.log(`${logPrefix} ${path} was changed, running...`)
-      }
-    })
-    watcher.on('unlink', (path) => {
-      if (!this.taskFn.running) {
-        this.log(`${logPrefix} ${path} was deleted, running...`)
-      }
-    })
-  }
-
 
   flatten(list) {
     // parallel and series set `.recipes` on the function as metadata
@@ -1246,8 +1235,6 @@ const Aggregate = class extends BaseGulp {
     }
 
     return list.reduce(callback, [])
-
-
   }
 
   flattenedRecipes() {

@@ -1,4 +1,4 @@
-define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'gulp-util', 'stringify-object', 'console', 'gulp-notify', 'shelljs', 'gulp-eslint', 'gulp-debug', 'gulp-if', 'gulp-uglify', 'gulp-sourcemaps', 'gulp-concat', 'gulp-ext-replace', 'gulp-autoprefixer', 'browser-sync', 'gulp-changed', 'gulp-imagemin', 'merge-stream', 'gulp-sass', 'findup-sync', 'gulp-scss-lint', 'gulp-scss-lint-stylish', 'rollup', 'rollup-plugin-node-resolve', 'rollup-plugin-commonjs', 'process', 'rollup-plugin-babel', 'fs-extra', 'file-sync-cmp', 'iconv-lite', 'buffer', 'chalk', 'glob-all', 'del', 'gulp-rev', 'gulp-rev-replace', 'gulp-replace', 'gulp-cssnano', 'gulp-mocha', 'gulp-mocha-phantomjs', 'build-control', 'path-is-absolute', 'tmp', 'undertaker-registry'], function (exports, extend, path, fs, glob, spawn, jsonfile, Util, stringify, console, notify, shelljs, eslint, debug, gulpif, uglify, sourcemaps, concat, extReplace, autoprefixer, BrowserSync, changed, imagemin, merge, sass, findup, scssLint, scssLintStylish, rollup, nodeResolve, commonjs, process, babel, fs$1, fileSyncCmp, iconv, buffer, chalk, globAll, del, rev, revReplace, replace, cssnano, mocha, mochaPhantomJS, buildControl, pathIsAbsolute, tmp, DefaultRegistry) { 'use strict';
+define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'gulp-util', 'stringify-object', 'console', 'gulp-notify', 'shelljs', 'gulp-eslint', 'gulp-debug', 'gulp-if', 'gulp-uglify', 'gulp-sourcemaps', 'gulp-concat', 'gulp-ext-replace', 'gulp-autoprefixer', 'browser-sync', 'gulp-changed', 'gulp-imagemin', 'merge-stream', 'gulp-sass', 'findup-sync', 'gulp-scss-lint', 'gulp-scss-lint-stylish', 'array-unique', 'rollup', 'rollup-plugin-node-resolve', 'rollup-plugin-commonjs', 'process', 'rollup-plugin-babel', 'fs-extra', 'file-sync-cmp', 'iconv-lite', 'buffer', 'chalk', 'glob-all', 'del', 'gulp-rev', 'gulp-rev-replace', 'gulp-replace', 'gulp-cssnano', 'gulp-mocha', 'gulp-mocha-phantomjs', 'build-control', 'path-is-absolute', 'tmp', 'undertaker-registry'], function (exports, extend, path, fs, glob, spawn, jsonfile, Util, stringify, console, notify, shelljs, eslint, debug, gulpif, uglify, sourcemaps, concat, extReplace, autoprefixer, BrowserSync, changed, imagemin, merge, sass, findup, scssLint, scssLintStylish, unique, rollup, nodeResolve, commonjs, process, babel, fs$1, fileSyncCmp, iconv, buffer, chalk, globAll, del, rev, revReplace, replace, cssnano, mocha, mochaPhantomJS, buildControl, pathIsAbsolute, tmp, DefaultRegistry) { 'use strict';
 
   extend = 'default' in extend ? extend['default'] : extend;
   path = 'default' in path ? path['default'] : path;
@@ -27,6 +27,7 @@ define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'g
   findup = 'default' in findup ? findup['default'] : findup;
   scssLint = 'default' in scssLint ? scssLint['default'] : scssLint;
   scssLintStylish = 'default' in scssLintStylish ? scssLintStylish['default'] : scssLintStylish;
+  unique = 'default' in unique ? unique['default'] : unique;
   nodeResolve = 'default' in nodeResolve ? nodeResolve['default'] : nodeResolve;
   commonjs = 'default' in commonjs ? commonjs['default'] : commonjs;
   process = 'default' in process ? process['default'] : process;
@@ -798,12 +799,12 @@ define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'g
             // generate watch task e.g. sass:watch
             var name = _this2.watchTaskName();
             _this2.debug('Registering task: ' + Util.colors.green(name));
-            _this2.watchFn = function () {
+            _this2.watchFn = function (done) {
               _this2.log('[' + Util.colors.green(name) + '] watching ' + _this2.config.watch.glob + ' ' + stringify(_this2.config.watch.options) + '...');
 
               return _this2.gulp.watch(_this2.config.watch.glob, _this2.config.watch.options, function () {
                 _this2.log('Watched file changed, running ' + _this2.taskName() + '...');
-                return Promise.resolve(_this2.run(null, true)).then(function () {
+                return Promise.resolve(_this2.run(done, true)).then(function () {
                   return _this2.logFinish();
                 });
               });
@@ -1357,9 +1358,6 @@ define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'g
   var Default$8 = {
     debug: false,
     watch: true // register a watch task that aggregates all watches and runs the full sequence
-
-    // watch can also specify an additional path i.e. spec/dummy app watching parent sources
-    // watch: { glob: '**/*.scss', options: { cwd: '../../' } }
   };
 
   var Aggregate = function (_BaseGulp) {
@@ -1428,17 +1426,58 @@ define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'g
         this.taskFn.description = this.createHelpText();
       }
     }, {
+      key: 'watchToGlobs',
+      value: function watchToGlobs(recipe) {
+        // glob could be array
+        var fullGlobs = [];
+        if (recipe.config.watch.glob === undefined) {
+          return fullGlobs;
+        }
+        var globs = recipe.config.watch.glob;
+        if (!Array.isArray(recipe.config.watch.glob)) {
+          globs = [recipe.config.watch.glob];
+        }
+
+        var _iteratorNormalCompletion = true;
+        var _didIteratorError = false;
+        var _iteratorError = undefined;
+
+        try {
+          for (var _iterator = globs[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+            var glob = _step.value;
+
+            fullGlobs.push(recipe.config.watch.options.cwd + '/' + glob);
+          }
+        } catch (err) {
+          _didIteratorError = true;
+          _iteratorError = err;
+        } finally {
+          try {
+            if (!_iteratorNormalCompletion && _iterator.return) {
+              _iterator.return();
+            }
+          } finally {
+            if (_didIteratorError) {
+              throw _iteratorError;
+            }
+          }
+        }
+
+        return fullGlobs;
+      }
+    }, {
       key: 'registerWatchTask',
-      value: function registerWatchTask(taskName) {
+      value: function registerWatchTask(watchTaskName) {
         var _this2 = this;
 
+        var coloredTask = '' + Util.colors.green(watchTaskName);
         // generate watch task
         if (this.watchableRecipes().length < 1) {
-          this.debug('No watchable recipes for task: ' + Util.colors.green(taskName));
+          this.debug('No watchable recipes for task: ' + coloredTask);
           return;
         }
 
-        this.debug('Registering task: ' + Util.colors.green(taskName));
+        this.debug('Registering task: ' + coloredTask);
 
         // on error ensure that we reset the flag so that it runs again
         this.gulp.on('error', function () {
@@ -1446,99 +1485,70 @@ define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'g
           _this2.taskFn.running = false;
         });
 
-        var watchFn = function watchFn() {
-          // watch the watchable recipes and make them #run the series
-          var _iteratorNormalCompletion = true;
-          var _didIteratorError = false;
-          var _iteratorError = undefined;
+        // aggregate all globs into an array for a single watch fn call
+        var globs = [];
+        var _iteratorNormalCompletion2 = true;
+        var _didIteratorError2 = false;
+        var _iteratorError2 = undefined;
 
+        try {
+          for (var _iterator2 = this.watchableRecipes()[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+            var recipe = _step2.value;
+
+            globs = globs.concat(this.watchToGlobs(recipe));
+          }
+        } catch (err) {
+          _didIteratorError2 = true;
+          _iteratorError2 = err;
+        } finally {
           try {
-            for (var _iterator = _this2.watchableRecipes()[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-              var recipe = _step.value;
-
-              _this2.addWatch(taskName, recipe);
+            if (!_iteratorNormalCompletion2 && _iterator2.return) {
+              _iterator2.return();
             }
-
-            // this aggregate may be configured with additional watch
-          } catch (err) {
-            _didIteratorError = true;
-            _iteratorError = err;
           } finally {
-            try {
-              if (!_iteratorNormalCompletion && _iterator.return) {
-                _iterator.return();
-              }
-            } finally {
-              if (_didIteratorError) {
-                throw _iteratorError;
-              }
+            if (_didIteratorError2) {
+              throw _iteratorError2;
             }
           }
+        }
 
-          if (_this2.config.watch.glob) {
-            _this2.addWatch(taskName, _this2);
-          }
+        globs = unique(globs);
+        this.debugDump('globs', globs);
+
+        var watchFn = function watchFn() {
+          _this2.log(coloredTask + ' watching ' + globs.join(', '));
+          var watcher = _this2.gulp.watch(globs, {}, _this2.taskFn);
+          // watcher.on('error', (error) => {
+          //   this.notifyError(`${coloredTask} ${error}`)
+          // })
+
+          watcher.on('add', function (path) {
+            if (!_this2.taskFn.running) {
+              _this2.log(coloredTask + ' ' + path + ' was added, running...');
+            }
+          });
+
+          watcher.on('change', function (path) {
+            if (!_this2.taskFn.running) {
+              _this2.log(coloredTask + ' ' + path + ' was changed, running...');
+            }
+          });
+          watcher.on('unlink', function (path) {
+            if (!_this2.taskFn.running) {
+              _this2.log(coloredTask + ' ' + path + ' was deleted, running...');
+            }
+          });
+
+          return watcher;
         };
 
         watchFn.description = this.createWatchHelpText();
-        this.gulp.task(taskName, watchFn);
-      }
-    }, {
-      key: 'addWatch',
-      value: function addWatch(taskName, recipe) {
-        var _this3 = this;
-
-        var recipeName = Util.colors.grey('(' + (recipe.taskName() || recipe.constructor.name || 'anonymous') + ')');
-        var logPrefix = '[' + Util.colors.green(taskName) + ' ' + recipeName + ']';
-        var msg = logPrefix + ' watching';
-        if (recipe.config.watch.options) {
-          msg += ' ' + recipe.config.watch.options.cwd + ' for ' + recipe.config.watch.glob + '...';
-        }
-        this.log(msg);
-
-        // declare this in here so we can use different display names in the log
-        var runFn = function runFn(done) {
-          // ensure that multiple watches do not run the entire set of recipes multiple times on a single change
-          if (_this3.taskFn.running) {
-            _this3.debug('Multiple matching watchers, skipping this one...');
-            done();
-            return;
-          } else {
-            _this3.debug('Allowing it to run....');
-            _this3.taskFn.running = true;
-          }
-
-          var finishFn = function finishFn() {
-            _this3.log(logPrefix + ' finished');
-            _this3.taskFn.running = false;
-          };
-
-          _this3.gulp.series(_this3.taskFn, finishFn, done)();
-        };
-        runFn.displayName = recipe.taskName() + ' watcher';
-
-        var watcher = this.gulp.watch(recipe.config.watch.glob, recipe.config.watch.options, runFn);
-        // add watchers for logging/information
-        watcher.on('add', function (path) {
-          if (!_this3.taskFn.running) {
-            _this3.log(logPrefix + ' ' + path + ' was added, running...');
-          }
-        });
-        watcher.on('change', function (path) {
-          if (!_this3.taskFn.running) {
-            _this3.log(logPrefix + ' ' + path + ' was changed, running...');
-          }
-        });
-        watcher.on('unlink', function (path) {
-          if (!_this3.taskFn.running) {
-            _this3.log(logPrefix + ' ' + path + ' was deleted, running...');
-          }
-        });
+        return this.gulp.task(watchTaskName, watchFn);
       }
     }, {
       key: 'flatten',
       value: function flatten(list) {
-        var _this4 = this;
+        var _this3 = this;
 
         // parallel and series set `.recipes` on the function as metadata
         var callback = function callback(prev, current) {
@@ -1546,13 +1556,13 @@ define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'g
 
           // Flatten any series/parallel
           if (typeof current === "function" && current.recipes) {
-            _this4.debugDump('flatten function recipes', current.recipes);
-            item = _this4.flatten(current.recipes);
+            _this3.debugDump('flatten function recipes', current.recipes);
+            item = _this3.flatten(current.recipes);
           }
           // Flatten any Aggregate object - exposes a taskFn (which should be a series/parallel)
           else if (current.taskFn && current.taskFn.recipes) {
-              _this4.debugDump('flatten ' + current.constructor.name + ' with taskFn.recipes', current.taskFn.recipes);
-              item = _this4.flatten(current.taskFn.recipes);
+              _this3.debugDump('flatten ' + current.constructor.name + ' with taskFn.recipes', current.taskFn.recipes);
+              item = _this3.flatten(current.taskFn.recipes);
             }
           //else {
           //  if (current.taskFn) {
@@ -1592,29 +1602,29 @@ define(['exports', 'extend', 'path', 'fs', 'glob', 'cross-spawn', 'jsonfile', 'g
       value: function watchableRecipes() {
         // create an array of watchable recipes
         var watchableRecipes = [];
-        var _iteratorNormalCompletion2 = true;
-        var _didIteratorError2 = false;
-        var _iteratorError2 = undefined;
+        var _iteratorNormalCompletion3 = true;
+        var _didIteratorError3 = false;
+        var _iteratorError3 = undefined;
 
         try {
-          for (var _iterator2 = this.flattenedRecipes()[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-            var recipe = _step2.value;
+          for (var _iterator3 = this.flattenedRecipes()[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+            var recipe = _step3.value;
 
             if (typeof recipe !== "string" && typeof recipe !== "function" && recipe.config.watch) {
               watchableRecipes.push(recipe);
             }
           }
         } catch (err) {
-          _didIteratorError2 = true;
-          _iteratorError2 = err;
+          _didIteratorError3 = true;
+          _iteratorError3 = err;
         } finally {
           try {
-            if (!_iteratorNormalCompletion2 && _iterator2.return) {
-              _iterator2.return();
+            if (!_iteratorNormalCompletion3 && _iterator3.return) {
+              _iterator3.return();
             }
           } finally {
-            if (_didIteratorError2) {
-              throw _iteratorError2;
+            if (_didIteratorError3) {
+              throw _iteratorError3;
             }
           }
         }

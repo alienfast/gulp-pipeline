@@ -82,7 +82,7 @@ const Aggregate = class extends BaseGulp {
       }
 
       // this aggregate may be configured with additional watch
-      if(this.config.watch.glob){
+      if (this.config.watch.glob) {
         this.addWatch(taskName, this)
       }
     }
@@ -113,22 +113,32 @@ const Aggregate = class extends BaseGulp {
         this.taskFn.running = true
       }
 
-      let finishFn = () => {
-        this.log(`${logPrefix} finished`)
-        this.taskFn.running = false
-      }
+      // let finishFn = (done) => {
+      //   this.log(`${logPrefix} finished`)
+      //   this.taskFn.running = false
+      //   done()
+      // }
 
-      this.gulp.series(this.taskFn, finishFn, done)()
+      // this.gulp.series(this.taskFn, /*finishFn,*/ done)()
+      this.taskFn(done)
     }
     runFn.displayName = `${recipe.taskName()} watcher`
 
     let watcher = this.gulp.watch(recipe.config.watch.glob, recipe.config.watch.options, runFn)
     // add watchers for logging/information
+    watcher.on('error', (a, b) => {
+      this.log(`Error via watcher a: ${a}`)
+      this.log(`Error via watcher b: ${b}`)
+      this.log(`arguments.length: ${arguments.length}`)
+      // this.notifyError(`${logPrefix} ${error}`)
+    })
+
     watcher.on('add', (path) => {
       if (!this.taskFn.running) {
         this.log(`${logPrefix} ${path} was added, running...`)
       }
     })
+
     watcher.on('change', (path) => {
       if (!this.taskFn.running) {
         this.log(`${logPrefix} ${path} was changed, running...`)

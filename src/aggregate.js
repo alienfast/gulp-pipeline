@@ -1,5 +1,4 @@
 import BaseGulp from './baseGulp'
-//import Recipes from './util/recipes'
 import Util from 'gulp-util'
 
 const Default = {
@@ -75,7 +74,7 @@ const Aggregate = class extends BaseGulp {
       this.taskFn.running = false
     })
 
-    let watchFn = () => {
+    let watchFn = (done) => {
       // watch the watchable recipes and make them #run the series
       for (let recipe of this.watchableRecipes()) {
         this.addWatch(taskName, recipe)
@@ -85,6 +84,7 @@ const Aggregate = class extends BaseGulp {
       if (this.config.watch.glob) {
         this.addWatch(taskName, this)
       }
+      done()
     }
 
     watchFn.description = this.createWatchHelpText()
@@ -120,7 +120,7 @@ const Aggregate = class extends BaseGulp {
       // }
 
       // this.gulp.series(this.taskFn, /*finishFn,*/ done)()
-      return this.taskFn(done)
+      return this.taskFn(done) // run this aggregates set of tasks
     }
     runFn.displayName = `${recipe.taskName()} watcher`
 

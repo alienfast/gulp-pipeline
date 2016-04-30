@@ -38,6 +38,7 @@ export { default as PublishNpm } from './publishNpm'
 export { default as PublishGhPages } from './publishGhPages'
 export { default as Jekyll } from './jekyll'
 
+export { default as File } from './util/file'
 export { default as series } from './util/series'
 export { default as parallel } from './util/parallel'
 export { default as tmpDirName } from './util/tmpDirName'

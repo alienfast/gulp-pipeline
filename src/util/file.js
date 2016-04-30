@@ -5,6 +5,7 @@ import fileSyncCmp from 'file-sync-cmp'
 import process from 'process'
 import iconv from 'iconv-lite'
 import {Buffer} from 'buffer'
+import findup from 'findup-sync'
 
 const isWindows = (process.platform === 'win32')
 const pathSeparatorRe = /[\/\\]/g;
@@ -19,6 +20,16 @@ const pathSeparatorRe = /[\/\\]/g;
 const FileImplementation = class extends Base {
   constructor(config = {debug: false}) {
     super({encoding: "utf8"}, config)
+  }
+
+  findup(glob, options = {}, fullPath = true) {
+    let f = findup(glob, options)
+    if (f && fullPath) {
+      return path.resolve(f)
+    }
+    else {
+      return f
+    }
   }
 
   // Read a file, optionally processing its content, then write the output.
@@ -135,7 +146,7 @@ const FileImplementation = class extends Base {
           this.notifyError(`Unable to create directory ${subpath} (Error code: ${e.code}).`, e)
         }
       }
-      else{
+      else {
         this.debug(`\t${subpath} already exists`)
       }
       return parts
@@ -174,6 +185,10 @@ const FileImplementation = class extends Base {
 
 
 const File = class {
+  static findup(glob, options = {}, fullPath = true){
+    return instance.findup(glob, options, fullPath)
+  }
+
   static copy(srcpath, destpath, options) {
     return instance.copy(srcpath, destpath, options)
   }

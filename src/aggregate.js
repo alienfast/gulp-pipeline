@@ -120,7 +120,7 @@ const Aggregate = class extends BaseGulp {
       // }
 
       // this.gulp.series(this.taskFn, /*finishFn,*/ done)()
-      this.taskFn(done)
+      return this.taskFn(done)
     }
     runFn.displayName = `${recipe.taskName()} watcher`
 

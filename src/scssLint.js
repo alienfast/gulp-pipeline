@@ -30,6 +30,10 @@ const ScssLint = class extends BaseRecipe {
   constructor(gulp, preset, ...configs) {
     super(gulp, preset, Default, ...configs)
 
+    if(!this.config.source.options.cwd){
+      this.notifyError(`Expected to find source.options.cwd in \n${this.dump(this.config)}`)
+    }
+
     // If a config is not specified, emulate the eslint config behavior by looking up.
     //  If there is a config at or above the source cwd, use it, otherwise leave null.
     if(!this.config.options.config){

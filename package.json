@@ -41,7 +41,7 @@
     "del": "^2.2.0",
     "extend": "^3.0.0",
     "file-sync-cmp": "^0.1.1",
-    "findup-sync": "^0.4.0",
+    "findup-sync": "0.3.0",
     "fs-extra": "^0.30.0",
     "glob": "^7.0.3",
     "glob-all": "^3.0.3",

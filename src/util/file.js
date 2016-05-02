@@ -24,6 +24,9 @@ const FileImplementation = class extends Base {
 
   findup(glob, options = {}, fullPath = true) {
     let f = findup(glob, options)
+    if(this.config.debug) {
+      this.debug(`findup-sync(${glob}, ${this.dump(options)}): ${this.dump(f)}`)
+    }
     if (f && fullPath) {
       return path.resolve(f)
     }

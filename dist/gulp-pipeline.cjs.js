@@ -1509,9 +1509,10 @@ var Default$6 = {
     name: 'sass'
   },
   options: {
+    // NOTE: these are added in the constructor
     // WARNING: `includePaths` this should be a fully qualified path if overriding
     //  @see https://github.com/sass/node-sass/issues/1377
-    includePaths: [node_modules] // this will find any node_modules above the current working directory
+    //includePaths: [node_modules] // this will find any node_modules above the current working directory
   },
   // capture defaults from autoprefixer class
   autoprefixer: {
@@ -1535,11 +1536,39 @@ var Sass = function (_BaseRecipe) {
 
     babelHelpers.classCallCheck(this, Sass);
 
+    var includePaths = [node_modules];
+    // add sub-node_module paths to the includePaths
+    var _iteratorNormalCompletion = true;
+    var _didIteratorError = false;
+    var _iteratorError = undefined;
+
+    try {
+      for (var _iterator = glob.sync('*/node_modules', { cwd: node_modules })[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+        var subNodeModules = _step.value;
+
+        var fullpath = path.join(node_modules, subNodeModules);
+        includePaths.push(fullpath);
+      }
+    } catch (err) {
+      _didIteratorError = true;
+      _iteratorError = err;
+    } finally {
+      try {
+        if (!_iteratorNormalCompletion && _iterator.return) {
+          _iterator.return();
+        }
+      } finally {
+        if (_didIteratorError) {
+          throw _iteratorError;
+        }
+      }
+    }
+
     for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
       configs[_key - 2] = arguments[_key];
     }
 
-    var _this = babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(Sass)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$6].concat(configs)));
+    var _this = babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(Sass)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$6, { options: { includePaths: includePaths } }].concat(configs)));
 
     _this.browserSync = BrowserSync.create();
     return _this;
@@ -1616,10 +1645,8 @@ var ScssLint = function (_BaseRecipe) {
     // If a config is not specified, emulate the eslint config behavior by looking up.
     //  If there is a config at or above the source cwd, use it, otherwise leave null.
     if (!_this.config.options.config) {
-
       var configFile = File.findup('.scss-lint.yml', { cwd: _this.config.source.options.cwd });
       if (configFile) {
-        _this.log('Using config: ' + configFile);
         _this.config.options.config = configFile;
       }
     }
@@ -1637,6 +1664,10 @@ var ScssLint = function (_BaseRecipe) {
       var _this2 = this;
 
       var watching = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
+
+      if (this.config.options.config) {
+        this.log('Using config: ' + this.config.options.config);
+      }
 
       return this.gulp.src(this.config.source.glob, this.config.source.options).pipe(gulpif(this.config.debug, debug(this.debugOptions()))).pipe(scssLint(this.config.options)).on('error', function (error) {
         _this2.notifyError(error, done, watching);
@@ -4124,9 +4155,9 @@ var RailsRegistry = function (_BaseRegistry) {
 
       var js = new (Function.prototype.bind.apply(Aggregate, [null].concat([gulp, 'js', series(gulp, this.esLinters(gulp), this.rollups(gulp))], babelHelpers.toConsumableArray(this.keyConfig('js')))))();
 
-      var css = new (Function.prototype.bind.apply(Aggregate, [null].concat([gulp, 'css', series(gulp, this.scssLinters(gulp), new Sass(gulp, preset))], babelHelpers.toConsumableArray(this.keyConfig('css')))))();
+      var css = new (Function.prototype.bind.apply(Aggregate, [null].concat([gulp, 'css', series(gulp, this.scssLinters(gulp), new (Function.prototype.bind.apply(Sass, [null].concat([gulp, preset], babelHelpers.toConsumableArray(this.classConfig(Sass)))))())], babelHelpers.toConsumableArray(this.keyConfig('css')))))();
 
-      var defaultRecipes = new (Function.prototype.bind.apply(Aggregate, [null].concat([gulp, 'default', series(gulp, new Clean(gulp, preset), parallel(gulp, new Images(gulp, preset), js, css))], babelHelpers.toConsumableArray(this.keyConfig('default')))))();
+      var defaultRecipes = new (Function.prototype.bind.apply(Aggregate, [null].concat([gulp, 'default', series(gulp, new Clean(gulp, preset), parallel(gulp, new (Function.prototype.bind.apply(Images, [null].concat([gulp, preset], babelHelpers.toConsumableArray(this.classConfig(Images)))))(), js, css))], babelHelpers.toConsumableArray(this.keyConfig('default')))))();
 
       // Create the production assets
       var tmpDirObj = tmpDir();
@@ -4139,7 +4170,7 @@ var RailsRegistry = function (_BaseRegistry) {
       var digest = new (Function.prototype.bind.apply(Aggregate, [null].concat([gulp, 'digest', series(gulp, new CleanDigest(gulp, preset, digests),
 
       // minify application.(css|js) to a tmp directory
-      parallel(gulp, new Uglify(gulp, preset, digests, { dest: minifiedAssetsDir, concat: { dest: 'application.js' } }), new CssNano(gulp, preset, digests, { dest: minifiedAssetsDir, minExtension: false })),
+      parallel(gulp, new (Function.prototype.bind.apply(Uglify, [null].concat([gulp, preset, digests, { dest: minifiedAssetsDir, concat: { dest: 'application.js' } }], babelHelpers.toConsumableArray(this.classConfig(Uglify)))))(), new (Function.prototype.bind.apply(CssNano, [null].concat([gulp, preset, digests, { dest: minifiedAssetsDir, minExtension: false }], babelHelpers.toConsumableArray(this.classConfig(CssNano)))))()),
 
       // rev minified css|js from tmp
       new Rev(gulp, preset, digests, {

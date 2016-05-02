@@ -1195,9 +1195,10 @@ const Default$6 = {
     name: 'sass'
   },
   options: {
+    // NOTE: these are added in the constructor
     // WARNING: `includePaths` this should be a fully qualified path if overriding
     //  @see https://github.com/sass/node-sass/issues/1377
-    includePaths: [node_modules] // this will find any node_modules above the current working directory
+    //includePaths: [node_modules] // this will find any node_modules above the current working directory
   },
   // capture defaults from autoprefixer class
   autoprefixer: {
@@ -1214,7 +1215,14 @@ const Sass = class extends BaseRecipe {
    * @param configs - customized overrides for this recipe
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, Default$6, ...configs)
+    let includePaths = [node_modules]
+    // add sub-node_module paths to the includePaths
+    for (let subNodeModules of glob.sync('*/node_modules', {cwd: node_modules})) {
+      let fullpath = path.join(node_modules, subNodeModules)
+      includePaths.push(fullpath)
+    }
+
+    super(gulp, preset, Default$6, {options: {includePaths: includePaths}}, ...configs)
     this.browserSync = BrowserSync.create()
   }
 
@@ -1224,7 +1232,7 @@ const Sass = class extends BaseRecipe {
 
   run(done, watching = false) {
     // add debug for importing problems (can be very helpful)
-    if(this.config.debug && this.config.options.importer === undefined) {
+    if (this.config.debug && this.config.options.importer === undefined) {
       this.config.options.importer = (url, prev, done) => {
         this.debug(`importing ${url} from ${prev}`)
         done({file: url})
@@ -1270,27 +1278,29 @@ const ScssLint = class extends BaseRecipe {
   constructor(gulp, preset, ...configs) {
     super(gulp, preset, Default$7, ...configs)
 
-    if(!this.config.source.options.cwd){
+    if (!this.config.source.options.cwd) {
       this.notifyError(`Expected to find source.options.cwd in \n${this.dump(this.config)}`)
     }
 
     // If a config is not specified, emulate the eslint config behavior by looking up.
     //  If there is a config at or above the source cwd, use it, otherwise leave null.
-    if(!this.config.options.config){
-
+    if (!this.config.options.config) {
       let configFile = File.findup('.scss-lint.yml', {cwd: this.config.source.options.cwd})
-      if(configFile){
-        this.log(`Using config: ${configFile}`)
+      if (configFile) {
         this.config.options.config = configFile
       }
     }
   }
 
-  createDescription(){
+  createDescription() {
     return `Lints ${this.config.source.options.cwd}/${this.config.source.glob}`
   }
 
   run(done, watching = false) {
+    if (this.config.options.config) {
+      this.log(`Using config: ${this.config.options.config}`)
+    }
+
     return this.gulp.src(this.config.source.glob, this.config.source.options)
       .pipe(gulpif(this.config.debug, debug(this.debugOptions())))
       .pipe(scssLint(this.config.options))
@@ -3093,7 +3103,7 @@ const RailsRegistry = class extends BaseRegistry {
     const css = new Aggregate(gulp, 'css',
       series(gulp,
         this.scssLinters(gulp),
-        new Sass(gulp, preset)
+        new Sass(gulp, preset, ...this.classConfig(Sass))
       ),
       ...this.keyConfig('css')
     )
@@ -3102,7 +3112,7 @@ const RailsRegistry = class extends BaseRegistry {
       series(gulp,
         new Clean(gulp, preset),
         parallel(gulp,
-          new Images(gulp, preset),
+          new Images(gulp, preset, ...this.classConfig(Images)),
           js,
           css
         )
@@ -3125,8 +3135,8 @@ const RailsRegistry = class extends BaseRegistry {
 
         // minify application.(css|js) to a tmp directory
         parallel(gulp,
-          new Uglify(gulp, preset, digests, {dest: minifiedAssetsDir, concat: {dest: 'application.js'}}),
-          new CssNano(gulp, preset, digests, {dest: minifiedAssetsDir, minExtension: false})
+          new Uglify(gulp, preset, digests, {dest: minifiedAssetsDir, concat: {dest: 'application.js'}}, ...this.classConfig(Uglify)),
+          new CssNano(gulp, preset, digests, {dest: minifiedAssetsDir, minExtension: false}, ...this.classConfig(CssNano))
         ),
 
         // rev minified css|js from tmp

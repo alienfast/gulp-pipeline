@@ -134,6 +134,7 @@ const RollupEs = class extends BaseRecipe {
   }
 
   run(done, watching = false) {
+    this.debug(`watching? ${watching}`)
     let options = extend(true, {
         entry: this.resolveEntry(),
         onwarn: (message) => {

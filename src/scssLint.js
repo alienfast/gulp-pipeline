@@ -1,5 +1,4 @@
 import BaseRecipe from './baseRecipe'
-import extend from 'extend'
 import scssLint from 'gulp-scss-lint'
 import scssLintStylish from 'gulp-scss-lint-stylish'
 import debug from 'gulp-debug'
@@ -29,7 +28,11 @@ const ScssLint = class extends BaseRecipe {
    * @param configs - customized overrides for this recipe
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, extend(true, {}, Default, ...configs))
+    super(gulp, preset, Default, ...configs)
+
+    if(!this.config.source.options.cwd){
+      this.notifyError(`Expected to find source.options.cwd in \n${this.dump(this.config)}`)
+    }
 
     // If a config is not specified, emulate the eslint config behavior by looking up.
     //  If there is a config at or above the source cwd, use it, otherwise leave null.

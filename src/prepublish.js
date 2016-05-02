@@ -1,6 +1,5 @@
 import BasePublish from './basePublish'
 import {BuildControl} from 'build-control'
-import extend from 'extend'
 
 const Default = {
   task: {
@@ -27,7 +26,7 @@ const Prepublish = class extends BasePublish {
    * @param config - customized overrides
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, extend(true, {}, Default, ...configs))
+    super(gulp, preset, Default, ...configs)
   }
 
   run(done) {

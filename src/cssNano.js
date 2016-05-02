@@ -1,7 +1,6 @@
 import BaseRecipe from './baseRecipe'
 import BrowserSync from 'browser-sync'
 import debug from 'gulp-debug'
-import extend from 'extend'
 import gulpif from 'gulp-if'
 import replace from 'gulp-replace'
 import cssnano from 'gulp-cssnano'
@@ -45,7 +44,7 @@ const CssNano = class extends BaseRecipe {
    * @param configs - customized overrides for this recipe
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, extend(true, {}, Default, ...configs))
+    super(gulp, preset, Default, ...configs)
     this.browserSync = BrowserSync.create()
   }
 

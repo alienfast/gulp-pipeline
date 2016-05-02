@@ -3,7 +3,6 @@ import { Default as AutoprefixerDefault } from './autoprefixer'
 import autoprefixer from 'gulp-autoprefixer'
 import BrowserSync from 'browser-sync'
 import debug from 'gulp-debug'
-import extend from 'extend'
 import sass from 'gulp-sass'
 import sourcemaps from 'gulp-sourcemaps'
 import gulpif from 'gulp-if'
@@ -37,7 +36,7 @@ const Sass = class extends BaseRecipe {
    * @param configs - customized overrides for this recipe
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, extend(true, {}, Default, ...configs))
+    super(gulp, preset, Default, ...configs)
     this.browserSync = BrowserSync.create()
   }
 

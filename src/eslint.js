@@ -1,8 +1,5 @@
 import BaseRecipe from './baseRecipe'
 import eslint from 'gulp-eslint'
-import extend from 'extend'
-//import jscs from 'gulp-jscs'
-//import stylish from 'gulp-jscs-stylish'
 import debug from 'gulp-debug'
 import gulpif from 'gulp-if'
 import {PluginError} from 'gulp-util'
@@ -37,7 +34,7 @@ const EsLint = class extends BaseRecipe {
    * @param configs - customized overrides for this recipe
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, extend(true, {}, Default, ...configs))
+    super(gulp, preset, Default, ...configs)
   }
 
   createDescription() {

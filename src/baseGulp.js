@@ -1,7 +1,6 @@
 import Base from './base'
 import notify from 'gulp-notify'
 import Util from 'gulp-util'
-import shelljs from 'shelljs'
 
 export const Default = {
   debug: false,
@@ -125,73 +124,6 @@ const BaseGulp = class extends Base {
     else {
       this.debug(`done callback was not provided`)
     }
-  }
-
-  /**
-   * Wraps shellJs calls that act on the file structure to give better output and error handling
-   * @param command
-   * @param logResult - return output from the execution, defaults to true. If false, will return code instead
-   * @param returnCode - defaults to false which will throw Error on error, true will return result code
-   */
-  exec(command, logResult = true, returnCode = false) {
-    let options = {silent: true}
-    if (this.config.cwd) {
-      options['cwd'] = this.config.cwd
-    }
-    else {
-      this.notifyError('cwd is required')
-    }
-
-    if (command.includes(`undefined`)) {
-      this.notifyError(`Invalid command: ${command}`)
-    }
-
-    this.debug(`Executing \`${command}\` with cwd: ${options['cwd']}`)
-    let shellResult = shelljs.exec(command, options)
-    let output = this.logShellOutput(shellResult, logResult);
-
-    if (shellResult.code === 0 || shellResult.code === 1) {
-
-      // ---
-      // determine the return value
-      if (returnCode) {
-        return shellResult.code
-      }
-      else {
-        return output
-      }
-    }
-    else {
-      if (returnCode) {
-        return shellResult.code
-      }
-      else {
-        this.notifyError(`Command failed \`${command}\`, cwd: ${options.cwd}: ${shellResult.stderr}.`)
-      }
-    }
-  }
-
-  logShellOutput(shellResult, logResult) {
-    //this.debug(`[exit code] ${shellResult.code}`)
-
-    // ---
-    // Log the result
-    // strangely enough, sometimes useful messages from git are an stderr even when it is a successful command with a 0 result code
-    let output = shellResult.stdout
-    if (output == '') {
-      output = shellResult.stderr
-    }
-
-    //this.log(stringify(shellResult))
-    if (output != '') {
-      if (logResult) {
-        this.log(output)
-      }
-      else {
-        this.debug(`[output] \n${output}`)
-      }
-    }
-    return output;
   }
 }
 

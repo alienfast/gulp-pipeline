@@ -24,6 +24,9 @@ const FileImplementation = class extends Base {
 
   findup(glob, options = {}, fullPath = true) {
     let f = findup(glob, options)
+    if(this.config.debug) {
+      this.debug(`findup-sync(${glob}, ${this.dump(options)}): ${this.dump(f)}`)
+    }
     if (f && fullPath) {
       return path.resolve(f)
     }
@@ -163,7 +166,16 @@ const FileImplementation = class extends Base {
 
   exists(...args) {
     let filepath = path.join(...args)
-    let result = fs.existsSync(filepath)
+    let result
+
+    try {
+      fs.statSync(filepath)
+      result = true
+    }
+    catch (error) {
+      result = false
+    }
+
     this.debug(`exists(${filepath})? ${result}`)
     return result
   }
@@ -181,11 +193,42 @@ const FileImplementation = class extends Base {
       return 'file'
     }
   }
+
+  modified(sourceFileName, targetFileName) {
+    let sourceStat = null
+    let targetStat = null
+    try {
+      sourceStat = fs.statSync(sourceFileName)
+      targetStat = fs.statSync(targetFileName)
+    }
+    catch (error) {
+      return true    // one file doesn't exist
+    }
+
+    this.debug(`modified mtime comparison a) ${sourceFileName} vs. b) ${targetFileName}\n\ta) ${sourceStat.mtime}\n\tb) ${targetStat.mtime}`)
+    if (sourceStat.mtime > targetStat.mtime) {
+      return true
+    }
+    else {
+      return false
+    }
+  }
+
+  delete(filename, ignoreError = false) {
+    try {
+      fs.unlinkSync(filename)
+    }
+    catch (error) {
+      if (!ignoreError) {
+        throw error
+      }
+    }
+  }
 }
 
 
 const File = class {
-  static findup(glob, options = {}, fullPath = true){
+  static findup(glob, options = {}, fullPath = true) {
     return instance.findup(glob, options, fullPath)
   }
 
@@ -223,6 +266,14 @@ const File = class {
 
   static detectDestType(dest) {
     return instance.detectDestType(dest)
+  }
+
+  static modified(sourceFileName, targetFileName) {
+    return instance.modified(sourceFileName, targetFileName)
+  }
+
+  static delete(filename, ignoreError = false){
+    return instance.delete(filename, ignoreError)
   }
 }
 

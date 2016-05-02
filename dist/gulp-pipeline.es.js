@@ -1,14 +1,18 @@
 import extend from 'extend';
 import path from 'path';
-import fs from 'fs';
-import glob from 'glob';
-import spawn from 'cross-spawn';
-import jsonfile from 'jsonfile';
 import Util, { PluginError } from 'gulp-util';
 import stringify from 'stringify-object';
+import shelljs from 'shelljs';
+import fs from 'fs-extra';
+import fileSyncCmp from 'file-sync-cmp';
+import process from 'process';
+import iconv from 'iconv-lite';
+import { Buffer } from 'buffer';
+import findup from 'findup-sync';
+import glob from 'glob';
+import jsonfile from 'jsonfile';
 import console from 'console';
 import notify from 'gulp-notify';
-import shelljs from 'shelljs';
 import eslint from 'gulp-eslint';
 import debug from 'gulp-debug';
 import gulpif from 'gulp-if';
@@ -22,12 +26,6 @@ import changed from 'gulp-changed';
 import imagemin from 'gulp-imagemin';
 import merge from 'merge-stream';
 import sass from 'gulp-sass';
-import fs$1 from 'fs-extra';
-import fileSyncCmp from 'file-sync-cmp';
-import process from 'process';
-import iconv from 'iconv-lite';
-import { Buffer } from 'buffer';
-import findup from 'findup-sync';
 import scssLint from 'gulp-scss-lint';
 import scssLintStylish from 'gulp-scss-lint-stylish';
 import unique from 'array-unique';
@@ -49,69 +47,412 @@ import pathIsAbsolute from 'path-is-absolute';
 import tmp from 'tmp';
 import DefaultRegistry from 'undertaker-registry';
 
+const Default = {
+  watch: true,
+  debug: false,
+  cwd: `${shelljs.pwd()}` // ensure a new string - not the string-like object which causes downstream errors on type === string
+}
+
+const Base = class {
+
+  /**
+   *
+   * @param gulp - gulp instance
+   * @param config - customized overrides
+   */
+  constructor(...configs) {
+    this.config = extend(true, {}, Default, ...configs)
+    // this.debugDump(`[${this.constructor.name}] using resolved config`, this.config)
+  }
+
+  // ----------------------------------------------
+  // protected
+  requireValue(value, name) {
+    if (value === undefined || value == null) {
+      this.notifyError(`${name} must be defined, found: ${value}`)
+    }
+  }
+
+  log(msg) {
+    Util.log(msg)
+  }
+
+  debug(msg) {
+    if (this.config.debug) {
+      this.log(`[${Util.colors.cyan('debug')}][${Util.colors.cyan(this.constructor.name)}] ${msg}`)
+    }
+  }
+
+  debugDump(msg, obj) {
+    if (this.config.debug) {
+      this.debug(`${msg}:\n${this.dump(obj)}`)
+    }
+  }
+
+  dump(obj) {
+    return stringify(obj)
+  }
+
+  notifyError(error, e) {
+    this.log(error)
+    throw e
+  }
+
+  /**
+   * Wraps shellJs calls that act on the file structure to give better output and error handling
+   * @param command
+   * @param logResult - return output from the execution, defaults to true. If false, will return code instead
+   * @param returnCode - defaults to false which will throw Error on error, true will return result code
+   */
+  exec(command, logResult = true) {
+    let options = {silent: true}
+    if (this.config.cwd) {
+      options['cwd'] = this.config.cwd
+    }
+    else {
+      this.notifyError('cwd is required')
+    }
+
+    if (command.includes(`undefined`)) {
+      this.notifyError(`Invalid command: ${command}`)
+    }
+
+    this.debug(`Executing \`${command}\` with cwd: ${options['cwd']}`)
+    let shellResult = shelljs.exec(command, options)
+    let output = this.logShellOutput(shellResult, logResult);
+
+    if (shellResult.code === 0 || shellResult.code === 1) {
+      return shellResult
+    }
+    else {
+      this.notifyError(`Command failed \`${command}\`, cwd: ${options.cwd}: ${output}.`)
+    }
+  }
+
+  logShellOutput(shellResult, logResult) {
+    //this.debug(`[exit code] ${shellResult.code}`)
+
+    // ---
+    // Log the result
+    // strangely enough, sometimes useful messages from git are an stderr even when it is a successful command with a 0 result code
+    let output = shellResult.stdout
+    if (output == '') {
+      output = shellResult.stderr
+    }
+
+    //this.log(stringify(shellResult))
+    if (output != '') {
+      if (logResult) {
+        this.log(output)
+      }
+      else {
+        this.debug(`[output] \n${output}`)
+      }
+    }
+    return output;
+  }
+}
+
+const isWindows = (process.platform === 'win32')
+const pathSeparatorRe = /[\/\\]/g;
+
+/**
+ * Implementation can use our base class, but is exposed as static methods in the exported File class
+ *
+ * TODO: reducing the amount of code by using other maintained libraries would be fantastic.  Worst case, break most of this into it's own library?
+ *
+ *  @credit to grunt for the grunt.file implementation. See license for attribution.
+ */
+const FileImplementation = class extends Base {
+  constructor(config = {debug: false}) {
+    super({encoding: "utf8"}, config)
+  }
+
+  findup(glob, options = {}, fullPath = true) {
+    let f = findup(glob, options)
+    if(this.config.debug) {
+      this.debug(`findup-sync(${glob}, ${this.dump(options)}): ${this.dump(f)}`)
+    }
+    if (f && fullPath) {
+      return path.resolve(f)
+    }
+    else {
+      return f
+    }
+  }
+
+  // Read a file, optionally processing its content, then write the output.
+  copy(srcpath, destpath, options) {
+    if (!options) {
+      options = {}
+    }
+    // If a process function was specified, process the file's source.
+
+    // If the file will be processed, use the encoding as-specified. Otherwise, use an encoding of null to force the file to be read/written as a Buffer.
+    let readWriteOptions = options.process ? options : {encoding: null}
+
+    let contents = this.read(srcpath, readWriteOptions)
+    if (options.process) {
+      this.debug('Processing source...')
+      try {
+        contents = options.process(contents, srcpath)
+      }
+      catch (e) {
+        this.notifyError(`Error while executing process function on ${srcpath}.`, e)
+      }
+    }
+    // Abort copy if the process function returns false.
+    if (contents === false) {
+      this.debug('Write aborted, no contents.')
+    }
+    else {
+      this.write(destpath, contents, readWriteOptions)
+    }
+  }
+
+  syncTimestamp(src, dest) {
+    let stat = fs.lstatSync(src)
+    if (path.basename(src) !== path.basename(dest)) {
+      return
+    }
+
+    if (stat.isFile() && !fileSyncCmp.equalFiles(src, dest)) {
+      return
+    }
+
+    let fd = fs.openSync(dest, isWindows ? 'r+' : 'r')
+    fs.futimesSync(fd, stat.atime, stat.mtime)
+    fs.closeSync(fd)
+  }
+
+  write(filepath, contents, options) {
+    if (!options) {
+      options = {}
+    }
+    // Create path, if necessary.
+    this.mkdir(path.dirname(filepath))
+    try {
+      // If contents is already a Buffer, don't try to encode it. If no encoding was specified, use the default.
+      if (!Buffer.isBuffer(contents)) {
+        contents = iconv.encode(contents, options.encoding || this.config.encoding)
+      }
+      // Actually write this.
+      fs.writeFileSync(filepath, contents)
+
+      return true
+    }
+    catch (e) {
+      this.notifyError(`Unable to write ${filepath} file (Error code: ${e.code}).`, e)
+    }
+  }
+
+  // Read a file, return its contents.
+  read(filepath, options) {
+    if (!options) {
+      options = {}
+    }
+    let contents
+    this.debug(`Reading ${filepath}...`)
+    try {
+      contents = fs.readFileSync(String(filepath))
+      // If encoding is not explicitly null, convert from encoded buffer to a
+      // string. If no encoding was specified, use the default.
+      if (options.encoding !== null) {
+        contents = iconv.decode(contents, options.encoding || this.config.encoding)
+        // Strip any BOM that might exist.
+        if (!this.config.preserveBOM && contents.charCodeAt(0) === 0xFEFF) {
+          contents = contents.substring(1)
+        }
+      }
+
+      return contents
+    }
+    catch (e) {
+      this.notifyError('Unable to read "' + filepath + '" file (Error code: ' + e.code + ').', e)
+    }
+  }
+
+  /**
+   * Like mkdir -p. Create a directory and any intermediary directories.
+   * @param dirpath
+   * @param mode
+   */
+  mkdir(dirpath, mode) {
+    this.debug(`mkdir ${dirpath}:`)
+    // Set directory mode in a strict-mode-friendly way.
+    if (mode == null) {
+      mode = parseInt('0777', 8) & (~process.umask())
+    }
+    dirpath.split(pathSeparatorRe).reduce((parts, part) => {
+      parts += part + '/'
+      let subpath = path.resolve(parts)
+      if (!this.exists(subpath)) {
+        try {
+          this.debug(`\tfs.mkdirSync(${subpath}, ${mode})`)
+          fs.mkdirSync(subpath, mode)
+        }
+        catch (e) {
+          this.notifyError(`Unable to create directory ${subpath} (Error code: ${e.code}).`, e)
+        }
+      }
+      else {
+        this.debug(`\t${subpath} already exists`)
+      }
+      return parts
+    }, '')
+  }
+
+  /**
+   * Match a filepath or filepaths against one or more wildcard patterns.
+   * @returns true if any of the patterns match.
+   */
+  isMatch(...args) {
+    return this.match(...args).length > 0
+  }
+
+  exists(...args) {
+    let filepath = path.join(...args)
+    let result
+
+    try {
+      fs.statSync(filepath)
+      result = true
+    }
+    catch (error) {
+      result = false
+    }
+
+    this.debug(`exists(${filepath})? ${result}`)
+    return result
+  }
+
+  isDir(...args) {
+    let filepath = path.join(...args)
+    return this.exists(filepath) && fs.statSync(filepath).isDirectory()
+  }
+
+  detectDestType(dest) {
+    if (dest.endsWith('/')) {
+      return 'directory'
+    }
+    else {
+      return 'file'
+    }
+  }
+
+  modified(sourceFileName, targetFileName) {
+    let sourceStat = null
+    let targetStat = null
+    try {
+      sourceStat = fs.statSync(sourceFileName)
+      targetStat = fs.statSync(targetFileName)
+    }
+    catch (error) {
+      return true    // one file doesn't exist
+    }
+
+    this.debug(`modified mtime comparison a) ${sourceFileName} vs. b) ${targetFileName}\n\ta) ${sourceStat.mtime}\n\tb) ${targetStat.mtime}`)
+    if (sourceStat.mtime > targetStat.mtime) {
+      return true
+    }
+    else {
+      return false
+    }
+  }
+
+  delete(filename, ignoreError = false) {
+    try {
+      fs.unlinkSync(filename)
+    }
+    catch (error) {
+      if (!ignoreError) {
+        throw error
+      }
+    }
+  }
+}
+
+
+const File = class {
+  static findup(glob, options = {}, fullPath = true) {
+    return instance.findup(glob, options, fullPath)
+  }
+
+  static copy(srcpath, destpath, options) {
+    return instance.copy(srcpath, destpath, options)
+  }
+
+  static syncTimestamp(src, dest) {
+    return instance.syncTimestamp(src, dest)
+  }
+
+  static write(filepath, contents, options) {
+    return instance.write(filepath, contents, options)
+  }
+
+  static read(filepath, options) {
+    return instance.read(filepath, options)
+  }
+
+  static isDir(...args) {
+    return instance.isDir(...args)
+  }
+
+  static mkdir(dirpath, mode) {
+    return instance.mkdir(dirpath, mode)
+  }
+
+  static isMatch(...args) {
+    return instance.isMatch(...args)
+  }
+
+  static exists(...args) {
+    return instance.exists(...args)
+  }
+
+  static detectDestType(dest) {
+    return instance.detectDestType(dest)
+  }
+
+  static modified(sourceFileName, targetFileName) {
+    return instance.modified(sourceFileName, targetFileName)
+  }
+
+  static delete(filename, ignoreError = false){
+    return instance.delete(filename, ignoreError)
+  }
+}
+
+//  singleton
+let instance = new FileImplementation()
+
 const Ruby = class {
   static localPath(name) {
     let filename = `${name}`
 
     // if using source dir
     let filepath = path.join(__dirname, filename) // eslint-disable-line no-undef
-    try {
-      fs.statSync(filepath)
-    }
-    catch (error) {
+    if(!File.exists(filepath)){
+
       // if using dist dir, use the relative src/ruby path
       filepath = path.join(__dirname, '../src/ruby', filename) // eslint-disable-line no-undef
-      fs.statSync(filepath)
+      if(!File.exists(filepath)) {
+        throw new Error(`Expected to find ${filepath}`)
+      }
     }
 
     return filepath
   }
 }
 
-const BaseDirectoriesCache = `.gulp-pipeline-rails.json`
-const GemfileLock = `Gemfile.lock`
-
-const Rails = class {
-  static enumerateEngines() {
-
-    let results = spawn.sync(Ruby.localPath('railsRunner.sh'), [Ruby.localPath('enumerateEngines.rb')], {
-      sdtio: 'inherit',
-      cwd: this.railsAppCwd()
-    })
-
-
-    // run via spring with zero results:
-    //    status: 0,
-    //    stdout: '{}\n',
-    //    stderr: 'Running via Spring preloader in process 95498\n',
-
-    if(results.status !== 0) {
-
-
-      Util.log(stringify(results))
-
-
-      if (results.stderr != '' || results.error != null) {
-        Util.log(stringify(results))
-
-        let msg = ''
-        if (results.stderr) {
-          msg += results.stderr
-        }
-        if (results.error) {
-          msg += results.error
-        }
-        // message will be either error or stderr, so just grap both of them
-        throw new Error(`Ruby script error: \n${results.stderr}${results.error}`)
-      }
-    }
-    return JSON.parse(results.stdout)
-  }
-
-  /**
-   * We need a rails app to run our rails script runner.  Since this project could be a rails engine, find a rails app somewhere in or under the cwd.
-   */
-  static railsAppCwd() {
+const Files = {
+  CACHE: `.gulp-pipeline-rails.json`,
+  GEM_LOCK: `Gemfile.lock`
+}
+const Rails = class extends Base {
+  constructor(config = {debug: false}) {
+    // We need a rails app to run our rails script runner.
+    //  Since this project could be a rails engine, find a rails app somewhere in or under the cwd.
     let entries = glob.sync('**/bin/rails', {realpath: true})
     if (!entries || entries.length <= 0) {
       throw new Error(`Unable to find Rails application directory based on existence of 'bin/rails'`)
@@ -120,7 +461,19 @@ const Rails = class {
     if (entries.length > 1) {
       throw new Error(`railsAppCwd() should only find one rails application but found ${entries}`)
     }
-    return path.join(entries[0], '../..')
+    let cwd = path.join(entries[0], '../..')
+
+    super({cwd: cwd}, config)
+  }
+
+  enumerateEngines() {
+    let results = this.exec(`${Ruby.localPath('railsRunner.sh')} ${Ruby.localPath('enumerateEngines.rb')}`)
+
+    // run via spring with zero results:
+    //    status: 0,
+    //    stdout: '{}\n',
+    //    stderr: 'Running via Spring preloader in process 95498\n',
+    return JSON.parse(results.stdout)
   }
 
   /**
@@ -133,50 +486,27 @@ const Rails = class {
    *
    * @returns {{baseDirectories: string[]}}
    */
-  static baseDirectories() {
-    if (!this.changed(GemfileLock, BaseDirectoriesCache)) {
-      Util.log(`Gemfile.lock is unchanged, using baseDirectories cache.`)
-      return jsonfile.readFileSync(BaseDirectoriesCache)
+  baseDirectories() {
+    if (!File.modified(Files.GEM_LOCK, Files.CACHE)) {
+      this.log(`Gemfile.lock is unchanged, using baseDirectories cache.`)
+      return jsonfile.readFileSync(Files.CACHE)
     }
     else {
-      Util.log(`Generating baseDirectories and rails engines cache...`)
-      try {
-        fs.unlinkSync(BaseDirectoriesCache)
-      } catch (error) {
-        //ignore
-      }
+      this.log(`Generating baseDirectories and rails engines cache...`)
+      File.delete(Files.CACHE, true)
 
-      let engines = Rails.enumerateEngines()
-      console.log(stringify(engines)) // eslint-disable-line no-console
+      let engines = this.enumerateEngines()
+      console.log(this.dump(engines)) // eslint-disable-line no-console
 
       let baseDirectories = ['./']
       for (let key of Object.keys(engines)) {
         baseDirectories.push(engines[key])
       }
 
-      Util.log(`Writing baseDirectories cache...`)
+      this.log(`Writing baseDirectories cache...`)
       let result = {baseDirectories: baseDirectories}
-      jsonfile.writeFileSync(BaseDirectoriesCache, result, {spaces: 2})
+      jsonfile.writeFileSync(Files.CACHE, result, {spaces: 2})
       return result
-    }
-  }
-
-  static changed(sourceFileName, targetFileName) {
-    let sourceStat = null
-    let targetStat = null
-    try {
-      sourceStat = fs.statSync(sourceFileName)
-      targetStat = fs.statSync(targetFileName)
-    }
-    catch (error) {
-      return true
-    }
-
-    if (sourceStat.mtime > targetStat.mtime) {
-      return true
-    }
-    else {
-      return false
     }
   }
 }
@@ -287,8 +617,7 @@ const Preset = class {
   }
 
   static rails(overrides = {}) {
-
-    return extend(true, {}, Baseline, PresetRails, Rails.baseDirectories(), overrides)
+    return extend(true, {}, Baseline, PresetRails, new Rails().baseDirectories(), overrides)
   }
 
   /**
@@ -330,57 +659,6 @@ const Preset = class {
 }
 
 const Default$3 = {
-  watch: true,
-  debug: false
-}
-
-const Base = class {
-
-  /**
-   *
-   * @param gulp - gulp instance
-   * @param config - customized overrides
-   */
-  constructor(...configs) {
-    this.config = extend(true, {}, Default$3, ...configs)
-    //this.debugDump(`[${this.constructor.name}] using resolved config`, this.config)
-  }
-
-  // ----------------------------------------------
-  // protected
-  requireValue(value, name) {
-    if (value === undefined || value == null) {
-      this.notifyError(`${name} must be defined, found: ${value}`)
-    }
-  }
-
-  log(msg) {
-    Util.log(msg)
-  }
-
-  debug(msg) {
-    if (this.config.debug) {
-      this.log(`[${Util.colors.cyan('debug')}][${Util.colors.cyan(this.constructor.name)}] ${msg}`)
-    }
-  }
-
-  debugDump(msg, obj) {
-    if (this.config.debug) {
-      this.debug(`${msg}:\n${this.dump(obj)}`)
-    }
-  }
-
-  dump(obj) {
-    return stringify(obj)
-  }
-
-  notifyError(error, e) {
-    this.log(error)
-    throw e
-  }
-}
-
-const Default$2 = {
   debug: false,
   watch: true,
   task: {
@@ -399,7 +677,7 @@ const BaseGulp = class extends Base {
    * @param config - customized overrides
    */
   constructor(gulp, ...configs) {
-    super(Default$2, ...configs)
+    super(Default$3, ...configs)
     this.requireValue(gulp, 'gulp')
     this.gulp = gulp
   }
@@ -503,76 +781,9 @@ const BaseGulp = class extends Base {
       this.debug(`done callback was not provided`)
     }
   }
-
-  /**
-   * Wraps shellJs calls that act on the file structure to give better output and error handling
-   * @param command
-   * @param logResult - return output from the execution, defaults to true. If false, will return code instead
-   * @param returnCode - defaults to false which will throw Error on error, true will return result code
-   */
-  exec(command, logResult = true, returnCode = false) {
-    let options = {silent: true}
-    if (this.config.cwd) {
-      options['cwd'] = this.config.cwd
-    }
-    else {
-      this.notifyError('cwd is required')
-    }
-
-    if (command.includes(`undefined`)) {
-      this.notifyError(`Invalid command: ${command}`)
-    }
-
-    this.debug(`Executing \`${command}\` with cwd: ${options['cwd']}`)
-    let shellResult = shelljs.exec(command, options)
-    let output = this.logShellOutput(shellResult, logResult);
-
-    if (shellResult.code === 0 || shellResult.code === 1) {
-
-      // ---
-      // determine the return value
-      if (returnCode) {
-        return shellResult.code
-      }
-      else {
-        return output
-      }
-    }
-    else {
-      if (returnCode) {
-        return shellResult.code
-      }
-      else {
-        this.notifyError(`Command failed \`${command}\`, cwd: ${options.cwd}: ${shellResult.stderr}.`)
-      }
-    }
-  }
-
-  logShellOutput(shellResult, logResult) {
-    //this.debug(`[exit code] ${shellResult.code}`)
-
-    // ---
-    // Log the result
-    // strangely enough, sometimes useful messages from git are an stderr even when it is a successful command with a 0 result code
-    let output = shellResult.stdout
-    if (output == '') {
-      output = shellResult.stderr
-    }
-
-    //this.log(stringify(shellResult))
-    if (output != '') {
-      if (logResult) {
-        this.log(output)
-      }
-      else {
-        this.debug(`[output] \n${output}`)
-      }
-    }
-    return output;
-  }
 }
 
-const Default$1 = {
+const Default$2 = {
   watch: true,
   debug: false
 }
@@ -589,7 +800,7 @@ const BaseRecipe = class extends BaseGulp {
 
     super(gulp,
       extend(true, {},  // extend presets here since BaseGulp doesn't use preset.
-        Default$1,
+        Default$2,
         {baseDirectories: preset.baseDirectories},
         Preset.resolveConfig(preset, ...configs)
       )
@@ -688,7 +899,7 @@ const BaseRecipe = class extends BaseGulp {
   }
 }
 
-const Default = {
+const Default$1 = {
   debug: false,
   presetType: 'javascripts',
   task: {
@@ -717,7 +928,7 @@ const EsLint = class extends BaseRecipe {
    * @param configs - customized overrides for this recipe
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, extend(true, {}, Default, ...configs))
+    super(gulp, preset, Default$1, ...configs)
   }
 
   createDescription() {
@@ -939,7 +1150,7 @@ const Images = class extends BaseRecipe {
    * @param configs - customized overrides for this recipe
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, extend(true, {}, Default$5, ...configs))
+    super(gulp, preset, Default$5, ...configs)
     this.browserSync = BrowserSync.create()
   }
 
@@ -959,7 +1170,7 @@ const Images = class extends BaseRecipe {
   runOne(done, cwd, watching) {
 
     // setup a run with a single cwd a.k.a base directory FIXME: perhaps this could be in the base recipe? or not?
-    let options = extend({}, this.config.source.options)
+    let options = extend(true, {}, this.config.source.options)
     options.cwd = cwd
     this.debug(`src: ${cwd}/${this.config.source.glob}`)
 
@@ -974,228 +1185,6 @@ const Images = class extends BaseRecipe {
       .pipe(this.browserSync.stream())
   }
 }
-
-const isWindows = (process.platform === 'win32')
-const pathSeparatorRe = /[\/\\]/g;
-
-/**
- * Implementation can use our base class, but is exposed as static methods in the exported File class
- *
- * TODO: reducing the amount of code by using other maintained libraries would be fantastic.  Worst case, break most of this into it's own library?
- *
- *  @credit to grunt for the grunt.file implementation. See license for attribution.
- */
-const FileImplementation = class extends Base {
-  constructor(config = {debug: false}) {
-    super({encoding: "utf8"}, config)
-  }
-
-  findup(glob, options = {}, fullPath = true) {
-    let f = findup(glob, options)
-    if (f && fullPath) {
-      return path.resolve(f)
-    }
-    else {
-      return f
-    }
-  }
-
-  // Read a file, optionally processing its content, then write the output.
-  copy(srcpath, destpath, options) {
-    if (!options) {
-      options = {}
-    }
-    // If a process function was specified, process the file's source.
-
-    // If the file will be processed, use the encoding as-specified. Otherwise, use an encoding of null to force the file to be read/written as a Buffer.
-    let readWriteOptions = options.process ? options : {encoding: null}
-
-    let contents = this.read(srcpath, readWriteOptions)
-    if (options.process) {
-      this.debug('Processing source...')
-      try {
-        contents = options.process(contents, srcpath)
-      }
-      catch (e) {
-        this.notifyError(`Error while executing process function on ${srcpath}.`, e)
-      }
-    }
-    // Abort copy if the process function returns false.
-    if (contents === false) {
-      this.debug('Write aborted, no contents.')
-    }
-    else {
-      this.write(destpath, contents, readWriteOptions)
-    }
-  }
-
-  syncTimestamp(src, dest) {
-    let stat = fs$1.lstatSync(src)
-    if (path.basename(src) !== path.basename(dest)) {
-      return
-    }
-
-    if (stat.isFile() && !fileSyncCmp.equalFiles(src, dest)) {
-      return
-    }
-
-    let fd = fs$1.openSync(dest, isWindows ? 'r+' : 'r')
-    fs$1.futimesSync(fd, stat.atime, stat.mtime)
-    fs$1.closeSync(fd)
-  }
-
-  write(filepath, contents, options) {
-    if (!options) {
-      options = {}
-    }
-    // Create path, if necessary.
-    this.mkdir(path.dirname(filepath))
-    try {
-      // If contents is already a Buffer, don't try to encode it. If no encoding was specified, use the default.
-      if (!Buffer.isBuffer(contents)) {
-        contents = iconv.encode(contents, options.encoding || this.config.encoding)
-      }
-      // Actually write this.
-      fs$1.writeFileSync(filepath, contents)
-
-      return true
-    }
-    catch (e) {
-      this.notifyError(`Unable to write ${filepath} file (Error code: ${e.code}).`, e)
-    }
-  }
-
-  // Read a file, return its contents.
-  read(filepath, options) {
-    if (!options) {
-      options = {}
-    }
-    let contents
-    this.debug(`Reading ${filepath}...`)
-    try {
-      contents = fs$1.readFileSync(String(filepath))
-      // If encoding is not explicitly null, convert from encoded buffer to a
-      // string. If no encoding was specified, use the default.
-      if (options.encoding !== null) {
-        contents = iconv.decode(contents, options.encoding || this.config.encoding)
-        // Strip any BOM that might exist.
-        if (!this.config.preserveBOM && contents.charCodeAt(0) === 0xFEFF) {
-          contents = contents.substring(1)
-        }
-      }
-
-      return contents
-    }
-    catch (e) {
-      this.notifyError('Unable to read "' + filepath + '" file (Error code: ' + e.code + ').', e)
-    }
-  }
-
-  /**
-   * Like mkdir -p. Create a directory and any intermediary directories.
-   * @param dirpath
-   * @param mode
-   */
-  mkdir(dirpath, mode) {
-    this.debug(`mkdir ${dirpath}:`)
-    // Set directory mode in a strict-mode-friendly way.
-    if (mode == null) {
-      mode = parseInt('0777', 8) & (~process.umask())
-    }
-    dirpath.split(pathSeparatorRe).reduce((parts, part) => {
-      parts += part + '/'
-      let subpath = path.resolve(parts)
-      if (!this.exists(subpath)) {
-        try {
-          this.debug(`\tfs.mkdirSync(${subpath}, ${mode})`)
-          fs$1.mkdirSync(subpath, mode)
-        }
-        catch (e) {
-          this.notifyError(`Unable to create directory ${subpath} (Error code: ${e.code}).`, e)
-        }
-      }
-      else {
-        this.debug(`\t${subpath} already exists`)
-      }
-      return parts
-    }, '')
-  }
-
-  /**
-   * Match a filepath or filepaths against one or more wildcard patterns.
-   * @returns true if any of the patterns match.
-   */
-  isMatch(...args) {
-    return this.match(...args).length > 0
-  }
-
-  exists(...args) {
-    let filepath = path.join(...args)
-    let result = fs$1.existsSync(filepath)
-    this.debug(`exists(${filepath})? ${result}`)
-    return result
-  }
-
-  isDir(...args) {
-    let filepath = path.join(...args)
-    return this.exists(filepath) && fs$1.statSync(filepath).isDirectory()
-  }
-
-  detectDestType(dest) {
-    if (dest.endsWith('/')) {
-      return 'directory'
-    }
-    else {
-      return 'file'
-    }
-  }
-}
-
-
-const File = class {
-  static findup(glob, options = {}, fullPath = true){
-    return instance.findup(glob, options, fullPath)
-  }
-
-  static copy(srcpath, destpath, options) {
-    return instance.copy(srcpath, destpath, options)
-  }
-
-  static syncTimestamp(src, dest) {
-    return instance.syncTimestamp(src, dest)
-  }
-
-  static write(filepath, contents, options) {
-    return instance.write(filepath, contents, options)
-  }
-
-  static read(filepath, options) {
-    return instance.read(filepath, options)
-  }
-
-  static isDir(...args) {
-    return instance.isDir(...args)
-  }
-
-  static mkdir(dirpath, mode) {
-    return instance.mkdir(dirpath, mode)
-  }
-
-  static isMatch(...args) {
-    return instance.isMatch(...args)
-  }
-
-  static exists(...args) {
-    return instance.exists(...args)
-  }
-
-  static detectDestType(dest) {
-    return instance.detectDestType(dest)
-  }
-}
-
-//  singleton
-let instance = new FileImplementation()
 
 const node_modules = File.findup('node_modules')
 
@@ -1225,7 +1214,7 @@ const Sass = class extends BaseRecipe {
    * @param configs - customized overrides for this recipe
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, extend(true, {}, Default$6, ...configs))
+    super(gulp, preset, Default$6, ...configs)
     this.browserSync = BrowserSync.create()
   }
 
@@ -1279,7 +1268,11 @@ const ScssLint = class extends BaseRecipe {
    * @param configs - customized overrides for this recipe
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, extend(true, {}, Default$7, ...configs))
+    super(gulp, preset, Default$7, ...configs)
+
+    if(!this.config.source.options.cwd){
+      this.notifyError(`Expected to find source.options.cwd in \n${this.dump(this.config)}`)
+    }
 
     // If a config is not specified, emulate the eslint config behavior by looking up.
     //  If there is a config at or above the source cwd, use it, otherwise leave null.
@@ -1393,6 +1386,7 @@ const Aggregate = class extends BaseGulp {
 
     this.debug(`Registering task: ${coloredTask}`)
 
+    // https://github.com/alienfast/gulp-pipeline/issues/29
     // aggregate all globs into an array for a single watch fn call
     let globs = []
     for (let recipe of this.watchableRecipes()) {
@@ -1889,7 +1883,7 @@ const Copy = class extends BaseRecipe {
    * @param config - customized overrides
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, extend(true, {}, Default$15, ...configs))
+    super(gulp, preset, Default$15, ...configs)
 
     this.requireValue(this.config.source.glob, `source.glob`)
     this.requireValue(this.config.source.options.cwd, `source.options.cwd`)
@@ -1907,7 +1901,7 @@ const Copy = class extends BaseRecipe {
 
   chmod(from, to) {
     if (this.config.mode !== false) {
-      fs$1.chmodSync(to, (this.config.mode === true) ? fs$1.lstatSync(from).mode : this.config.mode)
+      fs.chmodSync(to, (this.config.mode === true) ? fs.lstatSync(from).mode : this.config.mode)
     }
   }
 
@@ -2419,7 +2413,7 @@ const CssNano = class extends BaseRecipe {
    * @param configs - customized overrides for this recipe
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, extend(true, {}, Default$24, ...configs))
+    super(gulp, preset, Default$24, ...configs)
     this.browserSync = BrowserSync.create()
   }
 
@@ -2617,7 +2611,7 @@ const Prepublish = class extends BasePublish {
    * @param config - customized overrides
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, extend(true, {}, Default$28, ...configs))
+    super(gulp, preset, Default$28, ...configs)
   }
 
   run(done) {
@@ -2719,11 +2713,11 @@ const PublishBuild = class extends BasePublish {
     // generate a readme on the branch if one is not copied in.
     if (this.config.readme.enabled) {
       let readme = path.join(this.config.dir, this.config.readme.name)
-      if (fs$1.existsSync(readme)) {
+      if (fs.existsSync(readme)) {
         this.log(`Found readme at ${readme}.  Will not generate a new one from the template.  Turn this message off with { readme: {enabled: false} }`)
       }
       else {
-        fs$1.writeFileSync(readme, buildControl.interpolate(this.config.readme.template))
+        fs.writeFileSync(readme, buildControl.interpolate(this.config.readme.template))
       }
     }
   }
@@ -2744,7 +2738,7 @@ const PublishBuild = class extends BasePublish {
         let from = path.join(typePreset.source.options.cwd, name)
         let to = path.join(buildDir, from)
         this.log(`\t...to ${to}`)
-        fs$1.copySync(from, to)
+        fs.copySync(from, to)
       }
     }
 
@@ -2756,7 +2750,7 @@ const PublishBuild = class extends BasePublish {
         let from = path.relative(process.cwd(), fromFullPath)
         let to = path.join(buildDir, from)
         this.log(`\t...to ${to}`)
-        fs$1.copySync(from, to)
+        fs.copySync(from, to)
       }
     }
   }
@@ -2851,7 +2845,6 @@ const Default$33 = {
     name: 'jekyll',
     description: 'Builds a jekyll site'
   },
-  cwd: process.cwd(),
   options: {
     baseCommand: 'bundle exec',
     config: '_config.yml',
@@ -2893,7 +2886,7 @@ const Jekyll = class extends BaseRecipe {
       let tmpFile = tmp.fileSync({prefix: '_config.', postfix: '.yml'})
 
       // Write raw to file
-      fs$1.writeFileSync(tmpFile.name, this.config.options.raw)
+      fs.writeFileSync(tmpFile.name, this.config.options.raw)
 
       // return the file path
       return tmpFile.name

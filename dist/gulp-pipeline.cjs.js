@@ -1668,11 +1668,15 @@ var Aggregate = function (_BaseGulp) {
       _this.notifyError('recipes must not be an array, but a function, series, or parallel, found: ' + recipes);
     }
 
-    // track recipes as taskFn so that aggregates can be included and resolved as part of other aggregates just like recipes
-    _this.taskFn = recipes;
-
-    // track recipes as `recipes` like series/parallel so metadata can be discovered
-    //this.taskFn.recipes = recipes
+    if (Aggregate.isAggregate(recipes)) {
+      // it's another aggregate, so just use it's taskFn, but with a wrapper so we don't rename it.
+      _this.taskFn = function (done) {
+        return recipes.taskFn(done);
+      };
+    } else {
+      // track recipes as taskFn so that aggregates can be included and resolved as part of other aggregates just like recipes
+      _this.taskFn = recipes;
+    }
 
     _this.registerTask(_this.taskName());
 
@@ -1841,7 +1845,7 @@ var Aggregate = function (_BaseGulp) {
           item = _this3.flatten(current.recipes);
         }
         // Flatten any Aggregate object - exposes a taskFn (which should be a series/parallel)
-        else if (current.taskFn && current.taskFn.recipes) {
+        else if (Aggregate.isAggregate(current)) {
             _this3.debugDump('flatten ' + current.constructor.name + ' with taskFn.recipes', current.taskFn.recipes);
             item = _this3.flatten(current.taskFn.recipes);
           }
@@ -1911,6 +1915,15 @@ var Aggregate = function (_BaseGulp) {
       }
 
       return watchableRecipes;
+    }
+  }], [{
+    key: 'isAggregate',
+    value: function isAggregate(current) {
+      if (current.taskFn && current.taskFn.recipes) {
+        return true;
+      }
+
+      return false;
     }
   }]);
   return Aggregate;

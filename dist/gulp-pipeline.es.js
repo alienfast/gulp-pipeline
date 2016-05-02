@@ -1326,11 +1326,14 @@ const Aggregate = class extends BaseGulp {
       this.notifyError(`recipes must not be an array, but a function, series, or parallel, found: ${recipes}`)
     }
 
-    // track recipes as taskFn so that aggregates can be included and resolved as part of other aggregates just like recipes
-    this.taskFn = recipes
-
-    // track recipes as `recipes` like series/parallel so metadata can be discovered
-    //this.taskFn.recipes = recipes
+    if (Aggregate.isAggregate(recipes)) {
+      // it's another aggregate, so just use it's taskFn, but with a wrapper so we don't rename it.
+      this.taskFn = (done) => recipes.taskFn(done)
+    }
+    else {
+      // track recipes as taskFn so that aggregates can be included and resolved as part of other aggregates just like recipes
+      this.taskFn = recipes
+    }
 
     this.registerTask(this.taskName())
 
@@ -1433,6 +1436,14 @@ const Aggregate = class extends BaseGulp {
     return this.gulp.task(watchTaskName, watchFn)
   }
 
+  static isAggregate(current) {
+    if (current.taskFn && current.taskFn.recipes) {
+      return true
+    }
+
+    return false
+  }
+
   flatten(list) {
     // parallel and series set `.recipes` on the function as metadata
     let callback = (prev, current) => {
@@ -1444,7 +1455,7 @@ const Aggregate = class extends BaseGulp {
         item = this.flatten(current.recipes)
       }
       // Flatten any Aggregate object - exposes a taskFn (which should be a series/parallel)
-      else if (current.taskFn && current.taskFn.recipes) {
+      else if (Aggregate.isAggregate(current)) {
         this.debugDump(`flatten ${current.constructor.name} with taskFn.recipes`, current.taskFn.recipes)
         item = this.flatten(current.taskFn.recipes)
       }

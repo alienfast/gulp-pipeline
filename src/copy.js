@@ -1,7 +1,6 @@
 import BaseRecipe from './baseRecipe'
 import File from './util/file'
 import extend from 'extend'
-//import fs from 'fs-extra'
 import path from 'path'
 import chalk from 'chalk'
 import process from 'process'
@@ -49,7 +48,7 @@ const Copy = class extends BaseRecipe {
    * @param config - customized overrides
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, extend(true, {}, Default, ...configs))
+    super(gulp, preset, Default, ...configs)
 
     this.requireValue(this.config.source.glob, `source.glob`)
     this.requireValue(this.config.source.options.cwd, `source.options.cwd`)

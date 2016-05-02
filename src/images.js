@@ -39,7 +39,7 @@ const Images = class extends BaseRecipe {
    * @param configs - customized overrides for this recipe
    */
   constructor(gulp, preset, ...configs) {
-    super(gulp, preset, extend(true, {}, Default, ...configs))
+    super(gulp, preset, Default, ...configs)
     this.browserSync = BrowserSync.create()
   }
 
@@ -59,7 +59,7 @@ const Images = class extends BaseRecipe {
   runOne(done, cwd, watching) {
 
     // setup a run with a single cwd a.k.a base directory FIXME: perhaps this could be in the base recipe? or not?
-    let options = extend({}, this.config.source.options)
+    let options = extend(true, {}, this.config.source.options)
     options.cwd = cwd
     this.debug(`src: ${cwd}/${this.config.source.glob}`)
 

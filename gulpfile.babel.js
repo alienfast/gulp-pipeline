@@ -6,7 +6,6 @@ import RollupEs from './src/rollupEs'
 import RollupAmd from './src/rollupAmd'
 import RollupCjs from './src/rollupCjs'
 import RollupUmd from './src/rollupUmd'
-import RollupIife from './src/rollupIife'
 import Aggregate from './src/aggregate'
 import series from './src/util/series'
 import parallel from './src/util/parallel'
@@ -19,7 +18,7 @@ const preset = Preset.nodeSrc()
 
 // NOTE: it's overkill to generate all of these, but what the hell, it's a fair example.
 // Create our `default` set of recipes as a combination of series tasks with as much parallelization as possible, creates the `default` and `default:watch`
-const recipes = new Aggregate(gulp, 'default',
+const defaultRecipes = new Aggregate(gulp, 'default',
   series(gulp,
     new Clean(gulp, preset),
     new EsLint(gulp, preset),
@@ -32,6 +31,9 @@ const recipes = new Aggregate(gulp, 'default',
   )
 )
 
+const defaultAlias = new Aggregate(gulp, 'defaultAlias', defaultRecipes) // just to make sure Aggregates with Aggregates are working.
+
+
 //---------------
 // Publish tasks
 
@@ -39,7 +41,7 @@ const recipes = new Aggregate(gulp, 'default',
 new Aggregate(gulp, 'publish',
   series(gulp,
     new Prepublish(gulp, preset), // gives us a quick exit, in case we didn't commit
-    recipes,
+    defaultAlias,
     new PublishBuild(gulp, preset)
   )
 )

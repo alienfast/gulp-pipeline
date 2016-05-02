@@ -47,8 +47,9 @@ const BaseGulp = class extends Base {
     }
   }
 
-  notifyError(error, done) { //, watching = false) {
-
+  notifyError(error, done, watching = false) {
+    let isWatching = (this.gulp ? this.gulp.watching : undefined) || watching
+    this.debug(`isWatching: ${isWatching}`)
     //this.debugDump('notifyError', error)
 
     let lineNumber = (error.lineNumber) ? `Line ${error.lineNumber} -- ` : ''
@@ -91,13 +92,16 @@ const BaseGulp = class extends Base {
     this.log(report)
 
     // Prevent the 'watch' task from stopping
-    //if (!watching && this.gulp) {
-    if (this.gulp) {
+    if (isWatching) {
+        // do nothing
+      this.debug(`notifyError: watching, so not doing anything`)
+    }
+    else if (this.gulp) {
       // if this is not used, we see "Did you forget to signal async completion?", it also unfortunately logs more distracting information below.  But we need to exec the callback with an error to halt execution.
-
       this.donezo(done, error)
     }
     else {
+      this.debug(`notifyError: throwing error`)
       throw error
     }
   }

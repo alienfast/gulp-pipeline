@@ -11,5 +11,6 @@ const parallel = (gulp, ...recipes) => {
   parallel.recipes = recipes
   return parallel
 }
+parallel.displayName = `<parallel>`
 
 export default parallel

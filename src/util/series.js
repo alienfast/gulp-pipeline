@@ -11,5 +11,6 @@ const series = (gulp, ...recipes) => {
   series.recipes = recipes
   return series
 }
+series.displayName = `<series>`
 
 export default series

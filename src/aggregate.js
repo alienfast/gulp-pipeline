@@ -54,21 +54,22 @@ const Aggregate = class extends BaseGulp {
     //let tasks = this.toTasks(this.taskFn)
     //this.debug(`Registering task: ${Util.colors.green(taskName)} for ${stringify(tasks)}`)
     this.gulp.task(taskName, this.taskFn)
+    this.taskFn.displayName = taskName
     this.taskFn.description = this.createHelpText()
   }
 
   watchToGlobs(recipe) {
     // glob could be array
     let fullGlobs = []
-    if(recipe.config.watch.glob === undefined){
+    if (recipe.config.watch.glob === undefined) {
       return fullGlobs
     }
     let globs = recipe.config.watch.glob
-    if(!Array.isArray(recipe.config.watch.glob)){
+    if (!Array.isArray(recipe.config.watch.glob)) {
       globs = [recipe.config.watch.glob]
     }
 
-    for(let glob of globs) {
+    for (let glob of globs) {
       fullGlobs.push(`${recipe.config.watch.options.cwd}/${glob}`)
     }
     return fullGlobs
@@ -84,12 +85,6 @@ const Aggregate = class extends BaseGulp {
 
     this.debug(`Registering task: ${coloredTask}`)
 
-    // on error ensure that we reset the flag so that it runs again
-    this.gulp.on('error', () => {
-      this.debug(`Yay! listened for the error and am able to reset the running flag!`)
-      this.taskFn.running = false
-    })
-
     // aggregate all globs into an array for a single watch fn call
     let globs = []
     for (let recipe of this.watchableRecipes()) {
@@ -101,31 +96,34 @@ const Aggregate = class extends BaseGulp {
 
     let watchFn = () => {
       this.log(`${coloredTask} watching ${globs.join(', ')}`)
-      let watcher = this.gulp.watch(globs, {}, this.taskFn)
+      let watcher = this.gulp.watch(globs, {}, (done) => {
+
+        // set this global so that BasGulp#notifyError can make sure not to exit if we are watching
+        this.gulp.watching = true
+        this.debug(`setting gulp.watching: ${this.gulp.watching}`)
+        let result = this.taskFn(done)
+        return result
+      })
+
       // watcher.on('error', (error) => {
       //   this.notifyError(`${coloredTask} ${error}`)
       // })
 
       watcher.on('add', (path) => {
-        if (!this.taskFn.running) {
-          this.log(`${coloredTask} ${path} was added, running...`)
-        }
+        this.log(`${coloredTask} ${path} was added, running...`)
       })
 
       watcher.on('change', (path) => {
-        if (!this.taskFn.running) {
-          this.log(`${coloredTask} ${path} was changed, running...`)
-        }
+        this.log(`${coloredTask} ${path} was changed, running...`)
       })
       watcher.on('unlink', (path) => {
-        if (!this.taskFn.running) {
-          this.log(`${coloredTask} ${path} was deleted, running...`)
-        }
+        this.log(`${coloredTask} ${path} was deleted, running...`)
       })
 
       return watcher
     }
 
+    watchFn.displayName = `<${watchTaskName}>`
     watchFn.description = this.createWatchHelpText()
     return this.gulp.task(watchTaskName, watchFn)
   }

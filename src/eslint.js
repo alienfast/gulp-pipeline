@@ -5,6 +5,8 @@ import extend from 'extend'
 //import stylish from 'gulp-jscs-stylish'
 import debug from 'gulp-debug'
 import gulpif from 'gulp-if'
+import {PluginError} from 'gulp-util'
+
 
 export const Default = {
   debug: false,
@@ -38,7 +40,7 @@ const EsLint = class extends BaseRecipe {
     super(gulp, preset, extend(true, {}, Default, ...configs))
   }
 
-  createDescription(){
+  createDescription() {
     return `Lints ${this.config.source.options.cwd}/${this.config.source.glob}`
   }
 
@@ -48,7 +50,21 @@ const EsLint = class extends BaseRecipe {
       .pipe(gulpif(this.config.debug, debug(this.debugOptions())))
       .pipe(eslint(this.config.options))
       .pipe(eslint.format()) // outputs the lint results to the console. Alternatively use eslint.formatEach() (see Docs).
-      .pipe(gulpif(!watching, eslint.failAfterError())) // To have the process exit with an error code (1) on lint error, return the stream and pipe to failAfterError last.
+      // primarily eslint.failAfterError() but we use notifyError to process the difference between watching and not so we don't end process.
+      .pipe(eslint.results((results) => {
+        let count = results.errorCount;
+        if (count > 0) {
+          let error =  new PluginError(
+            'gulp-eslint',
+            {
+              name: 'ESLintError',
+              message: 'Failed with ' + count + (count === 1 ? ' error' : ' errors')
+            }
+          )
+
+          this.notifyError(error, done, watching)
+        }
+      }))
       .on('error', (error) => {
         this.notifyError(error, done, watching)
       })

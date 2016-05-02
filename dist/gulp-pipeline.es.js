@@ -4,7 +4,7 @@ import fs from 'fs';
 import glob from 'glob';
 import spawn from 'cross-spawn';
 import jsonfile from 'jsonfile';
-import Util from 'gulp-util';
+import Util, { PluginError } from 'gulp-util';
 import stringify from 'stringify-object';
 import console from 'console';
 import notify from 'gulp-notify';
@@ -424,8 +424,9 @@ const BaseGulp = class extends Base {
     }
   }
 
-  notifyError(error, done) { //, watching = false) {
-
+  notifyError(error, done, watching = false) {
+    let isWatching = (this.gulp ? this.gulp.watching : undefined) || watching
+    this.debug(`isWatching: ${isWatching}`)
     //this.debugDump('notifyError', error)
 
     let lineNumber = (error.lineNumber) ? `Line ${error.lineNumber} -- ` : ''
@@ -468,13 +469,16 @@ const BaseGulp = class extends Base {
     this.log(report)
 
     // Prevent the 'watch' task from stopping
-    //if (!watching && this.gulp) {
-    if (this.gulp) {
+    if (isWatching) {
+        // do nothing
+      this.debug(`notifyError: watching, so not doing anything`)
+    }
+    else if (this.gulp) {
       // if this is not used, we see "Did you forget to signal async completion?", it also unfortunately logs more distracting information below.  But we need to exec the callback with an error to halt execution.
-
       this.donezo(done, error)
     }
     else {
+      this.debug(`notifyError: throwing error`)
       throw error
     }
   }
@@ -716,7 +720,7 @@ const EsLint = class extends BaseRecipe {
     super(gulp, preset, extend(true, {}, Default, ...configs))
   }
 
-  createDescription(){
+  createDescription() {
     return `Lints ${this.config.source.options.cwd}/${this.config.source.glob}`
   }
 
@@ -726,7 +730,21 @@ const EsLint = class extends BaseRecipe {
       .pipe(gulpif(this.config.debug, debug(this.debugOptions())))
       .pipe(eslint(this.config.options))
       .pipe(eslint.format()) // outputs the lint results to the console. Alternatively use eslint.formatEach() (see Docs).
-      .pipe(gulpif(!watching, eslint.failAfterError())) // To have the process exit with an error code (1) on lint error, return the stream and pipe to failAfterError last.
+      // primarily eslint.failAfterError() but we use notifyError to process the difference between watching and not so we don't end process.
+      .pipe(eslint.results((results) => {
+        let count = results.errorCount;
+        if (count > 0) {
+          let error =  new PluginError(
+            'gulp-eslint',
+            {
+              name: 'ESLintError',
+              message: 'Failed with ' + count + (count === 1 ? ' error' : ' errors')
+            }
+          )
+
+          this.notifyError(error, done, watching)
+        }
+      }))
       .on('error', (error) => {
         this.notifyError(error, done, watching)
       })
@@ -1341,21 +1359,22 @@ const Aggregate = class extends BaseGulp {
     //let tasks = this.toTasks(this.taskFn)
     //this.debug(`Registering task: ${Util.colors.green(taskName)} for ${stringify(tasks)}`)
     this.gulp.task(taskName, this.taskFn)
+    this.taskFn.displayName = taskName
     this.taskFn.description = this.createHelpText()
   }
 
   watchToGlobs(recipe) {
     // glob could be array
     let fullGlobs = []
-    if(recipe.config.watch.glob === undefined){
+    if (recipe.config.watch.glob === undefined) {
       return fullGlobs
     }
     let globs = recipe.config.watch.glob
-    if(!Array.isArray(recipe.config.watch.glob)){
+    if (!Array.isArray(recipe.config.watch.glob)) {
       globs = [recipe.config.watch.glob]
     }
 
-    for(let glob of globs) {
+    for (let glob of globs) {
       fullGlobs.push(`${recipe.config.watch.options.cwd}/${glob}`)
     }
     return fullGlobs
@@ -1371,12 +1390,6 @@ const Aggregate = class extends BaseGulp {
 
     this.debug(`Registering task: ${coloredTask}`)
 
-    // on error ensure that we reset the flag so that it runs again
-    this.gulp.on('error', () => {
-      this.debug(`Yay! listened for the error and am able to reset the running flag!`)
-      this.taskFn.running = false
-    })
-
     // aggregate all globs into an array for a single watch fn call
     let globs = []
     for (let recipe of this.watchableRecipes()) {
@@ -1388,31 +1401,34 @@ const Aggregate = class extends BaseGulp {
 
     let watchFn = () => {
       this.log(`${coloredTask} watching ${globs.join(', ')}`)
-      let watcher = this.gulp.watch(globs, {}, this.taskFn)
+      let watcher = this.gulp.watch(globs, {}, (done) => {
+
+        // set this global so that BasGulp#notifyError can make sure not to exit if we are watching
+        this.gulp.watching = true
+        this.debug(`setting gulp.watching: ${this.gulp.watching}`)
+        let result = this.taskFn(done)
+        return result
+      })
+
       // watcher.on('error', (error) => {
       //   this.notifyError(`${coloredTask} ${error}`)
       // })
 
       watcher.on('add', (path) => {
-        if (!this.taskFn.running) {
-          this.log(`${coloredTask} ${path} was added, running...`)
-        }
+        this.log(`${coloredTask} ${path} was added, running...`)
       })
 
       watcher.on('change', (path) => {
-        if (!this.taskFn.running) {
-          this.log(`${coloredTask} ${path} was changed, running...`)
-        }
+        this.log(`${coloredTask} ${path} was changed, running...`)
       })
       watcher.on('unlink', (path) => {
-        if (!this.taskFn.running) {
-          this.log(`${coloredTask} ${path} was deleted, running...`)
-        }
+        this.log(`${coloredTask} ${path} was deleted, running...`)
       })
 
       return watcher
     }
 
+    watchFn.displayName = `<${watchTaskName}>`
     watchFn.description = this.createWatchHelpText()
     return this.gulp.task(watchTaskName, watchFn)
   }
@@ -1604,6 +1620,7 @@ const RollupEs = class extends BaseRecipe {
   }
 
   run(done, watching = false) {
+    this.debug(`watching? ${watching}`)
     let options = extend(true, {
         entry: this.resolveEntry(),
         onwarn: (message) => {
@@ -2169,6 +2186,7 @@ const parallel = (gulp, ...recipes) => {
   parallel.recipes = recipes
   return parallel
 }
+parallel.displayName = `<parallel>`
 
 const Default$21 = {
   debug: false,
@@ -2886,6 +2904,7 @@ const series = (gulp, ...recipes) => {
   series.recipes = recipes
   return series
 }
+series.displayName = `<series>`
 
 /**
  *

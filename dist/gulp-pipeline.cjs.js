@@ -8,7 +8,8 @@ var fs = _interopDefault(require('fs'));
 var glob = _interopDefault(require('glob'));
 var spawn = _interopDefault(require('cross-spawn'));
 var jsonfile = _interopDefault(require('jsonfile'));
-var Util = _interopDefault(require('gulp-util'));
+var Util = require('gulp-util');
+var Util__default = _interopDefault(Util);
 var stringify = _interopDefault(require('stringify-object'));
 var console = _interopDefault(require('console'));
 var notify = _interopDefault(require('gulp-notify'));
@@ -190,10 +191,10 @@ var Rails = function () {
 
       if (results.status !== 0) {
 
-        Util.log(stringify(results));
+        Util__default.log(stringify(results));
 
         if (results.stderr != '' || results.error != null) {
-          Util.log(stringify(results));
+          Util__default.log(stringify(results));
 
           var msg = '';
           if (results.stderr) {
@@ -242,10 +243,10 @@ var Rails = function () {
     key: 'baseDirectories',
     value: function baseDirectories() {
       if (!this.changed(GemfileLock, BaseDirectoriesCache)) {
-        Util.log('Gemfile.lock is unchanged, using baseDirectories cache.');
+        Util__default.log('Gemfile.lock is unchanged, using baseDirectories cache.');
         return jsonfile.readFileSync(BaseDirectoriesCache);
       } else {
-        Util.log('Generating baseDirectories and rails engines cache...');
+        Util__default.log('Generating baseDirectories and rails engines cache...');
         try {
           fs.unlinkSync(BaseDirectoriesCache);
         } catch (error) {
@@ -281,7 +282,7 @@ var Rails = function () {
           }
         }
 
-        Util.log('Writing baseDirectories cache...');
+        Util__default.log('Writing baseDirectories cache...');
         var result = { baseDirectories: baseDirectories };
         jsonfile.writeFileSync(BaseDirectoriesCache, result, { spaces: 2 });
         return result;
@@ -519,13 +520,13 @@ var Base = function () {
   }, {
     key: 'log',
     value: function log(msg) {
-      Util.log(msg);
+      Util__default.log(msg);
     }
   }, {
     key: 'debug',
     value: function debug(msg) {
       if (this.config.debug) {
-        this.log('[' + Util.colors.cyan('debug') + '][' + Util.colors.cyan(this.constructor.name) + '] ' + msg);
+        this.log('[' + Util__default.colors.cyan('debug') + '][' + Util__default.colors.cyan(this.constructor.name) + '] ' + msg);
       }
     }
   }, {
@@ -611,8 +612,10 @@ var BaseGulp = function (_Base) {
   }, {
     key: 'notifyError',
     value: function notifyError(error, done) {
-      //, watching = false) {
+      var watching = arguments.length <= 2 || arguments[2] === undefined ? false : arguments[2];
 
+      var isWatching = (this.gulp ? this.gulp.watching : undefined) || watching;
+      this.debug('isWatching: ' + isWatching);
       //this.debugDump('notifyError', error)
 
       var lineNumber = error.lineNumber ? 'Line ' + error.lineNumber + ' -- ' : '';
@@ -629,8 +632,8 @@ var BaseGulp = function (_Base) {
         sound: 'Sosumi' // See: https://github.com/mikaelbr/node-notifier#all-notification-options-with-their-defaults
       }).write(error);
 
-      var tag = Util.colors.black.bgRed;
-      var report = '\n' + tag('    Task:') + ' [' + Util.colors.cyan(taskName) + ']\n';
+      var tag = Util__default.colors.black.bgRed;
+      var report = '\n' + tag('    Task:') + ' [' + Util__default.colors.cyan(taskName) + ']\n';
 
       if (error.plugin) {
         report += tag('  Plugin:') + ' [' + error.plugin + ']\n';
@@ -654,12 +657,14 @@ var BaseGulp = function (_Base) {
       this.log(report);
 
       // Prevent the 'watch' task from stopping
-      //if (!watching && this.gulp) {
-      if (this.gulp) {
+      if (isWatching) {
+        // do nothing
+        this.debug('notifyError: watching, so not doing anything');
+      } else if (this.gulp) {
         // if this is not used, we see "Did you forget to signal async completion?", it also unfortunately logs more distracting information below.  But we need to exec the callback with an error to halt execution.
-
         this.donezo(done, error);
       } else {
+        this.debug('notifyError: throwing error');
         throw error;
       }
     }
@@ -803,9 +808,9 @@ var BaseRecipe = function (_BaseGulp) {
         (function () {
           // generate watch task e.g. sass:watch
           var name = _this2.watchTaskName();
-          _this2.debug('Registering task: ' + Util.colors.green(name));
+          _this2.debug('Registering task: ' + Util__default.colors.green(name));
           _this2.watchFn = function (done) {
-            _this2.log('[' + Util.colors.green(name) + '] watching ' + _this2.config.watch.glob + ' ' + stringify(_this2.config.watch.options) + '...');
+            _this2.log('[' + Util__default.colors.green(name) + '] watching ' + _this2.config.watch.glob + ' ' + stringify(_this2.config.watch.options) + '...');
 
             return _this2.gulp.watch(_this2.config.watch.glob, _this2.config.watch.options, function () {
               _this2.log('Watched file changed, running ' + _this2.taskName() + '...');
@@ -822,7 +827,7 @@ var BaseRecipe = function (_BaseGulp) {
   }, {
     key: 'createWatchDescription',
     value: function createWatchDescription() {
-      return Util.colors.grey('|___ watches ' + this.config.watch.options.cwd + '/' + this.config.watch.glob);
+      return Util__default.colors.grey('|___ watches ' + this.config.watch.options.cwd + '/' + this.config.watch.glob);
     }
   }, {
     key: 'registerTask',
@@ -836,7 +841,7 @@ var BaseRecipe = function (_BaseGulp) {
         //this.log(`Running task: ${Util.colors.green(name)}`)
 
         if (_this3.config.debug) {
-          _this3.debugDump('Executing ' + Util.colors.green(_this3.displayName()) + ' with config', _this3.config);
+          _this3.debugDump('Executing ' + Util__default.colors.green(_this3.displayName()) + ' with config', _this3.config);
         }
         return _this3.run(done);
       };
@@ -859,7 +864,7 @@ var BaseRecipe = function (_BaseGulp) {
 
         // register
         var name = this.taskName();
-        this.debug('Registering task: ' + Util.colors.green(name));
+        this.debug('Registering task: ' + Util__default.colors.green(name));
         this.gulp.task(name, this.taskFn);
       }
     }
@@ -885,13 +890,13 @@ var BaseRecipe = function (_BaseGulp) {
     value: function logFinish() {
       var message = arguments.length <= 0 || arguments[0] === undefined ? 'finished.' : arguments[0];
 
-      this.log('[' + Util.colors.green(this.taskName()) + '] ' + message);
+      this.log('[' + Util__default.colors.green(this.taskName()) + '] ' + message);
     }
   }, {
     key: 'debugOptions',
     value: function debugOptions() {
       // this controls the gulp-debug log statement, created to mirror our #debug's log format
-      return { title: '[' + Util.colors.cyan('debug') + '][' + Util.colors.cyan(this.constructor.name) + ']' };
+      return { title: '[' + Util__default.colors.cyan('debug') + '][' + Util__default.colors.cyan(this.constructor.name) + ']' };
     }
   }]);
   return BaseRecipe;
@@ -952,8 +957,18 @@ var EsLint = function (_BaseRecipe) {
 
       // eslint() attaches the lint output to the "eslint" property of the file object so it can be used by other modules.
       return this.gulp.src(this.config.source.glob, this.config.source.options).pipe(gulpif(this.config.debug, debug(this.debugOptions()))).pipe(eslint(this.config.options)).pipe(eslint.format()) // outputs the lint results to the console. Alternatively use eslint.formatEach() (see Docs).
-      .pipe(gulpif(!watching, eslint.failAfterError())) // To have the process exit with an error code (1) on lint error, return the stream and pipe to failAfterError last.
-      .on('error', function (error) {
+      // primarily eslint.failAfterError() but we use notifyError to process the difference between watching and not so we don't end process.
+      .pipe(eslint.results(function (results) {
+        var count = results.errorCount;
+        if (count > 0) {
+          var error = new Util.PluginError('gulp-eslint', {
+            name: 'ESLintError',
+            message: 'Failed with ' + count + (count === 1 ? ' error' : ' errors')
+          });
+
+          _this2.notifyError(error, done, watching);
+        }
+      })).on('error', function (error) {
         _this2.notifyError(error, done, watching);
       });
 
@@ -1683,7 +1698,7 @@ var Aggregate = function (_BaseGulp) {
         return a.concat(b.taskName());
       }, []);
 
-      return Util.colors.grey('|___ aggregates watches from [' + taskNames.join(', ') + '] and runs all tasks on any change');
+      return Util__default.colors.grey('|___ aggregates watches from [' + taskNames.join(', ') + '] and runs all tasks on any change');
     }
   }, {
     key: 'registerTask',
@@ -1691,6 +1706,7 @@ var Aggregate = function (_BaseGulp) {
       //let tasks = this.toTasks(this.taskFn)
       //this.debug(`Registering task: ${Util.colors.green(taskName)} for ${stringify(tasks)}`)
       this.gulp.task(taskName, this.taskFn);
+      this.taskFn.displayName = taskName;
       this.taskFn.description = this.createHelpText();
     }
   }, {
@@ -1738,7 +1754,7 @@ var Aggregate = function (_BaseGulp) {
     value: function registerWatchTask(watchTaskName) {
       var _this2 = this;
 
-      var coloredTask = '' + Util.colors.green(watchTaskName);
+      var coloredTask = '' + Util__default.colors.green(watchTaskName);
       // generate watch task
       if (this.watchableRecipes().length < 1) {
         this.debug('No watchable recipes for task: ' + coloredTask);
@@ -1746,12 +1762,6 @@ var Aggregate = function (_BaseGulp) {
       }
 
       this.debug('Registering task: ' + coloredTask);
-
-      // on error ensure that we reset the flag so that it runs again
-      this.gulp.on('error', function () {
-        _this2.debug('Yay! listened for the error and am able to reset the running flag!');
-        _this2.taskFn.running = false;
-      });
 
       // aggregate all globs into an array for a single watch fn call
       var globs = [];
@@ -1785,31 +1795,34 @@ var Aggregate = function (_BaseGulp) {
 
       var watchFn = function watchFn() {
         _this2.log(coloredTask + ' watching ' + globs.join(', '));
-        var watcher = _this2.gulp.watch(globs, {}, _this2.taskFn);
+        var watcher = _this2.gulp.watch(globs, {}, function (done) {
+
+          // set this global so that BasGulp#notifyError can make sure not to exit if we are watching
+          _this2.gulp.watching = true;
+          _this2.debug('setting gulp.watching: ' + _this2.gulp.watching);
+          var result = _this2.taskFn(done);
+          return result;
+        });
+
         // watcher.on('error', (error) => {
         //   this.notifyError(`${coloredTask} ${error}`)
         // })
 
         watcher.on('add', function (path) {
-          if (!_this2.taskFn.running) {
-            _this2.log(coloredTask + ' ' + path + ' was added, running...');
-          }
+          _this2.log(coloredTask + ' ' + path + ' was added, running...');
         });
 
         watcher.on('change', function (path) {
-          if (!_this2.taskFn.running) {
-            _this2.log(coloredTask + ' ' + path + ' was changed, running...');
-          }
+          _this2.log(coloredTask + ' ' + path + ' was changed, running...');
         });
         watcher.on('unlink', function (path) {
-          if (!_this2.taskFn.running) {
-            _this2.log(coloredTask + ' ' + path + ' was deleted, running...');
-          }
+          _this2.log(coloredTask + ' ' + path + ' was deleted, running...');
         });
 
         return watcher;
       };
 
+      watchFn.displayName = '<' + watchTaskName + '>';
       watchFn.description = this.createWatchHelpText();
       return this.gulp.task(watchTaskName, watchFn);
     }
@@ -2048,6 +2061,7 @@ var RollupEs = function (_BaseRecipe) {
 
       var watching = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
 
+      this.debug('watching? ' + watching);
       var options = extend(true, {
         entry: this.resolveEntry(),
         onwarn: function onwarn(message) {
@@ -2860,6 +2874,7 @@ var parallel = function parallel(gulp) {
   parallel.recipes = recipes;
   return parallel;
 };
+parallel.displayName = '<parallel>';
 
 var Default$21 = {
   debug: false,
@@ -3844,6 +3859,7 @@ var series = function series(gulp) {
   series.recipes = recipes;
   return series;
 };
+series.displayName = '<series>';
 
 /**
  *
@@ -4011,13 +4027,13 @@ var BaseRegistry = function (_DefaultRegistry) {
   }, {
     key: 'log',
     value: function log(msg) {
-      Util.log(msg);
+      Util__default.log(msg);
     }
   }, {
     key: 'debug',
     value: function debug(msg) {
       if (this.config.debug) {
-        this.log('[' + Util.colors.cyan('debug') + '][' + Util.colors.cyan(this.constructor.name) + '] ' + msg);
+        this.log('[' + Util__default.colors.cyan('debug') + '][' + Util__default.colors.cyan(this.constructor.name) + '] ' + msg);
       }
     }
   }, {

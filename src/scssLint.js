@@ -30,27 +30,29 @@ const ScssLint = class extends BaseRecipe {
   constructor(gulp, preset, ...configs) {
     super(gulp, preset, Default, ...configs)
 
-    if(!this.config.source.options.cwd){
+    if (!this.config.source.options.cwd) {
       this.notifyError(`Expected to find source.options.cwd in \n${this.dump(this.config)}`)
     }
 
     // If a config is not specified, emulate the eslint config behavior by looking up.
     //  If there is a config at or above the source cwd, use it, otherwise leave null.
-    if(!this.config.options.config){
-
+    if (!this.config.options.config) {
       let configFile = File.findup('.scss-lint.yml', {cwd: this.config.source.options.cwd})
-      if(configFile){
-        this.log(`Using config: ${configFile}`)
+      if (configFile) {
         this.config.options.config = configFile
       }
     }
   }
 
-  createDescription(){
+  createDescription() {
     return `Lints ${this.config.source.options.cwd}/${this.config.source.glob}`
   }
 
   run(done, watching = false) {
+    if (this.config.options.config) {
+      this.log(`Using config: ${this.config.options.config}`)
+    }
+
     return this.gulp.src(this.config.source.glob, this.config.source.options)
       .pipe(gulpif(this.config.debug, debug(this.debugOptions())))
       .pipe(scssLint(this.config.options))

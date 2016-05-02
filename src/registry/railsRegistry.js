@@ -59,7 +59,7 @@ const RailsRegistry = class extends BaseRegistry {
     const css = new Aggregate(gulp, 'css',
       series(gulp,
         this.scssLinters(gulp),
-        new Sass(gulp, preset)
+        new Sass(gulp, preset, ...this.classConfig(Sass))
       ),
       ...this.keyConfig('css')
     )
@@ -68,7 +68,7 @@ const RailsRegistry = class extends BaseRegistry {
       series(gulp,
         new Clean(gulp, preset),
         parallel(gulp,
-          new Images(gulp, preset),
+          new Images(gulp, preset, ...this.classConfig(Images)),
           js,
           css
         )
@@ -91,8 +91,8 @@ const RailsRegistry = class extends BaseRegistry {
 
         // minify application.(css|js) to a tmp directory
         parallel(gulp,
-          new Uglify(gulp, preset, digests, {dest: minifiedAssetsDir, concat: {dest: 'application.js'}}),
-          new CssNano(gulp, preset, digests, {dest: minifiedAssetsDir, minExtension: false})
+          new Uglify(gulp, preset, digests, {dest: minifiedAssetsDir, concat: {dest: 'application.js'}}, ...this.classConfig(Uglify)),
+          new CssNano(gulp, preset, digests, {dest: minifiedAssetsDir, minExtension: false}, ...this.classConfig(CssNano))
         ),
 
         // rev minified css|js from tmp

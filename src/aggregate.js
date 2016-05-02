@@ -88,6 +88,7 @@ const Aggregate = class extends BaseGulp {
 
     this.debug(`Registering task: ${coloredTask}`)
 
+    // https://github.com/alienfast/gulp-pipeline/issues/29
     // aggregate all globs into an array for a single watch fn call
     let globs = []
     for (let recipe of this.watchableRecipes()) {

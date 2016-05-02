@@ -108,8 +108,7 @@ const Preset = class {
   }
 
   static rails(overrides = {}) {
-
-    return extend(true, {}, Baseline, PresetRails, Rails.baseDirectories(), overrides)
+    return extend(true, {}, Baseline, PresetRails, new Rails().baseDirectories(), overrides)
   }
 
   /**

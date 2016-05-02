@@ -1,7 +1,6 @@
 import BaseRecipe from './baseRecipe'
 import tmp from 'tmp'
 import fs from 'fs-extra'
-import process from 'process'
 import Ruby from './ruby/ruby'
 
 const Default = {
@@ -11,7 +10,6 @@ const Default = {
     name: 'jekyll',
     description: 'Builds a jekyll site'
   },
-  cwd: process.cwd(),
   options: {
     baseCommand: 'bundle exec',
     config: '_config.yml',

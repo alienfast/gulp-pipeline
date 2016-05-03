@@ -3,9 +3,7 @@
 # gulp-pipeline
 Gulp 4 recipes modularized as ES2015 classes. Fully configurable. Fully extensible. Full pipeline in a few lines of code.
 
-This **is not** just for rails, it's agnostic and works for anything (node, angular, etc). 
-
-With that said, did we mention that gulp-pipeline + [gulp-pipeline-rails](https://github.com/alienfast/gulp-pipeline-rails) enables you to remove sprockets and easily serve gulp assets with rails?
+This agnostic of your server software choice and works for anything (rails, node, angular, etc). 
 
 ## Recipes
 See the [src](src) directory for a full list.  Common recipes:
@@ -34,25 +32,6 @@ See the [src](src) directory for a full list.  Common recipes:
 We eat our own dogfood.  All distributions are built and published by gulp-pipeline using our `Publish*` recipes, you can find these on our [`dist` branch](https://github.com/alienfast/gulp-pipeline/tree/dist).
 
 ## Usage
-
-### Rails sample
-Here's a `gulpfile.babel.js` that uses the [`RailsRegistry`](src/registry/railsRegistry.js) tasks to build and watch an ES2015/SCSS project.  We can get this kind of reuse because of the standards employed in a rails project structure.
- 
-```javascript
-import {RailsRegistry} from 'gulp-pipeline'
-import gulp from 'gulp'
-
-// minimal setup with no overrides config
-gulp.registry(new RailsRegistry({}))
-```
-
-This creates all the tasks you need, view them with `gulp --tasks`.  Notable tasks:
-
-- `gulp` runs the `default` task which builds all assets for development
-- For development, you my want to
-  - run individual watches for speed such as `gulp css:watch js:watch images:watch`
-  - use the all-in-one `gulp default:watch` will watch all asset sources and run `default`
-- `gulp all` runs `default` then `digest` which is a full clean build with revisioned assets for production
 
 ### NPM ES2015 package sample 
 
@@ -96,6 +75,25 @@ This configuration generates the following (call the `help` task) that is specif
 
 ![Help](help-demo.png) 
 
+
+### Rails sample
+Here's a `gulpfile.babel.js` that uses the [`RailsRegistry`](src/registry/railsRegistry.js) tasks to build and watch an ES2015/SCSS project.  We can get this kind of reuse because of the standards employed in a rails project structure.  To obtain the easiest and most seamless Rails deployment, see the companion project [gulp-pipeline-rails](https://github.com/alienfast/gulp-pipeline-rails).  `gulp-pipeline` + [gulp-pipeline-rails](https://github.com/alienfast/gulp-pipeline-rails) enables you to remove sprockets and easily serve gulp assets with rails.
+ 
+```javascript
+import {RailsRegistry} from 'gulp-pipeline'
+import gulp from 'gulp'
+
+// minimal setup with no overrides config
+gulp.registry(new RailsRegistry({}))
+```
+
+This creates all the tasks you need, view them with `gulp --tasks`.  Notable tasks:
+
+- `gulp` runs the `default` task which builds all assets for development
+- For development, you my want to
+  - run individual watches for speed such as `gulp css:watch js:watch images:watch`
+  - use the all-in-one `gulp default:watch` will watch all asset sources and run `default`
+- `gulp all` runs `default` then `digest` which is a full clean build with revisioned assets for production
 
 ## Aggregate
 Aggregate provides a helper to not only generate a basic task from a list of series/parallel tasks e.g. `default`, but also aggregate all the watches so that separate watches do not have to be defined separately e.g. `default:watch`.  In the npm package example above and as indicated by `gulp --tasks`, `gulp default:watch` will do the folowing:
@@ -190,6 +188,12 @@ No problem, just start with the `#baseline` and add your overrides such as the f
     }
   })
   ```
+  
+## Projects using `gulp-pipeline`
+  - [keys.js](https://github.com/alienfast/key.js) - very simple ES2015 setup with Mocha tests + automatic deployment (tag + `dist` branch + npm)
+  - [picker.js](https://github.com/alienfast/picker.js) - SCSS + ES2015 + Mocha PhantomJs tests written as ES2015 + automatic deployment (tag + `dist` branch + npm)
+  - [bulid-control](https://github.com/alienfast/build-control) - ES2015 with automatic deployment using itself through `gulp-pipeline` 
+  - [bootstrap-material-design](https://github.com/FezVrasta/bootstrap-material-design/tree/v4-dev) - complex fully custom setup ES2015 + SCSS + independent DOCS pipeline + Jekyll + automatic deployment (tag + `dist` branch + npm)
 
 ## Credits
 > If I have seen further, it is by standing on the shoulders of giants. - Sir Isaac Newton

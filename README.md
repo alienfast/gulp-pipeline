@@ -46,10 +46,12 @@ import gulp from 'gulp'
 gulp.registry(new RailsRegistry({}))
 ```
 
-This creates all the tasks you need, view them with `gulp --tasks`.  Notable tasks (subject to name changes):
+This creates all the tasks you need, view them with `gulp --tasks`.  Notable tasks:
 
 - `gulp` runs the `default` task which builds all assets for development
-- `gulp default:watch` will watch all asset sources and run `default` - use this one while developing
+- For development, you my want to
+  - run individual watches for speed such as `gulp css:watch js:watch images:watch`
+  - use the all-in-one `gulp default:watch` will watch all asset sources and run `default`
 - `gulp all` runs `default` then `digest` which is a full clean build with revisioned assets for production
 
 ### NPM ES2015 package sample 

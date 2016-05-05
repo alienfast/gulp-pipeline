@@ -176,8 +176,8 @@ const RollupEs = class extends BaseRecipe {
     if (this.config.nodeResolve.enabled) {
       plugins += `\t\tnodeResolve(${this.dump(this.config.nodeResolve.options)}),\n`
     }
-    if (this.config.babelOptions) {
-      plugins += `\t\tbabel(${this.dump(this.config.babelOptions)}),\n`
+    if (this.config.babel) {
+      plugins += `\t\tbabel(${this.dump(this.config.babel)}),\n`
     }
     plugins += `],\n`
 

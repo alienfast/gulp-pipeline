@@ -19,6 +19,9 @@ export const Default = {
     //  presets: ['es2015-rollup']
     //})]
   },
+  nodeEnvReplace: {
+    enabled: false // building for react in the browser?
+  },
   nodeResolve: {
     enabled: false // bundle a full package with dependencies?
   },

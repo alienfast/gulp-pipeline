@@ -1,12 +1,13 @@
 import BaseRecipe from './baseRecipe'
-import { rollup } from 'rollup'
-//import BrowserSync from 'browser-sync'
+import {rollup} from 'rollup'
 import extend from 'extend'
 import glob from 'glob'
+import replace from 'rollup-plugin-replace'
 import nodeResolve from 'rollup-plugin-node-resolve'
 import commonjs from 'rollup-plugin-commonjs'
 import process from 'process'
 import File from './util/file'
+//import BrowserSync from 'browser-sync'
 const node_modules = File.findup('node_modules')
 
 
@@ -22,6 +23,15 @@ export const Default = {
     sourceMap: true,
     format: 'es6',
     plugins: []
+  }
+}
+
+export const NodeEnvReplace = {
+  nodeEnvReplace: {
+    enabled: false,
+    options: {
+      'process.env.NODE_ENV': JSON.stringify('production')
+    }
   }
 }
 
@@ -84,7 +94,7 @@ const RollupEs = class extends BaseRecipe {
       throw new Error(`options.dest filename must be specified.`)
     }
 
-    super(gulp, preset, Default, NodeResolve, CommonJs, config)
+    super(gulp, preset, Default, NodeEnvReplace, NodeResolve, CommonJs, config)
 
     // Utilize the presets to get the dest cwd/base directory, then add the remaining passed-in file path/name
     this.config.options.dest = `${this.config.dest}/${this.config.options.dest}`
@@ -104,6 +114,13 @@ const RollupEs = class extends BaseRecipe {
       this.debug('Adding nodeResolve plugin')
       // add at the beginning
       this.config.options.plugins.unshift(nodeResolve(this.config.nodeResolve.options))
+    }
+
+    // Add nodeEnvReplace before (nodeResolve &&|| commonjs &&|| babel)
+    if (this.config.nodeEnvReplace.enabled) {
+      this.debug('Adding nodeEnvReplace plugin')
+      // add at the beginning
+      this.config.options.plugins.unshift(replace(this.config.nodeEnvReplace.options))
     }
 
     //this.browserSync = BrowserSync.create()

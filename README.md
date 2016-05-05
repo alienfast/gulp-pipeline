@@ -194,6 +194,7 @@ No problem, just start with the `#baseline` and add your overrides such as the f
   - [picker.js](https://github.com/alienfast/picker.js) - SCSS + ES2015 + Mocha PhantomJs tests written as ES2015 + automatic deployment (tag + `dist` branch + npm)
   - [bulid-control](https://github.com/alienfast/build-control) - ES2015 with automatic deployment using itself through `gulp-pipeline` 
   - [bootstrap-material-design](https://github.com/FezVrasta/bootstrap-material-design/tree/v4-dev) - complex fully custom setup ES2015 + SCSS + independent DOCS pipeline + Jekyll + automatic deployment (tag + `dist` branch + npm)
+  - [reactjs-hello-world](https://github.com/rosskevin/reactjs-hello-world) - A hello world for ReactJs written in ES2015/JSX with gulp-pipeline using Eslint, Rollup, and Uglify 
 
 ## Credits
 > If I have seen further, it is by standing on the shoulders of giants. - Sir Isaac Newton

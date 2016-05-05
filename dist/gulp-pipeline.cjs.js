@@ -35,6 +35,7 @@ var scssLint = _interopDefault(require('gulp-scss-lint'));
 var scssLintStylish = _interopDefault(require('gulp-scss-lint-stylish'));
 var unique = _interopDefault(require('array-unique'));
 var rollup = require('rollup');
+var replace = _interopDefault(require('rollup-plugin-replace'));
 var nodeResolve = _interopDefault(require('rollup-plugin-node-resolve'));
 var commonjs = _interopDefault(require('rollup-plugin-commonjs'));
 var babel = _interopDefault(require('rollup-plugin-babel'));
@@ -43,7 +44,7 @@ var globAll = _interopDefault(require('glob-all'));
 var del = _interopDefault(require('del'));
 var rev = _interopDefault(require('gulp-rev'));
 var revReplace = _interopDefault(require('gulp-rev-replace'));
-var replace = _interopDefault(require('gulp-replace'));
+var replace$1 = _interopDefault(require('gulp-replace'));
 var cssnano = _interopDefault(require('gulp-cssnano'));
 var mocha = _interopDefault(require('gulp-mocha'));
 var mochaPhantomJS = _interopDefault(require('gulp-mocha-phantomjs'));
@@ -1969,6 +1970,7 @@ var Aggregate = function (_BaseGulp) {
   return Aggregate;
 }(BaseGulp);
 
+//import BrowserSync from 'browser-sync'
 var node_modules$1 = File.findup('node_modules');
 
 var Default$9 = {
@@ -1983,6 +1985,15 @@ var Default$9 = {
     sourceMap: true,
     format: 'es6',
     plugins: []
+  }
+};
+
+var NodeEnvReplace = {
+  nodeEnvReplace: {
+    enabled: false,
+    options: {
+      'process.env.NODE_ENV': JSON.stringify('production')
+    }
   }
 };
 
@@ -2056,7 +2067,7 @@ var RollupEs = function (_BaseRecipe) {
 
     // Utilize the presets to get the dest cwd/base directory, then add the remaining passed-in file path/name
 
-    var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(RollupEs).call(this, gulp, preset, Default$9, NodeResolve, CommonJs, config));
+    var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(RollupEs).call(this, gulp, preset, Default$9, NodeEnvReplace, NodeResolve, CommonJs, config));
 
     _this.config.options.dest = _this.config.dest + '/' + _this.config.options.dest;
 
@@ -2075,6 +2086,13 @@ var RollupEs = function (_BaseRecipe) {
       _this.debug('Adding nodeResolve plugin');
       // add at the beginning
       _this.config.options.plugins.unshift(nodeResolve(_this.config.nodeResolve.options));
+    }
+
+    // Add nodeEnvReplace before (nodeResolve &&|| commonjs &&|| babel)
+    if (_this.config.nodeEnvReplace.enabled) {
+      _this.debug('Adding nodeEnvReplace plugin');
+      // add at the beginning
+      _this.config.options.plugins.unshift(replace(_this.config.nodeEnvReplace.options));
     }
 
     //this.browserSync = BrowserSync.create()
@@ -2156,8 +2174,8 @@ var RollupEs = function (_BaseRecipe) {
       if (this.config.nodeResolve.enabled) {
         plugins += '\t\tnodeResolve(' + this.dump(this.config.nodeResolve.options) + '),\n';
       }
-      if (this.config.babelOptions) {
-        plugins += '\t\tbabel(' + this.dump(this.config.babelOptions) + '),\n';
+      if (this.config.babel) {
+        plugins += '\t\tbabel(' + this.dump(this.config.babel) + '),\n';
       }
       plugins += '],\n';
 
@@ -2174,7 +2192,7 @@ var Default$10 = {
     name: 'rollup:cjs'
   },
   presetType: 'javascripts',
-  babelOptions: {
+  babel: {
     babelrc: false,
     presets: ['es2015-rollup']
   },
@@ -2185,6 +2203,9 @@ var Default$10 = {
     //  babelrc: false,
     //  presets: ['es2015-rollup']
     //})]
+  },
+  nodeEnvReplace: {
+    enabled: false // building for react in the browser?
   },
   nodeResolve: {
     enabled: false // bundle a full package with dependencies?
@@ -2222,7 +2243,7 @@ var RollupCjs = function (_RollupEs) {
     var config = Preset.resolveConfig.apply(Preset, [preset, Default$10].concat(configs));
     return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(RollupCjs)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$10, {
       options: {
-        plugins: [babel(config.babelOptions)]
+        plugins: [babel(config.babel)]
       }
     }].concat(configs)));
   }
@@ -3214,7 +3235,7 @@ var CssNano = function (_BaseRecipe) {
       return this.gulp.src(this.config.source.glob, this.config.source.options).pipe(gulpif(this.config.debug, debug(this.debugOptions()))).pipe(gulpif(this.config.minExtension, extReplace('.min.css')))
       // whack the sourcemap otherwise it gives us "Unsupported source map encoding charset=utf8;base64"
       // ...we don't want it in the min file anyway
-      .pipe(replace(/\/\*# sourceMappingURL=.*\*\//g, '')).pipe(cssnano(this.config.options)).pipe(this.gulp.dest(this.config.dest)).on('error', function (error) {
+      .pipe(replace$1(/\/\*# sourceMappingURL=.*\*\//g, '')).pipe(cssnano(this.config.options)).pipe(this.gulp.dest(this.config.dest)).on('error', function (error) {
         _this2.notifyError(error, done, watching);
       }).pipe(this.browserSync.stream());
     }
@@ -4121,6 +4142,7 @@ var Default$35 = {
   //  - in some cases, passing false for the class name may be implemented as omitting the registration of the recipe (see implementation of #init for details)
   RollupIife: true, // absent any overrides, build iife
   RollupCjs: false,
+  RollupCjsBundled: false,
   RollupAmd: false,
   RollupUmd: false
 };

@@ -29,6 +29,7 @@ export const Default = {
   //  - in some cases, passing false for the class name may be implemented as omitting the registration of the recipe (see implementation of #init for details)
   RollupIife: true, // absent any overrides, build iife
   RollupCjs: false,
+  RollupCjsBundled: false,
   RollupAmd: false,
   RollupUmd: false
 }

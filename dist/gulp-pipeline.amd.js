@@ -1,4 +1,4 @@
-define(['exports', 'extend', 'path', 'gulp-util', 'stringify-object', 'shelljs', 'fs-extra', 'file-sync-cmp', 'process', 'iconv-lite', 'buffer', 'findup-sync', 'glob', 'jsonfile', 'console', 'gulp-notify', 'gulp-eslint', 'gulp-debug', 'gulp-if', 'gulp-uglify', 'gulp-sourcemaps', 'gulp-concat', 'gulp-ext-replace', 'gulp-autoprefixer', 'browser-sync', 'gulp-changed', 'gulp-imagemin', 'merge-stream', 'gulp-sass', 'gulp-scss-lint', 'gulp-scss-lint-stylish', 'array-unique', 'rollup', 'rollup-plugin-node-resolve', 'rollup-plugin-commonjs', 'rollup-plugin-babel', 'chalk', 'glob-all', 'del', 'gulp-rev', 'gulp-rev-replace', 'gulp-replace', 'gulp-cssnano', 'gulp-mocha', 'gulp-mocha-phantomjs', 'build-control', 'path-is-absolute', 'tmp', 'undertaker-registry'], function (exports, extend, path, Util, stringify, shelljs, fs, fileSyncCmp, process, iconv, buffer, _findup, glob, jsonfile, console, notify, eslint, debug, gulpif, uglify, sourcemaps, concat, extReplace, autoprefixer, BrowserSync, changed, imagemin, merge, sass, scssLint, scssLintStylish, unique, rollup, nodeResolve, commonjs, babel, chalk, globAll, del, rev, revReplace, replace, cssnano, mocha, mochaPhantomJS, buildControl, pathIsAbsolute, tmp, DefaultRegistry) { 'use strict';
+define(['exports', 'extend', 'path', 'gulp-util', 'stringify-object', 'shelljs', 'fs-extra', 'file-sync-cmp', 'process', 'iconv-lite', 'buffer', 'findup-sync', 'glob', 'jsonfile', 'console', 'gulp-notify', 'gulp-eslint', 'gulp-debug', 'gulp-if', 'gulp-uglify', 'gulp-sourcemaps', 'gulp-concat', 'gulp-ext-replace', 'gulp-autoprefixer', 'browser-sync', 'gulp-changed', 'gulp-imagemin', 'merge-stream', 'gulp-sass', 'gulp-scss-lint', 'gulp-scss-lint-stylish', 'array-unique', 'rollup', 'rollup-plugin-replace', 'rollup-plugin-node-resolve', 'rollup-plugin-commonjs', 'rollup-plugin-babel', 'chalk', 'glob-all', 'del', 'gulp-rev', 'gulp-rev-replace', 'gulp-replace', 'gulp-cssnano', 'gulp-mocha', 'gulp-mocha-phantomjs', 'build-control', 'path-is-absolute', 'tmp', 'undertaker-registry'], function (exports, extend, path, Util, stringify, shelljs, fs, fileSyncCmp, process, iconv, buffer, _findup, glob, jsonfile, console, notify, eslint, debug, gulpif, uglify, sourcemaps, concat, extReplace, autoprefixer, BrowserSync, changed, imagemin, merge, sass, scssLint, scssLintStylish, unique, rollup, replace, nodeResolve, commonjs, babel, chalk, globAll, del, rev, revReplace, replace$1, cssnano, mocha, mochaPhantomJS, buildControl, pathIsAbsolute, tmp, DefaultRegistry) { 'use strict';
 
   extend = 'default' in extend ? extend['default'] : extend;
   path = 'default' in path ? path['default'] : path;
@@ -30,6 +30,7 @@ define(['exports', 'extend', 'path', 'gulp-util', 'stringify-object', 'shelljs',
   scssLint = 'default' in scssLint ? scssLint['default'] : scssLint;
   scssLintStylish = 'default' in scssLintStylish ? scssLintStylish['default'] : scssLintStylish;
   unique = 'default' in unique ? unique['default'] : unique;
+  replace = 'default' in replace ? replace['default'] : replace;
   nodeResolve = 'default' in nodeResolve ? nodeResolve['default'] : nodeResolve;
   commonjs = 'default' in commonjs ? commonjs['default'] : commonjs;
   babel = 'default' in babel ? babel['default'] : babel;
@@ -38,7 +39,7 @@ define(['exports', 'extend', 'path', 'gulp-util', 'stringify-object', 'shelljs',
   del = 'default' in del ? del['default'] : del;
   rev = 'default' in rev ? rev['default'] : rev;
   revReplace = 'default' in revReplace ? revReplace['default'] : revReplace;
-  replace = 'default' in replace ? replace['default'] : replace;
+  replace$1 = 'default' in replace$1 ? replace$1['default'] : replace$1;
   cssnano = 'default' in cssnano ? cssnano['default'] : cssnano;
   mocha = 'default' in mocha ? mocha['default'] : mocha;
   mochaPhantomJS = 'default' in mochaPhantomJS ? mochaPhantomJS['default'] : mochaPhantomJS;
@@ -1963,6 +1964,7 @@ define(['exports', 'extend', 'path', 'gulp-util', 'stringify-object', 'shelljs',
     return Aggregate;
   }(BaseGulp);
 
+  //import BrowserSync from 'browser-sync'
   var node_modules$1 = File.findup('node_modules');
 
   var Default$9 = {
@@ -1977,6 +1979,15 @@ define(['exports', 'extend', 'path', 'gulp-util', 'stringify-object', 'shelljs',
       sourceMap: true,
       format: 'es6',
       plugins: []
+    }
+  };
+
+  var NodeEnvReplace = {
+    nodeEnvReplace: {
+      enabled: false,
+      options: {
+        'process.env.NODE_ENV': JSON.stringify('production')
+      }
     }
   };
 
@@ -2050,7 +2061,7 @@ define(['exports', 'extend', 'path', 'gulp-util', 'stringify-object', 'shelljs',
 
       // Utilize the presets to get the dest cwd/base directory, then add the remaining passed-in file path/name
 
-      var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(RollupEs).call(this, gulp, preset, Default$9, NodeResolve, CommonJs, config));
+      var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(RollupEs).call(this, gulp, preset, Default$9, NodeEnvReplace, NodeResolve, CommonJs, config));
 
       _this.config.options.dest = _this.config.dest + '/' + _this.config.options.dest;
 
@@ -2069,6 +2080,13 @@ define(['exports', 'extend', 'path', 'gulp-util', 'stringify-object', 'shelljs',
         _this.debug('Adding nodeResolve plugin');
         // add at the beginning
         _this.config.options.plugins.unshift(nodeResolve(_this.config.nodeResolve.options));
+      }
+
+      // Add nodeEnvReplace before (nodeResolve &&|| commonjs &&|| babel)
+      if (_this.config.nodeEnvReplace.enabled) {
+        _this.debug('Adding nodeEnvReplace plugin');
+        // add at the beginning
+        _this.config.options.plugins.unshift(replace(_this.config.nodeEnvReplace.options));
       }
 
       //this.browserSync = BrowserSync.create()
@@ -2150,8 +2168,8 @@ define(['exports', 'extend', 'path', 'gulp-util', 'stringify-object', 'shelljs',
         if (this.config.nodeResolve.enabled) {
           plugins += '\t\tnodeResolve(' + this.dump(this.config.nodeResolve.options) + '),\n';
         }
-        if (this.config.babelOptions) {
-          plugins += '\t\tbabel(' + this.dump(this.config.babelOptions) + '),\n';
+        if (this.config.babel) {
+          plugins += '\t\tbabel(' + this.dump(this.config.babel) + '),\n';
         }
         plugins += '],\n';
 
@@ -2168,7 +2186,7 @@ define(['exports', 'extend', 'path', 'gulp-util', 'stringify-object', 'shelljs',
       name: 'rollup:cjs'
     },
     presetType: 'javascripts',
-    babelOptions: {
+    babel: {
       babelrc: false,
       presets: ['es2015-rollup']
     },
@@ -2179,6 +2197,9 @@ define(['exports', 'extend', 'path', 'gulp-util', 'stringify-object', 'shelljs',
       //  babelrc: false,
       //  presets: ['es2015-rollup']
       //})]
+    },
+    nodeEnvReplace: {
+      enabled: false // building for react in the browser?
     },
     nodeResolve: {
       enabled: false // bundle a full package with dependencies?
@@ -2216,7 +2237,7 @@ define(['exports', 'extend', 'path', 'gulp-util', 'stringify-object', 'shelljs',
       var config = Preset.resolveConfig.apply(Preset, [preset, Default$10].concat(configs));
       return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(RollupCjs)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$10, {
         options: {
-          plugins: [babel(config.babelOptions)]
+          plugins: [babel(config.babel)]
         }
       }].concat(configs)));
     }
@@ -3208,7 +3229,7 @@ define(['exports', 'extend', 'path', 'gulp-util', 'stringify-object', 'shelljs',
         return this.gulp.src(this.config.source.glob, this.config.source.options).pipe(gulpif(this.config.debug, debug(this.debugOptions()))).pipe(gulpif(this.config.minExtension, extReplace('.min.css')))
         // whack the sourcemap otherwise it gives us "Unsupported source map encoding charset=utf8;base64"
         // ...we don't want it in the min file anyway
-        .pipe(replace(/\/\*# sourceMappingURL=.*\*\//g, '')).pipe(cssnano(this.config.options)).pipe(this.gulp.dest(this.config.dest)).on('error', function (error) {
+        .pipe(replace$1(/\/\*# sourceMappingURL=.*\*\//g, '')).pipe(cssnano(this.config.options)).pipe(this.gulp.dest(this.config.dest)).on('error', function (error) {
           _this2.notifyError(error, done, watching);
         }).pipe(this.browserSync.stream());
       }
@@ -4115,6 +4136,7 @@ define(['exports', 'extend', 'path', 'gulp-util', 'stringify-object', 'shelljs',
     //  - in some cases, passing false for the class name may be implemented as omitting the registration of the recipe (see implementation of #init for details)
     RollupIife: true, // absent any overrides, build iife
     RollupCjs: false,
+    RollupCjsBundled: false,
     RollupAmd: false,
     RollupUmd: false
   };

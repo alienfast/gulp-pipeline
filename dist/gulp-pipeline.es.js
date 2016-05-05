@@ -30,6 +30,7 @@ import scssLint from 'gulp-scss-lint';
 import scssLintStylish from 'gulp-scss-lint-stylish';
 import unique from 'array-unique';
 import { rollup } from 'rollup';
+import replace from 'rollup-plugin-replace';
 import nodeResolve from 'rollup-plugin-node-resolve';
 import commonjs from 'rollup-plugin-commonjs';
 import babel from 'rollup-plugin-babel';
@@ -38,7 +39,7 @@ import globAll from 'glob-all';
 import del from 'del';
 import rev from 'gulp-rev';
 import revReplace from 'gulp-rev-replace';
-import replace from 'gulp-replace';
+import replace$1 from 'gulp-replace';
 import cssnano from 'gulp-cssnano';
 import mocha from 'gulp-mocha';
 import mochaPhantomJS from 'gulp-mocha-phantomjs';
@@ -1508,6 +1509,7 @@ const Aggregate = class extends BaseGulp {
   }
 }
 
+//import BrowserSync from 'browser-sync'
 const node_modules$1 = File.findup('node_modules')
 
 
@@ -1523,6 +1525,15 @@ const Default$9 = {
     sourceMap: true,
     format: 'es6',
     plugins: []
+  }
+}
+
+const NodeEnvReplace = {
+  nodeEnvReplace: {
+    enabled: false,
+    options: {
+      'process.env.NODE_ENV': JSON.stringify('production')
+    }
   }
 }
 
@@ -1585,7 +1596,7 @@ const RollupEs = class extends BaseRecipe {
       throw new Error(`options.dest filename must be specified.`)
     }
 
-    super(gulp, preset, Default$9, NodeResolve, CommonJs, config)
+    super(gulp, preset, Default$9, NodeEnvReplace, NodeResolve, CommonJs, config)
 
     // Utilize the presets to get the dest cwd/base directory, then add the remaining passed-in file path/name
     this.config.options.dest = `${this.config.dest}/${this.config.options.dest}`
@@ -1605,6 +1616,13 @@ const RollupEs = class extends BaseRecipe {
       this.debug('Adding nodeResolve plugin')
       // add at the beginning
       this.config.options.plugins.unshift(nodeResolve(this.config.nodeResolve.options))
+    }
+
+    // Add nodeEnvReplace before (nodeResolve &&|| commonjs &&|| babel)
+    if (this.config.nodeEnvReplace.enabled) {
+      this.debug('Adding nodeEnvReplace plugin')
+      // add at the beginning
+      this.config.options.plugins.unshift(replace(this.config.nodeEnvReplace.options))
     }
 
     //this.browserSync = BrowserSync.create()
@@ -1677,8 +1695,8 @@ const RollupEs = class extends BaseRecipe {
     if (this.config.nodeResolve.enabled) {
       plugins += `\t\tnodeResolve(${this.dump(this.config.nodeResolve.options)}),\n`
     }
-    if (this.config.babelOptions) {
-      plugins += `\t\tbabel(${this.dump(this.config.babelOptions)}),\n`
+    if (this.config.babel) {
+      plugins += `\t\tbabel(${this.dump(this.config.babel)}),\n`
     }
     plugins += `],\n`
 
@@ -1694,7 +1712,7 @@ const Default$10 = {
     name: 'rollup:cjs'
   },
   presetType: 'javascripts',
-  babelOptions: {
+  babel: {
     babelrc: false,
     presets: ['es2015-rollup']
   },
@@ -1705,6 +1723,9 @@ const Default$10 = {
     //  babelrc: false,
     //  presets: ['es2015-rollup']
     //})]
+  },
+  nodeEnvReplace: {
+    enabled: false // building for react in the browser?
   },
   nodeResolve: {
     enabled: false // bundle a full package with dependencies?
@@ -1731,7 +1752,7 @@ const RollupCjs = class extends RollupEs {
     let config = Preset.resolveConfig(preset, Default$10, ...configs)
     super(gulp, preset, Default$10, {
         options: {
-          plugins: [babel(config.babelOptions)]
+          plugins: [babel(config.babel)]
         }
       },
       ...configs)
@@ -2438,7 +2459,7 @@ const CssNano = class extends BaseRecipe {
       .pipe(gulpif(this.config.minExtension, extReplace('.min.css')))
       // whack the sourcemap otherwise it gives us "Unsupported source map encoding charset=utf8;base64"
       // ...we don't want it in the min file anyway
-      .pipe(replace(/\/\*# sourceMappingURL=.*\*\//g, ''))
+      .pipe(replace$1(/\/\*# sourceMappingURL=.*\*\//g, ''))
       .pipe(cssnano(this.config.options))
       .pipe(this.gulp.dest(this.config.dest))
       .on('error', (error) => {
@@ -3073,6 +3094,7 @@ const Default$35 = {
   //  - in some cases, passing false for the class name may be implemented as omitting the registration of the recipe (see implementation of #init for details)
   RollupIife: true, // absent any overrides, build iife
   RollupCjs: false,
+  RollupCjsBundled: false,
   RollupAmd: false,
   RollupUmd: false
 }

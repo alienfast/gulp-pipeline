@@ -7,7 +7,7 @@ export const Default = {
     name: 'rollup:cjs'
   },
   presetType: 'javascripts',
-  babelOptions: {
+  babel: {
     babelrc: false,
     presets: ['es2015-rollup']
   },
@@ -18,6 +18,9 @@ export const Default = {
     //  babelrc: false,
     //  presets: ['es2015-rollup']
     //})]
+  },
+  nodeEnvReplace: {
+    enabled: false // building for react in the browser?
   },
   nodeResolve: {
     enabled: false // bundle a full package with dependencies?
@@ -44,7 +47,7 @@ const RollupCjs = class extends RollupEs {
     let config = Preset.resolveConfig(preset, Default, ...configs)
     super(gulp, preset, Default, {
         options: {
-          plugins: [babel(config.babelOptions)]
+          plugins: [babel(config.babel)]
         }
       },
       ...configs)

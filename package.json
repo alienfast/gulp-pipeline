@@ -1,6 +1,6 @@
 {
   "name": "gulp-pipeline",
-  "version": "4.0.40",
+  "version": "4.0.41",
   "description": "Meta gulp plugin recipes modularized as ES6 classes. Fully configurable. Fully extensible. Full pipeline in a few lines of code.",
   "main": "dist/gulp-pipeline.cjs.js",
   "jsnext:main": "src/index.js",
@@ -73,6 +73,7 @@
     "rollup-plugin-babel": "^2.4.0",
     "rollup-plugin-commonjs": "^2.2.1",
     "rollup-plugin-node-resolve": "^1.5.0",
+    "rollup-plugin-replace": "^1.1.0",
     "shelljs": "^0.7.0",
     "stringify-object": "^2.3.1",
     "tmp": "0.0.28",

@@ -29,7 +29,7 @@ import sass from 'gulp-sass';
 import scssLint from 'gulp-scss-lint';
 import scssLintStylish from 'gulp-scss-lint-stylish';
 import unique from 'array-unique';
-import { rollup } from 'rollup';
+import { rollup as rollup$1 } from 'rollup';
 import replace from 'rollup-plugin-replace';
 import nodeResolve from 'rollup-plugin-node-resolve';
 import commonjs from 'rollup-plugin-commonjs';

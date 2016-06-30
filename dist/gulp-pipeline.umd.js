@@ -51,15 +51,13 @@
   tmp = 'default' in tmp ? tmp['default'] : tmp;
   DefaultRegistry = 'default' in DefaultRegistry ? DefaultRegistry['default'] : DefaultRegistry;
 
-  var babelHelpers = {};
-
-  babelHelpers.classCallCheck = function (instance, Constructor) {
+  var classCallCheck = function (instance, Constructor) {
     if (!(instance instanceof Constructor)) {
       throw new TypeError("Cannot call a class as a function");
     }
   };
 
-  babelHelpers.createClass = function () {
+  var createClass = function () {
     function defineProperties(target, props) {
       for (var i = 0; i < props.length; i++) {
         var descriptor = props[i];
@@ -77,7 +75,7 @@
     };
   }();
 
-  babelHelpers.get = function get(object, property, receiver) {
+  var get = function get(object, property, receiver) {
     if (object === null) object = Function.prototype;
     var desc = Object.getOwnPropertyDescriptor(object, property);
 
@@ -102,7 +100,7 @@
     }
   };
 
-  babelHelpers.inherits = function (subClass, superClass) {
+  var inherits = function (subClass, superClass) {
     if (typeof superClass !== "function" && superClass !== null) {
       throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
     }
@@ -118,7 +116,7 @@
     if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
   };
 
-  babelHelpers.possibleConstructorReturn = function (self, call) {
+  var possibleConstructorReturn = function (self, call) {
     if (!self) {
       throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
     }
@@ -126,7 +124,7 @@
     return call && (typeof call === "object" || typeof call === "function") ? call : self;
   };
 
-  babelHelpers.toConsumableArray = function (arr) {
+  var toConsumableArray = function (arr) {
     if (Array.isArray(arr)) {
       for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
 
@@ -135,8 +133,6 @@
       return Array.from(arr);
     }
   };
-
-  babelHelpers;
 
   var Default = {
     watch: true,
@@ -153,7 +149,7 @@
      */
 
     function Base() {
-      babelHelpers.classCallCheck(this, Base);
+      classCallCheck(this, Base);
 
       for (var _len = arguments.length, configs = Array(_len), _key = 0; _key < _len; _key++) {
         configs[_key] = arguments[_key];
@@ -167,7 +163,7 @@
     // protected
 
 
-    babelHelpers.createClass(Base, [{
+    createClass(Base, [{
       key: 'requireValue',
       value: function requireValue(value, name) {
         if (value === undefined || value == null) {
@@ -276,15 +272,15 @@
    *  @credit to grunt for the grunt.file implementation. See license for attribution.
    */
   var FileImplementation = function (_Base) {
-    babelHelpers.inherits(FileImplementation, _Base);
+    inherits(FileImplementation, _Base);
 
     function FileImplementation() {
       var config = arguments.length <= 0 || arguments[0] === undefined ? { debug: false } : arguments[0];
-      babelHelpers.classCallCheck(this, FileImplementation);
-      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(FileImplementation).call(this, { encoding: "utf8" }, config));
+      classCallCheck(this, FileImplementation);
+      return possibleConstructorReturn(this, Object.getPrototypeOf(FileImplementation).call(this, { encoding: "utf8" }, config));
     }
 
-    babelHelpers.createClass(FileImplementation, [{
+    createClass(FileImplementation, [{
       key: 'findup',
       value: function findup(glob) {
         var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
@@ -508,10 +504,10 @@
 
   var File = function () {
     function File() {
-      babelHelpers.classCallCheck(this, File);
+      classCallCheck(this, File);
     }
 
-    babelHelpers.createClass(File, null, [{
+    createClass(File, null, [{
       key: 'findup',
       value: function findup(glob) {
         var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
@@ -585,10 +581,10 @@
 
   var Ruby = function () {
     function Ruby() {
-      babelHelpers.classCallCheck(this, Ruby);
+      classCallCheck(this, Ruby);
     }
 
-    babelHelpers.createClass(Ruby, null, [{
+    createClass(Ruby, null, [{
       key: 'localPath',
       value: function localPath(name) {
         var filename = '' + name;
@@ -615,11 +611,11 @@
     GEM_LOCK: 'Gemfile.lock'
   };
   var Rails = function (_Base) {
-    babelHelpers.inherits(Rails, _Base);
+    inherits(Rails, _Base);
 
     function Rails() {
       var config = arguments.length <= 0 || arguments[0] === undefined ? { debug: false } : arguments[0];
-      babelHelpers.classCallCheck(this, Rails);
+      classCallCheck(this, Rails);
 
       // We need a rails app to run our rails script runner.
       //  Since this project could be a rails engine, find a rails app somewhere in or under the cwd.
@@ -633,10 +629,10 @@
       }
       var cwd = path.join(entries[0], '../..');
 
-      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Rails).call(this, { cwd: cwd }, config));
+      return possibleConstructorReturn(this, Object.getPrototypeOf(Rails).call(this, { cwd: cwd }, config));
     }
 
-    babelHelpers.createClass(Rails, [{
+    createClass(Rails, [{
       key: 'enumerateEngines',
       value: function enumerateEngines() {
         var results = this.exec(Ruby.localPath('railsRunner.sh') + ' ' + Ruby.localPath('enumerateEngines.rb'));
@@ -801,10 +797,10 @@
 
   var Preset = function () {
     function Preset() {
-      babelHelpers.classCallCheck(this, Preset);
+      classCallCheck(this, Preset);
     }
 
-    babelHelpers.createClass(Preset, null, [{
+    createClass(Preset, null, [{
       key: 'baseline',
       value: function baseline() {
         var overrides = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
@@ -891,7 +887,7 @@
   };
 
   var BaseGulp = function (_Base) {
-    babelHelpers.inherits(BaseGulp, _Base);
+    inherits(BaseGulp, _Base);
 
 
     /**
@@ -903,20 +899,20 @@
     function BaseGulp(gulp) {
       var _Object$getPrototypeO;
 
-      babelHelpers.classCallCheck(this, BaseGulp);
+      classCallCheck(this, BaseGulp);
 
       for (var _len = arguments.length, configs = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
         configs[_key - 1] = arguments[_key];
       }
 
-      var _this = babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(BaseGulp)).call.apply(_Object$getPrototypeO, [this, Default$3].concat(configs)));
+      var _this = possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(BaseGulp)).call.apply(_Object$getPrototypeO, [this, Default$3].concat(configs)));
 
       _this.requireValue(gulp, 'gulp');
       _this.gulp = gulp;
       return _this;
     }
 
-    babelHelpers.createClass(BaseGulp, [{
+    createClass(BaseGulp, [{
       key: 'taskName',
       value: function taskName() {
         if (!this.config.task || !this.config.task.name) {
@@ -1030,7 +1026,7 @@
   };
 
   var BaseRecipe = function (_BaseGulp) {
-    babelHelpers.inherits(BaseRecipe, _BaseGulp);
+    inherits(BaseRecipe, _BaseGulp);
 
 
     /**
@@ -1041,7 +1037,7 @@
      */
 
     function BaseRecipe(gulp, preset) {
-      babelHelpers.classCallCheck(this, BaseRecipe);
+      classCallCheck(this, BaseRecipe);
 
       for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
         configs[_key - 2] = arguments[_key];
@@ -1049,7 +1045,7 @@
 
       // in case someone needs to inspect it later i.e. buildControl
 
-      var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(BaseRecipe).call(this, gulp, extend(true, {}, // extend presets here since BaseGulp doesn't use preset.
+      var _this = possibleConstructorReturn(this, Object.getPrototypeOf(BaseRecipe).call(this, gulp, extend(true, {}, // extend presets here since BaseGulp doesn't use preset.
       Default$2, { baseDirectories: preset.baseDirectories }, Preset.resolveConfig.apply(Preset, [preset].concat(configs)))));
 
       _this.preset = preset;
@@ -1058,7 +1054,7 @@
       return _this;
     }
 
-    babelHelpers.createClass(BaseRecipe, [{
+    createClass(BaseRecipe, [{
       key: 'registerWatchTask',
       value: function registerWatchTask() {
         var _this2 = this;
@@ -1182,7 +1178,7 @@
   };
 
   var EsLint = function (_BaseRecipe) {
-    babelHelpers.inherits(EsLint, _BaseRecipe);
+    inherits(EsLint, _BaseRecipe);
 
 
     /**
@@ -1195,16 +1191,16 @@
     function EsLint(gulp, preset) {
       var _Object$getPrototypeO;
 
-      babelHelpers.classCallCheck(this, EsLint);
+      classCallCheck(this, EsLint);
 
       for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
         configs[_key - 2] = arguments[_key];
       }
 
-      return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(EsLint)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$1].concat(configs)));
+      return possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(EsLint)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$1].concat(configs)));
     }
 
-    babelHelpers.createClass(EsLint, [{
+    createClass(EsLint, [{
       key: 'createDescription',
       value: function createDescription() {
         return 'Lints ' + this.config.source.options.cwd + '/' + this.config.source.glob;
@@ -1269,7 +1265,7 @@
    *
    */
   var Uglify = function (_BaseRecipe) {
-    babelHelpers.inherits(Uglify, _BaseRecipe);
+    inherits(Uglify, _BaseRecipe);
 
 
     /**
@@ -1282,16 +1278,16 @@
     function Uglify(gulp, preset) {
       var _Object$getPrototypeO;
 
-      babelHelpers.classCallCheck(this, Uglify);
+      classCallCheck(this, Uglify);
 
       for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
         configs[_key - 2] = arguments[_key];
       }
 
-      return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(Uglify)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$4].concat(configs)));
+      return possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(Uglify)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$4].concat(configs)));
     }
 
-    babelHelpers.createClass(Uglify, [{
+    createClass(Uglify, [{
       key: 'createDescription',
       value: function createDescription() {
         var msg = 'Uglifies ' + this.config.source.options.cwd + '/' + this.config.source.glob + ' to ' + this.config.dest;
@@ -1375,7 +1371,7 @@
   };
 
   var Autoprefixer = function (_BaseRecipe) {
-    babelHelpers.inherits(Autoprefixer, _BaseRecipe);
+    inherits(Autoprefixer, _BaseRecipe);
 
 
     /**
@@ -1388,16 +1384,16 @@
     function Autoprefixer(gulp, preset) {
       var _Object$getPrototypeO;
 
-      babelHelpers.classCallCheck(this, Autoprefixer);
+      classCallCheck(this, Autoprefixer);
 
       for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
         configs[_key - 2] = arguments[_key];
       }
 
-      return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(Autoprefixer)).call.apply(_Object$getPrototypeO, [this, gulp, preset, AutoprefixerDefault].concat(configs)));
+      return possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(Autoprefixer)).call.apply(_Object$getPrototypeO, [this, gulp, preset, AutoprefixerDefault].concat(configs)));
     }
 
-    babelHelpers.createClass(Autoprefixer, [{
+    createClass(Autoprefixer, [{
       key: 'run',
       value: function run(done) {
         var _this2 = this;
@@ -1436,7 +1432,7 @@
   };
 
   var Images = function (_BaseRecipe) {
-    babelHelpers.inherits(Images, _BaseRecipe);
+    inherits(Images, _BaseRecipe);
 
 
     /**
@@ -1449,19 +1445,19 @@
     function Images(gulp, preset) {
       var _Object$getPrototypeO;
 
-      babelHelpers.classCallCheck(this, Images);
+      classCallCheck(this, Images);
 
       for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
         configs[_key - 2] = arguments[_key];
       }
 
-      var _this = babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(Images)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$5].concat(configs)));
+      var _this = possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(Images)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$5].concat(configs)));
 
       _this.browserSync = BrowserSync.create();
       return _this;
     }
 
-    babelHelpers.createClass(Images, [{
+    createClass(Images, [{
       key: 'createDescription',
       value: function createDescription() {
         return 'Minifies change images from ' + this.config.source.options.cwd + '/' + this.config.source.glob;
@@ -1520,7 +1516,7 @@
   };
 
   var Sass = function (_BaseRecipe) {
-    babelHelpers.inherits(Sass, _BaseRecipe);
+    inherits(Sass, _BaseRecipe);
 
 
     /**
@@ -1533,7 +1529,7 @@
     function Sass(gulp, preset) {
       var _Object$getPrototypeO;
 
-      babelHelpers.classCallCheck(this, Sass);
+      classCallCheck(this, Sass);
 
       var includePaths = [node_modules];
       // add sub-node_module paths to the includePaths
@@ -1567,13 +1563,13 @@
         configs[_key - 2] = arguments[_key];
       }
 
-      var _this = babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(Sass)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$6, { options: { includePaths: includePaths } }].concat(configs)));
+      var _this = possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(Sass)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$6, { options: { includePaths: includePaths } }].concat(configs)));
 
       _this.browserSync = BrowserSync.create();
       return _this;
     }
 
-    babelHelpers.createClass(Sass, [{
+    createClass(Sass, [{
       key: 'createDescription',
       value: function createDescription() {
         return 'Compiles ' + this.config.source.options.cwd + '/' + this.config.source.glob;
@@ -1616,7 +1612,7 @@
   };
 
   var ScssLint = function (_BaseRecipe) {
-    babelHelpers.inherits(ScssLint, _BaseRecipe);
+    inherits(ScssLint, _BaseRecipe);
 
 
     /**
@@ -1629,13 +1625,13 @@
     function ScssLint(gulp, preset) {
       var _Object$getPrototypeO;
 
-      babelHelpers.classCallCheck(this, ScssLint);
+      classCallCheck(this, ScssLint);
 
       for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
         configs[_key - 2] = arguments[_key];
       }
 
-      var _this = babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(ScssLint)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$7].concat(configs)));
+      var _this = possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(ScssLint)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$7].concat(configs)));
 
       if (!_this.config.source.options.cwd) {
         _this.notifyError('Expected to find source.options.cwd in \n' + _this.dump(_this.config));
@@ -1652,7 +1648,7 @@
       return _this;
     }
 
-    babelHelpers.createClass(ScssLint, [{
+    createClass(ScssLint, [{
       key: 'createDescription',
       value: function createDescription() {
         return 'Lints ' + this.config.source.options.cwd + '/' + this.config.source.glob;
@@ -1682,7 +1678,7 @@
   };
 
   var Aggregate = function (_BaseGulp) {
-    babelHelpers.inherits(Aggregate, _BaseGulp);
+    inherits(Aggregate, _BaseGulp);
 
 
     /**
@@ -1694,13 +1690,13 @@
     function Aggregate(gulp, taskName, recipes) {
       var _Object$getPrototypeO;
 
-      babelHelpers.classCallCheck(this, Aggregate);
+      classCallCheck(this, Aggregate);
 
       for (var _len = arguments.length, configs = Array(_len > 3 ? _len - 3 : 0), _key = 3; _key < _len; _key++) {
         configs[_key - 3] = arguments[_key];
       }
 
-      var _this = babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(Aggregate)).call.apply(_Object$getPrototypeO, [this, gulp, Default$8, { task: { name: taskName } }].concat(configs)));
+      var _this = possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(Aggregate)).call.apply(_Object$getPrototypeO, [this, gulp, Default$8, { task: { name: taskName } }].concat(configs)));
 
       if (Array.isArray(recipes)) {
         _this.notifyError('recipes must not be an array, but a function, series, or parallel, found: ' + recipes);
@@ -1724,7 +1720,7 @@
       return _this;
     }
 
-    babelHelpers.createClass(Aggregate, [{
+    createClass(Aggregate, [{
       key: 'createHelpText',
       value: function createHelpText() {
         //let taskNames = new Recipes().toTasks(this.taskFn)
@@ -2040,7 +2036,7 @@
   };
 
   var RollupEs = function (_BaseRecipe) {
-    babelHelpers.inherits(RollupEs, _BaseRecipe);
+    inherits(RollupEs, _BaseRecipe);
 
 
     /**
@@ -2051,7 +2047,7 @@
      */
 
     function RollupEs(gulp, preset) {
-      babelHelpers.classCallCheck(this, RollupEs);
+      classCallCheck(this, RollupEs);
 
       for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
         configs[_key - 2] = arguments[_key];
@@ -2065,7 +2061,7 @@
 
       // Utilize the presets to get the dest cwd/base directory, then add the remaining passed-in file path/name
 
-      var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(RollupEs).call(this, gulp, preset, Default$9, NodeEnvReplace, NodeResolve, CommonJs, config));
+      var _this = possibleConstructorReturn(this, Object.getPrototypeOf(RollupEs).call(this, gulp, preset, Default$9, NodeEnvReplace, NodeResolve, CommonJs, config));
 
       _this.config.options.dest = _this.config.dest + '/' + _this.config.options.dest;
 
@@ -2097,7 +2093,7 @@
       return _this;
     }
 
-    babelHelpers.createClass(RollupEs, [{
+    createClass(RollupEs, [{
       key: 'resolveEntry',
       value: function resolveEntry() {
         // Resolve the source and make sure there is one entry point
@@ -2219,7 +2215,7 @@
    * ----------------------------------------------
    */
   var RollupCjs = function (_RollupEs) {
-    babelHelpers.inherits(RollupCjs, _RollupEs);
+    inherits(RollupCjs, _RollupEs);
 
 
     /**
@@ -2232,14 +2228,14 @@
     function RollupCjs(gulp, preset) {
       var _Object$getPrototypeO;
 
-      babelHelpers.classCallCheck(this, RollupCjs);
+      classCallCheck(this, RollupCjs);
 
       for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
         configs[_key - 2] = arguments[_key];
       }
 
       var config = Preset.resolveConfig.apply(Preset, [preset, Default$10].concat(configs));
-      return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(RollupCjs)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$10, {
+      return possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(RollupCjs)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$10, {
         options: {
           plugins: [babel(config.babel)]
         }
@@ -2267,7 +2263,7 @@
    * ----------------------------------------------
    */
   var RollupCjsBundled = function (_RollupCjs) {
-    babelHelpers.inherits(RollupCjsBundled, _RollupCjs);
+    inherits(RollupCjsBundled, _RollupCjs);
 
 
     /**
@@ -2280,13 +2276,13 @@
     function RollupCjsBundled(gulp, preset) {
       var _Object$getPrototypeO;
 
-      babelHelpers.classCallCheck(this, RollupCjsBundled);
+      classCallCheck(this, RollupCjsBundled);
 
       for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
         configs[_key - 2] = arguments[_key];
       }
 
-      return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(RollupCjsBundled)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$11].concat(configs)));
+      return possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(RollupCjsBundled)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$11].concat(configs)));
     }
 
     return RollupCjsBundled;
@@ -2308,7 +2304,7 @@
    * ----------------------------------------------
    */
   var RollupIife = function (_RollupCjsBundled) {
-    babelHelpers.inherits(RollupIife, _RollupCjsBundled);
+    inherits(RollupIife, _RollupCjsBundled);
 
 
     /**
@@ -2321,13 +2317,13 @@
     function RollupIife(gulp, preset) {
       var _Object$getPrototypeO;
 
-      babelHelpers.classCallCheck(this, RollupIife);
+      classCallCheck(this, RollupIife);
 
       for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
         configs[_key - 2] = arguments[_key];
       }
 
-      return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(RollupIife)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$12].concat(configs)));
+      return possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(RollupIife)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$12].concat(configs)));
     }
 
     return RollupIife;
@@ -2349,7 +2345,7 @@
    * ----------------------------------------------
    */
   var RollupAmd = function (_RollupCjs) {
-    babelHelpers.inherits(RollupAmd, _RollupCjs);
+    inherits(RollupAmd, _RollupCjs);
 
 
     /**
@@ -2362,13 +2358,13 @@
     function RollupAmd(gulp, preset) {
       var _Object$getPrototypeO;
 
-      babelHelpers.classCallCheck(this, RollupAmd);
+      classCallCheck(this, RollupAmd);
 
       for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
         configs[_key - 2] = arguments[_key];
       }
 
-      return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(RollupAmd)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$13].concat(configs)));
+      return possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(RollupAmd)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$13].concat(configs)));
     }
 
     return RollupAmd;
@@ -2390,7 +2386,7 @@
    * ----------------------------------------------
    */
   var RollupUmd = function (_RollupCjs) {
-    babelHelpers.inherits(RollupUmd, _RollupCjs);
+    inherits(RollupUmd, _RollupCjs);
 
 
     /**
@@ -2403,13 +2399,13 @@
     function RollupUmd(gulp, preset) {
       var _Object$getPrototypeO;
 
-      babelHelpers.classCallCheck(this, RollupUmd);
+      classCallCheck(this, RollupUmd);
 
       for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
         configs[_key - 2] = arguments[_key];
       }
 
-      return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(RollupUmd)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$14].concat(configs)));
+      return possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(RollupUmd)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$14].concat(configs)));
     }
 
     return RollupUmd;
@@ -2450,7 +2446,7 @@
    *  @credit to grunt and grunt-contrib-copy for the implementation. See license for attribution.
    */
   var Copy = function (_BaseRecipe) {
-    babelHelpers.inherits(Copy, _BaseRecipe);
+    inherits(Copy, _BaseRecipe);
 
 
     /**
@@ -2462,13 +2458,13 @@
     function Copy(gulp, preset) {
       var _Object$getPrototypeO;
 
-      babelHelpers.classCallCheck(this, Copy);
+      classCallCheck(this, Copy);
 
       for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
         configs[_key - 2] = arguments[_key];
       }
 
-      var _this = babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(Copy)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$15].concat(configs)));
+      var _this = possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(Copy)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$15].concat(configs)));
 
       _this.requireValue(_this.config.source.glob, 'source.glob');
       _this.requireValue(_this.config.source.options.cwd, 'source.options.cwd');
@@ -2481,7 +2477,7 @@
       return _this;
     }
 
-    babelHelpers.createClass(Copy, [{
+    createClass(Copy, [{
       key: 'createDescription',
       value: function createDescription() {
         return 'Copies ' + this.config.source.options.cwd + '/' + this.config.source.glob + ' to ' + this.config.dest;
@@ -2620,7 +2616,7 @@
   };
 
   var BaseClean = function (_BaseRecipe) {
-    babelHelpers.inherits(BaseClean, _BaseRecipe);
+    inherits(BaseClean, _BaseRecipe);
 
 
     /**
@@ -2631,7 +2627,7 @@
      */
 
     function BaseClean(gulp, preset) {
-      babelHelpers.classCallCheck(this, BaseClean);
+      classCallCheck(this, BaseClean);
 
       for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
         configs[_key - 2] = arguments[_key];
@@ -2642,10 +2638,10 @@
       if (config.glob) {
         destGlob = { dest: config.dest + '/' + config.glob };
       }
-      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(BaseClean).call(this, gulp, preset, config, destGlob));
+      return possibleConstructorReturn(this, Object.getPrototypeOf(BaseClean).call(this, gulp, preset, config, destGlob));
     }
 
-    babelHelpers.createClass(BaseClean, [{
+    createClass(BaseClean, [{
       key: 'createDescription',
       value: function createDescription() {
         // use the config to generate the dynamic help
@@ -2717,7 +2713,7 @@
   };
 
   var CleanImages = function (_BaseClean) {
-    babelHelpers.inherits(CleanImages, _BaseClean);
+    inherits(CleanImages, _BaseClean);
 
 
     /**
@@ -2730,13 +2726,13 @@
     function CleanImages(gulp, preset) {
       var _Object$getPrototypeO;
 
-      babelHelpers.classCallCheck(this, CleanImages);
+      classCallCheck(this, CleanImages);
 
       for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
         configs[_key - 2] = arguments[_key];
       }
 
-      return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(CleanImages)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$16].concat(configs)));
+      return possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(CleanImages)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$16].concat(configs)));
     }
 
     return CleanImages;
@@ -2751,7 +2747,7 @@
   };
 
   var CleanStylesheets = function (_BaseClean) {
-    babelHelpers.inherits(CleanStylesheets, _BaseClean);
+    inherits(CleanStylesheets, _BaseClean);
 
 
     /**
@@ -2764,13 +2760,13 @@
     function CleanStylesheets(gulp, preset) {
       var _Object$getPrototypeO;
 
-      babelHelpers.classCallCheck(this, CleanStylesheets);
+      classCallCheck(this, CleanStylesheets);
 
       for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
         configs[_key - 2] = arguments[_key];
       }
 
-      return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(CleanStylesheets)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$18].concat(configs)));
+      return possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(CleanStylesheets)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$18].concat(configs)));
     }
 
     return CleanStylesheets;
@@ -2785,7 +2781,7 @@
   };
 
   var CleanJavascripts = function (_BaseClean) {
-    babelHelpers.inherits(CleanJavascripts, _BaseClean);
+    inherits(CleanJavascripts, _BaseClean);
 
 
     /**
@@ -2798,13 +2794,13 @@
     function CleanJavascripts(gulp, preset) {
       var _Object$getPrototypeO;
 
-      babelHelpers.classCallCheck(this, CleanJavascripts);
+      classCallCheck(this, CleanJavascripts);
 
       for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
         configs[_key - 2] = arguments[_key];
       }
 
-      return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(CleanJavascripts)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$19].concat(configs)));
+      return possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(CleanJavascripts)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$19].concat(configs)));
     }
 
     return CleanJavascripts;
@@ -2818,7 +2814,7 @@
   };
 
   var CleanDigest = function (_BaseClean) {
-    babelHelpers.inherits(CleanDigest, _BaseClean);
+    inherits(CleanDigest, _BaseClean);
 
 
     /**
@@ -2831,25 +2827,25 @@
     function CleanDigest(gulp, preset) {
       var _Object$getPrototypeO;
 
-      babelHelpers.classCallCheck(this, CleanDigest);
+      classCallCheck(this, CleanDigest);
 
       for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
         configs[_key - 2] = arguments[_key];
       }
 
-      return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(CleanDigest)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$20].concat(configs)));
+      return possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(CleanDigest)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$20].concat(configs)));
     }
 
     return CleanDigest;
   }(BaseClean);
 
   var Recipes = function (_Base) {
-    babelHelpers.inherits(Recipes, _Base);
+    inherits(Recipes, _Base);
 
     function Recipes() {
       var config = arguments.length <= 0 || arguments[0] === undefined ? { debug: false } : arguments[0];
-      babelHelpers.classCallCheck(this, Recipes);
-      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Recipes).call(this, config));
+      classCallCheck(this, Recipes);
+      return possibleConstructorReturn(this, Object.getPrototypeOf(Recipes).call(this, config));
     }
 
     /**
@@ -2860,7 +2856,7 @@
      */
 
 
-    babelHelpers.createClass(Recipes, [{
+    createClass(Recipes, [{
       key: "toTask",
       value: function toTask(recipeOrAggregateOrString) {
         var task = null;
@@ -2961,7 +2957,7 @@
   };
 
   var Clean = function (_Aggregate) {
-    babelHelpers.inherits(Clean, _Aggregate);
+    inherits(Clean, _Aggregate);
 
 
     /**
@@ -2971,7 +2967,7 @@
      */
 
     function Clean(gulp, preset) {
-      babelHelpers.classCallCheck(this, Clean);
+      classCallCheck(this, Clean);
 
       for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
         configs[_key - 2] = arguments[_key];
@@ -2980,7 +2976,7 @@
       var config = Preset.resolveConfig.apply(Preset, [preset, Default$21].concat(configs));
       var recipes = parallel(gulp, new (Function.prototype.bind.apply(CleanImages, [null].concat([gulp, preset], configs)))(), new (Function.prototype.bind.apply(CleanStylesheets, [null].concat([gulp, preset], configs)))(), new (Function.prototype.bind.apply(CleanJavascripts, [null].concat([gulp, preset], configs)))(), new (Function.prototype.bind.apply(CleanDigest, [null].concat([gulp, preset], configs)))());
 
-      return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Clean).call(this, gulp, config.task.name, recipes, config));
+      return possibleConstructorReturn(this, Object.getPrototypeOf(Clean).call(this, gulp, config.task.name, recipes, config));
     }
 
     return Clean;
@@ -3025,7 +3021,7 @@
   };
 
   var Rev = function (_BaseRecipe) {
-    babelHelpers.inherits(Rev, _BaseRecipe);
+    inherits(Rev, _BaseRecipe);
 
 
     /**
@@ -3038,19 +3034,19 @@
     function Rev(gulp, preset) {
       var _Object$getPrototypeO;
 
-      babelHelpers.classCallCheck(this, Rev);
+      classCallCheck(this, Rev);
 
       for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
         configs[_key - 2] = arguments[_key];
       }
 
-      var _this = babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(Rev)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$22].concat(configs)));
+      var _this = possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(Rev)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$22].concat(configs)));
 
       _this.browserSync = BrowserSync.create();
       return _this;
     }
 
-    babelHelpers.createClass(Rev, [{
+    createClass(Rev, [{
       key: 'createDescription',
       value: function createDescription() {
         return 'Adds revision digest to assets from ' + this.config.source.options.cwd + '/' + this.config.source.glob;
@@ -3101,7 +3097,7 @@
   };
 
   var RevReplace = function (_BaseRecipe) {
-    babelHelpers.inherits(RevReplace, _BaseRecipe);
+    inherits(RevReplace, _BaseRecipe);
 
 
     /**
@@ -3114,14 +3110,14 @@
     function RevReplace(gulp, preset) {
       var _Object$getPrototypeO;
 
-      babelHelpers.classCallCheck(this, RevReplace);
+      classCallCheck(this, RevReplace);
 
       for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
         configs[_key - 2] = arguments[_key];
       }
 
       var resolvedPreset = Preset.resolveConfig.apply(Preset, [preset, Default$23].concat(configs));
-      return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(RevReplace)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$23, {
+      return possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(RevReplace)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$23, {
         source: {
           options: { // replace everything in the postProcessor dest folder (except manifest)
             cwd: resolvedPreset.dest,
@@ -3131,7 +3127,7 @@
       }].concat(configs)));
     }
 
-    babelHelpers.createClass(RevReplace, [{
+    createClass(RevReplace, [{
       key: 'createDescription',
       value: function createDescription() {
         return 'Adds revision digest to assets from ' + this.config.source.options.cwd + '/' + this.config.source.glob;
@@ -3192,7 +3188,7 @@
    * Recipe to be run after Rev or any other that places final assets in the digest destination directory
    */
   var CssNano = function (_BaseRecipe) {
-    babelHelpers.inherits(CssNano, _BaseRecipe);
+    inherits(CssNano, _BaseRecipe);
 
 
     /**
@@ -3205,19 +3201,19 @@
     function CssNano(gulp, preset) {
       var _Object$getPrototypeO;
 
-      babelHelpers.classCallCheck(this, CssNano);
+      classCallCheck(this, CssNano);
 
       for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
         configs[_key - 2] = arguments[_key];
       }
 
-      var _this = babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(CssNano)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$24].concat(configs)));
+      var _this = possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(CssNano)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$24].concat(configs)));
 
       _this.browserSync = BrowserSync.create();
       return _this;
     }
 
-    babelHelpers.createClass(CssNano, [{
+    createClass(CssNano, [{
       key: 'createDescription',
       value: function createDescription() {
         return 'Minifies digest css from ' + this.config.source.options.cwd + '/' + this.config.source.glob;
@@ -3247,7 +3243,7 @@
   };
 
   var BaseMocha = function (_BaseRecipe) {
-    babelHelpers.inherits(BaseMocha, _BaseRecipe);
+    inherits(BaseMocha, _BaseRecipe);
 
 
     /**
@@ -3260,17 +3256,17 @@
     function BaseMocha(gulp, preset) {
       var _Object$getPrototypeO;
 
-      babelHelpers.classCallCheck(this, BaseMocha);
+      classCallCheck(this, BaseMocha);
 
       for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
         configs[_key - 2] = arguments[_key];
       }
 
       // resolve watch cwd based on test cwd
-      return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(BaseMocha)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$26, { watch: { options: { cwd: Preset.resolveConfig.apply(Preset, [preset, Default$26].concat(configs)).test.options.cwd } } }].concat(configs)));
+      return possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(BaseMocha)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$26, { watch: { options: { cwd: Preset.resolveConfig.apply(Preset, [preset, Default$26].concat(configs)).test.options.cwd } } }].concat(configs)));
     }
 
-    babelHelpers.createClass(BaseMocha, [{
+    createClass(BaseMocha, [{
       key: 'createDescription',
       value: function createDescription() {
         return 'Tests ' + this.config.test.options.cwd + '/' + this.config.test.glob;
@@ -3289,7 +3285,7 @@
   };
 
   var Mocha = function (_BaseMocha) {
-    babelHelpers.inherits(Mocha, _BaseMocha);
+    inherits(Mocha, _BaseMocha);
 
 
     /**
@@ -3302,16 +3298,16 @@
     function Mocha(gulp, preset) {
       var _Object$getPrototypeO;
 
-      babelHelpers.classCallCheck(this, Mocha);
+      classCallCheck(this, Mocha);
 
       for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
         configs[_key - 2] = arguments[_key];
       }
 
-      return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(Mocha)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$25].concat(configs)));
+      return possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(Mocha)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$25].concat(configs)));
     }
 
-    babelHelpers.createClass(Mocha, [{
+    createClass(Mocha, [{
       key: 'run',
       value: function run(done) {
         var _this2 = this;
@@ -3345,7 +3341,7 @@
   WARNING: Using this means using a browser, and if your tests are written in ES2015 you need to use rollup first!
   */
   var MochaPhantomJs = function (_BaseMocha) {
-    babelHelpers.inherits(MochaPhantomJs, _BaseMocha);
+    inherits(MochaPhantomJs, _BaseMocha);
 
 
     /**
@@ -3358,16 +3354,16 @@
     function MochaPhantomJs(gulp, preset) {
       var _Object$getPrototypeO;
 
-      babelHelpers.classCallCheck(this, MochaPhantomJs);
+      classCallCheck(this, MochaPhantomJs);
 
       for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
         configs[_key - 2] = arguments[_key];
       }
 
-      return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(MochaPhantomJs)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$27].concat(configs)));
+      return possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(MochaPhantomJs)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$27].concat(configs)));
     }
 
-    babelHelpers.createClass(MochaPhantomJs, [{
+    createClass(MochaPhantomJs, [{
       key: 'run',
       value: function run(done) {
         var _this2 = this;
@@ -3420,7 +3416,7 @@
   };
 
   var BasePublish = function (_BaseRecipe) {
-    babelHelpers.inherits(BasePublish, _BaseRecipe);
+    inherits(BasePublish, _BaseRecipe);
 
 
     /**
@@ -3432,7 +3428,7 @@
     function BasePublish(gulp, preset) {
       var _Object$getPrototypeO;
 
-      babelHelpers.classCallCheck(this, BasePublish);
+      classCallCheck(this, BasePublish);
 
       for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
         configs[_key - 2] = arguments[_key];
@@ -3440,7 +3436,7 @@
 
       // use the dir as the cwd to the BuildControl class
 
-      var _this = babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(BasePublish)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$29].concat(configs)));
+      var _this = possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(BasePublish)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$29].concat(configs)));
 
       _this.config.options = extend(true, { debug: _this.config.debug, cwd: _this.config.dir }, _this.config.options);
       return _this;
@@ -3467,7 +3463,7 @@
    *  Run this before long running tests to error your build quickly.
    */
   var Prepublish = function (_BasePublish) {
-    babelHelpers.inherits(Prepublish, _BasePublish);
+    inherits(Prepublish, _BasePublish);
 
 
     /**
@@ -3479,16 +3475,16 @@
     function Prepublish(gulp, preset) {
       var _Object$getPrototypeO;
 
-      babelHelpers.classCallCheck(this, Prepublish);
+      classCallCheck(this, Prepublish);
 
       for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
         configs[_key - 2] = arguments[_key];
       }
 
-      return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(Prepublish)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$28].concat(configs)));
+      return possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(Prepublish)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$28].concat(configs)));
     }
 
-    babelHelpers.createClass(Prepublish, [{
+    createClass(Prepublish, [{
       key: 'run',
       value: function run(done) {
         var buildControl$$ = new buildControl.BuildControl(this.config.options);
@@ -3548,7 +3544,7 @@
   };
 
   var PublishBuild = function (_BasePublish) {
-    babelHelpers.inherits(PublishBuild, _BasePublish);
+    inherits(PublishBuild, _BasePublish);
 
 
     /**
@@ -3560,16 +3556,16 @@
     function PublishBuild(gulp, preset) {
       var _Object$getPrototypeO;
 
-      babelHelpers.classCallCheck(this, PublishBuild);
+      classCallCheck(this, PublishBuild);
 
       for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
         configs[_key - 2] = arguments[_key];
       }
 
-      return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(PublishBuild)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$30].concat(configs)));
+      return possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(PublishBuild)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$30].concat(configs)));
     }
 
-    babelHelpers.createClass(PublishBuild, [{
+    createClass(PublishBuild, [{
       key: 'run',
       value: function run(done) {
         var buildControl$$ = new buildControl.BuildControl(this.config.options);
@@ -3756,7 +3752,7 @@
    *  @see also PublishBuild - it will bump, publish build, and publish npm (all in one)
    */
   var PublishNpm = function (_BasePublish) {
-    babelHelpers.inherits(PublishNpm, _BasePublish);
+    inherits(PublishNpm, _BasePublish);
 
 
     /**
@@ -3768,16 +3764,16 @@
     function PublishNpm(gulp, preset) {
       var _Object$getPrototypeO;
 
-      babelHelpers.classCallCheck(this, PublishNpm);
+      classCallCheck(this, PublishNpm);
 
       for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
         configs[_key - 2] = arguments[_key];
       }
 
-      return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(PublishNpm)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$31].concat(configs)));
+      return possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(PublishNpm)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$31].concat(configs)));
     }
 
-    babelHelpers.createClass(PublishNpm, [{
+    createClass(PublishNpm, [{
       key: 'run',
       value: function run(done) {
         var npm = new buildControl.Npm(this.config.options);
@@ -3810,7 +3806,7 @@
   };
 
   var PublishGhPages = function (_BasePublish) {
-    babelHelpers.inherits(PublishGhPages, _BasePublish);
+    inherits(PublishGhPages, _BasePublish);
 
 
     /**
@@ -3822,16 +3818,16 @@
     function PublishGhPages(gulp, preset) {
       var _Object$getPrototypeO;
 
-      babelHelpers.classCallCheck(this, PublishGhPages);
+      classCallCheck(this, PublishGhPages);
 
       for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
         configs[_key - 2] = arguments[_key];
       }
 
-      return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(PublishGhPages)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$32].concat(configs)));
+      return possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(PublishGhPages)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$32].concat(configs)));
     }
 
-    babelHelpers.createClass(PublishGhPages, [{
+    createClass(PublishGhPages, [{
       key: 'run',
       value: function run(done) {
         var buildControl$$ = new buildControl.BuildControl(this.config.options);
@@ -3861,7 +3857,7 @@
   };
 
   var Jekyll = function (_BaseRecipe) {
-    babelHelpers.inherits(Jekyll, _BaseRecipe);
+    inherits(Jekyll, _BaseRecipe);
 
 
     /**
@@ -3873,16 +3869,16 @@
     function Jekyll(gulp, preset) {
       var _Object$getPrototypeO;
 
-      babelHelpers.classCallCheck(this, Jekyll);
+      classCallCheck(this, Jekyll);
 
       for (var _len = arguments.length, configs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
         configs[_key - 2] = arguments[_key];
       }
 
-      return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(Jekyll)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$33].concat(configs)));
+      return possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(Jekyll)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$33].concat(configs)));
     }
 
-    babelHelpers.createClass(Jekyll, [{
+    createClass(Jekyll, [{
       key: 'run',
       value: function run(done) {
         var config = '--config ' + this.config.options.config;
@@ -3971,7 +3967,7 @@
    * Sleep the given ms value, for those quirky cases like when you need the filesystem to catch up.
    */
   var Sleep = function (_BaseRecipe) {
-    babelHelpers.inherits(Sleep, _BaseRecipe);
+    inherits(Sleep, _BaseRecipe);
 
 
     /**
@@ -3983,16 +3979,16 @@
     function Sleep(gulp, preset, sleep) {
       var _Object$getPrototypeO;
 
-      babelHelpers.classCallCheck(this, Sleep);
+      classCallCheck(this, Sleep);
 
       for (var _len = arguments.length, configs = Array(_len > 3 ? _len - 3 : 0), _key = 3; _key < _len; _key++) {
         configs[_key - 3] = arguments[_key];
       }
 
-      return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(Sleep)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$34, { sleep: sleep }].concat(configs)));
+      return possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(Sleep)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$34, { sleep: sleep }].concat(configs)));
     }
 
-    babelHelpers.createClass(Sleep, [{
+    createClass(Sleep, [{
       key: 'createDescription',
       value: function createDescription() {
         return 'Sleeps for ' + this.config.sleep + ' milliseconds.';
@@ -4028,7 +4024,7 @@
   };
 
   var BaseRegistry = function (_DefaultRegistry) {
-    babelHelpers.inherits(BaseRegistry, _DefaultRegistry);
+    inherits(BaseRegistry, _DefaultRegistry);
 
 
     /**
@@ -4038,9 +4034,9 @@
      */
 
     function BaseRegistry() {
-      babelHelpers.classCallCheck(this, BaseRegistry);
+      classCallCheck(this, BaseRegistry);
 
-      var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(BaseRegistry).call(this));
+      var _this = possibleConstructorReturn(this, Object.getPrototypeOf(BaseRegistry).call(this));
 
       for (var _len = arguments.length, configs = Array(_len), _key = 0; _key < _len; _key++) {
         configs[_key] = arguments[_key];
@@ -4059,7 +4055,7 @@
      */
 
 
-    babelHelpers.createClass(BaseRegistry, [{
+    createClass(BaseRegistry, [{
       key: 'classConfig',
       value: function classConfig(clazz) {
         var className = clazz.prototype.constructor.name;
@@ -4149,7 +4145,7 @@
    * gulp.registry(new RailsRegistry(...configs))
    */
   var RailsRegistry = function (_BaseRegistry) {
-    babelHelpers.inherits(RailsRegistry, _BaseRegistry);
+    inherits(RailsRegistry, _BaseRegistry);
 
 
     /**
@@ -4159,25 +4155,25 @@
     function RailsRegistry() {
       var _Object$getPrototypeO;
 
-      babelHelpers.classCallCheck(this, RailsRegistry);
+      classCallCheck(this, RailsRegistry);
 
       for (var _len = arguments.length, configs = Array(_len), _key = 0; _key < _len; _key++) {
         configs[_key] = arguments[_key];
       }
 
-      return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(RailsRegistry)).call.apply(_Object$getPrototypeO, [this, Default$35, { preset: Preset.rails() }].concat(configs)));
+      return possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(RailsRegistry)).call.apply(_Object$getPrototypeO, [this, Default$35, { preset: Preset.rails() }].concat(configs)));
     }
 
-    babelHelpers.createClass(RailsRegistry, [{
+    createClass(RailsRegistry, [{
       key: 'init',
       value: function init(gulp) {
         var preset = this.config.preset;
 
-        var js = new (Function.prototype.bind.apply(Aggregate, [null].concat([gulp, 'js', series(gulp, this.esLinters(gulp), this.rollups(gulp))], babelHelpers.toConsumableArray(this.keyConfig('js')))))();
+        var js = new (Function.prototype.bind.apply(Aggregate, [null].concat([gulp, 'js', series(gulp, this.esLinters(gulp), this.rollups(gulp))], toConsumableArray(this.keyConfig('js')))))();
 
-        var css = new (Function.prototype.bind.apply(Aggregate, [null].concat([gulp, 'css', series(gulp, this.scssLinters(gulp), new (Function.prototype.bind.apply(Sass, [null].concat([gulp, preset], babelHelpers.toConsumableArray(this.classConfig(Sass)))))())], babelHelpers.toConsumableArray(this.keyConfig('css')))))();
+        var css = new (Function.prototype.bind.apply(Aggregate, [null].concat([gulp, 'css', series(gulp, this.scssLinters(gulp), new (Function.prototype.bind.apply(Sass, [null].concat([gulp, preset], toConsumableArray(this.classConfig(Sass)))))())], toConsumableArray(this.keyConfig('css')))))();
 
-        var defaultRecipes = new (Function.prototype.bind.apply(Aggregate, [null].concat([gulp, 'default', series(gulp, new Clean(gulp, preset), parallel(gulp, new (Function.prototype.bind.apply(Images, [null].concat([gulp, preset], babelHelpers.toConsumableArray(this.classConfig(Images)))))(), js, css))], babelHelpers.toConsumableArray(this.keyConfig('default')))))();
+        var defaultRecipes = new (Function.prototype.bind.apply(Aggregate, [null].concat([gulp, 'default', series(gulp, new Clean(gulp, preset), parallel(gulp, new (Function.prototype.bind.apply(Images, [null].concat([gulp, preset], toConsumableArray(this.classConfig(Images)))))(), js, css))], toConsumableArray(this.keyConfig('default')))))();
 
         // Create the production assets
         var tmpDirObj = tmpDir();
@@ -4190,7 +4186,7 @@
         var digest = new (Function.prototype.bind.apply(Aggregate, [null].concat([gulp, 'digest', series(gulp, new CleanDigest(gulp, preset, digests),
 
         // minify application.(css|js) to a tmp directory
-        parallel(gulp, new (Function.prototype.bind.apply(Uglify, [null].concat([gulp, preset, digests, { dest: minifiedAssetsDir, concat: { dest: 'application.js' } }], babelHelpers.toConsumableArray(this.classConfig(Uglify)))))(), new (Function.prototype.bind.apply(CssNano, [null].concat([gulp, preset, digests, { dest: minifiedAssetsDir, minExtension: false }], babelHelpers.toConsumableArray(this.classConfig(CssNano)))))()),
+        parallel(gulp, new (Function.prototype.bind.apply(Uglify, [null].concat([gulp, preset, digests, { dest: minifiedAssetsDir, concat: { dest: 'application.js' } }], toConsumableArray(this.classConfig(Uglify)))))(), new (Function.prototype.bind.apply(CssNano, [null].concat([gulp, preset, digests, { dest: minifiedAssetsDir, minExtension: false }], toConsumableArray(this.classConfig(CssNano)))))()),
 
         // rev minified css|js from tmp
         new Rev(gulp, preset, digests, {
@@ -4213,20 +4209,20 @@
         new RevReplace(gulp, preset, digests),
 
         // cleanup the temp files and folders
-        clean(gulp, minifiedAssetsDir + '/**'))], babelHelpers.toConsumableArray(this.keyConfig('digest')))))();
+        clean(gulp, minifiedAssetsDir + '/**'))], toConsumableArray(this.keyConfig('digest')))))();
 
         // default then digest
-        new (Function.prototype.bind.apply(Aggregate, [null].concat([gulp, 'all', series(gulp, defaultRecipes, digest)], babelHelpers.toConsumableArray(this.keyConfig('all')))))();
+        new (Function.prototype.bind.apply(Aggregate, [null].concat([gulp, 'all', series(gulp, defaultRecipes, digest)], toConsumableArray(this.keyConfig('all')))))();
       }
     }, {
       key: 'esLinters',
       value: function esLinters(gulp) {
-        return new (Function.prototype.bind.apply(EsLint, [null].concat([gulp, this.config.preset], babelHelpers.toConsumableArray(this.classConfig(EsLint)))))();
+        return new (Function.prototype.bind.apply(EsLint, [null].concat([gulp, this.config.preset], toConsumableArray(this.classConfig(EsLint)))))();
       }
     }, {
       key: 'scssLinters',
       value: function scssLinters(gulp) {
-        return new (Function.prototype.bind.apply(ScssLint, [null].concat([gulp, this.config.preset], babelHelpers.toConsumableArray(this.classConfig(ScssLint)))))();
+        return new (Function.prototype.bind.apply(ScssLint, [null].concat([gulp, this.config.preset], toConsumableArray(this.classConfig(ScssLint)))))();
       }
     }, {
       key: 'rollups',
@@ -4243,7 +4239,7 @@
               dest: 'application.js',
               moduleName: 'App'
             }
-          }], babelHelpers.toConsumableArray(this.classConfig(RollupIife)))))());
+          }], toConsumableArray(this.classConfig(RollupIife)))))());
         }
 
         // Rails apps probably don't need commonjs, so by default it is off.
@@ -4254,7 +4250,7 @@
               dest: 'application.cjs.js',
               moduleName: 'App'
             }
-          }], babelHelpers.toConsumableArray(this.classConfig(RollupCjs)))))());
+          }], toConsumableArray(this.classConfig(RollupCjs)))))());
         }
 
         if (this.config.RollupCjsBundled) {
@@ -4263,7 +4259,7 @@
               dest: 'application.cjs-bundled.js',
               moduleName: 'App'
             }
-          }], babelHelpers.toConsumableArray(this.classConfig(RollupCjsBundled)))))());
+          }], toConsumableArray(this.classConfig(RollupCjsBundled)))))());
         }
 
         if (this.config.RollupUmd) {
@@ -4272,7 +4268,7 @@
               dest: 'application.umd.js',
               moduleName: 'App'
             }
-          }], babelHelpers.toConsumableArray(this.classConfig(RollupUmd)))))());
+          }], toConsumableArray(this.classConfig(RollupUmd)))))());
         }
 
         if (this.config.RollupAmd) {
@@ -4281,7 +4277,7 @@
               dest: 'application.amd.js',
               moduleName: 'App'
             }
-          }], babelHelpers.toConsumableArray(this.classConfig(RollupAmd)))))());
+          }], toConsumableArray(this.classConfig(RollupAmd)))))());
         }
 
         return parallel.apply(undefined, [gulp].concat(rollups));
@@ -4299,7 +4295,7 @@
    * gulp.registry(new RailsEngineDummyRegistry(...configs))
    */
   var RailsEngineDummyRegistry = function (_RailsRegistry) {
-    babelHelpers.inherits(RailsEngineDummyRegistry, _RailsRegistry);
+    inherits(RailsEngineDummyRegistry, _RailsRegistry);
 
 
     /**
@@ -4309,13 +4305,13 @@
     function RailsEngineDummyRegistry() {
       var _Object$getPrototypeO;
 
-      babelHelpers.classCallCheck(this, RailsEngineDummyRegistry);
+      classCallCheck(this, RailsEngineDummyRegistry);
 
       for (var _len = arguments.length, configs = Array(_len), _key = 0; _key < _len; _key++) {
         configs[_key] = arguments[_key];
       }
 
-      return babelHelpers.possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(RailsEngineDummyRegistry)).call.apply(_Object$getPrototypeO, [this, Default$37].concat(configs)));
+      return possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(RailsEngineDummyRegistry)).call.apply(_Object$getPrototypeO, [this, Default$37].concat(configs)));
     }
 
     /**
@@ -4324,7 +4320,7 @@
      */
 
 
-    babelHelpers.createClass(RailsEngineDummyRegistry, [{
+    createClass(RailsEngineDummyRegistry, [{
       key: 'esLinters',
       value: function esLinters(gulp) {
         var engineCwd = {
@@ -4333,7 +4329,7 @@
           }
         };
 
-        return parallel(gulp, babelHelpers.get(Object.getPrototypeOf(RailsEngineDummyRegistry.prototype), 'esLinters', this).call(this, gulp), new EsLint(gulp, this.config.preset, {
+        return parallel(gulp, get(Object.getPrototypeOf(RailsEngineDummyRegistry.prototype), 'esLinters', this).call(this, gulp), new EsLint(gulp, this.config.preset, {
           task: { name: 'eslint:engine' },
           source: engineCwd,
           watch: engineCwd
@@ -4355,7 +4351,7 @@
           }
         };
 
-        return parallel(gulp, babelHelpers.get(Object.getPrototypeOf(RailsEngineDummyRegistry.prototype), 'scssLinters', this).call(this, gulp), new ScssLint(gulp, this.config.preset, {
+        return parallel(gulp, get(Object.getPrototypeOf(RailsEngineDummyRegistry.prototype), 'scssLinters', this).call(this, gulp), new ScssLint(gulp, this.config.preset, {
           //debug: true,
           task: { name: 'scss:lint:engine' },
           source: engineCwd,
@@ -4408,6 +4404,8 @@
   exports.sleep = sleep;
   exports.RailsRegistry = RailsRegistry;
   exports.RailsEngineDummyRegistry = RailsEngineDummyRegistry;
+
+  Object.defineProperty(exports, '__esModule', { value: true });
 
 }));
 //# sourceMappingURL=gulp-pipeline.umd.js.map

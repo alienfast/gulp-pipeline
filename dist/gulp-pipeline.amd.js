@@ -143,7 +143,6 @@ define(['exports', 'extend', 'path', 'gulp-util', 'stringify-object', 'shelljs',
      * @param gulp - gulp instance
      * @param config - customized overrides
      */
-
     function Base() {
       classCallCheck(this, Base);
 
@@ -885,13 +884,11 @@ define(['exports', 'extend', 'path', 'gulp-util', 'stringify-object', 'shelljs',
   var BaseGulp = function (_Base) {
     inherits(BaseGulp, _Base);
 
-
     /**
      *
      * @param gulp - gulp instance
      * @param config - customized overrides
      */
-
     function BaseGulp(gulp) {
       var _Object$getPrototypeO;
 
@@ -1024,14 +1021,12 @@ define(['exports', 'extend', 'path', 'gulp-util', 'stringify-object', 'shelljs',
   var BaseRecipe = function (_BaseGulp) {
     inherits(BaseRecipe, _BaseGulp);
 
-
     /**
      *
      * @param gulp - gulp instance
      * @param preset - base preset configuration - either one from preset.js or a custom hash
      * @param configs - customized overrides for this recipe
      */
-
     function BaseRecipe(gulp, preset) {
       classCallCheck(this, BaseRecipe);
 
@@ -1040,7 +1035,6 @@ define(['exports', 'extend', 'path', 'gulp-util', 'stringify-object', 'shelljs',
       }
 
       // in case someone needs to inspect it later i.e. buildControl
-
       var _this = possibleConstructorReturn(this, Object.getPrototypeOf(BaseRecipe).call(this, gulp, extend(true, {}, // extend presets here since BaseGulp doesn't use preset.
       Default$2, { baseDirectories: preset.baseDirectories }, Preset.resolveConfig.apply(Preset, [preset].concat(configs)))));
 
@@ -1176,14 +1170,12 @@ define(['exports', 'extend', 'path', 'gulp-util', 'stringify-object', 'shelljs',
   var EsLint = function (_BaseRecipe) {
     inherits(EsLint, _BaseRecipe);
 
-
     /**
      *
      * @param gulp - gulp instance
      * @param preset - base preset configuration - either one from preset.js or a custom hash
      * @param configs - customized overrides for this recipe
      */
-
     function EsLint(gulp, preset) {
       var _Object$getPrototypeO;
 
@@ -1263,14 +1255,12 @@ define(['exports', 'extend', 'path', 'gulp-util', 'stringify-object', 'shelljs',
   var Uglify = function (_BaseRecipe) {
     inherits(Uglify, _BaseRecipe);
 
-
     /**
      *
      * @param gulp - gulp instance
      * @param preset - base preset configuration - either one from preset.js or a custom hash
      * @param configs - customized overrides for this recipe
      */
-
     function Uglify(gulp, preset) {
       var _Object$getPrototypeO;
 
@@ -1369,14 +1359,12 @@ define(['exports', 'extend', 'path', 'gulp-util', 'stringify-object', 'shelljs',
   var Autoprefixer = function (_BaseRecipe) {
     inherits(Autoprefixer, _BaseRecipe);
 
-
     /**
      *
      * @param gulp - gulp instance
      * @param preset - base preset configuration - either one from preset.js or a custom hash
      * @param configs - customized overrides for this recipe
      */
-
     function Autoprefixer(gulp, preset) {
       var _Object$getPrototypeO;
 
@@ -1430,14 +1418,12 @@ define(['exports', 'extend', 'path', 'gulp-util', 'stringify-object', 'shelljs',
   var Images = function (_BaseRecipe) {
     inherits(Images, _BaseRecipe);
 
-
     /**
      *
      * @param gulp - gulp instance
      * @param preset - base preset configuration - either one from preset.js or a custom hash
      * @param configs - customized overrides for this recipe
      */
-
     function Images(gulp, preset) {
       var _Object$getPrototypeO;
 
@@ -1514,14 +1500,12 @@ define(['exports', 'extend', 'path', 'gulp-util', 'stringify-object', 'shelljs',
   var Sass = function (_BaseRecipe) {
     inherits(Sass, _BaseRecipe);
 
-
     /**
      *
      * @param gulp - gulp instance
      * @param preset - base preset configuration - either one from preset.js or a custom hash
      * @param configs - customized overrides for this recipe
      */
-
     function Sass(gulp, preset) {
       var _Object$getPrototypeO;
 
@@ -1610,14 +1594,12 @@ define(['exports', 'extend', 'path', 'gulp-util', 'stringify-object', 'shelljs',
   var ScssLint = function (_BaseRecipe) {
     inherits(ScssLint, _BaseRecipe);
 
-
     /**
      *
      * @param gulp - gulp instance
      * @param preset - base preset configuration - either one from preset.js or a custom hash
      * @param configs - customized overrides for this recipe
      */
-
     function ScssLint(gulp, preset) {
       var _Object$getPrototypeO;
 
@@ -1676,13 +1658,11 @@ define(['exports', 'extend', 'path', 'gulp-util', 'stringify-object', 'shelljs',
   var Aggregate = function (_BaseGulp) {
     inherits(Aggregate, _BaseGulp);
 
-
     /**
      *
      * @param gulp - gulp instance
      * @param configs - customized overrides
      */
-
     function Aggregate(gulp, taskName, recipes) {
       var _Object$getPrototypeO;
 
@@ -2034,14 +2014,12 @@ define(['exports', 'extend', 'path', 'gulp-util', 'stringify-object', 'shelljs',
   var RollupEs = function (_BaseRecipe) {
     inherits(RollupEs, _BaseRecipe);
 
-
     /**
      *
      * @param gulp - gulp instance
      * @param preset - base preset configuration - either one from preset.js or a custom hash
      * @param configs - customized overrides for this recipe
      */
-
     function RollupEs(gulp, preset) {
       classCallCheck(this, RollupEs);
 
@@ -2056,7 +2034,6 @@ define(['exports', 'extend', 'path', 'gulp-util', 'stringify-object', 'shelljs',
       }
 
       // Utilize the presets to get the dest cwd/base directory, then add the remaining passed-in file path/name
-
       var _this = possibleConstructorReturn(this, Object.getPrototypeOf(RollupEs).call(this, gulp, preset, Default$9, NodeEnvReplace, NodeResolve, CommonJs, config));
 
       _this.config.options.dest = _this.config.dest + '/' + _this.config.options.dest;
@@ -2213,14 +2190,12 @@ define(['exports', 'extend', 'path', 'gulp-util', 'stringify-object', 'shelljs',
   var RollupCjs = function (_RollupEs) {
     inherits(RollupCjs, _RollupEs);
 
-
     /**
      *
      * @param gulp - gulp instance
      * @param preset - base preset configuration - either one from preset.js or a custom hash
      * @param configs - customized overrides for this recipe
      */
-
     function RollupCjs(gulp, preset) {
       var _Object$getPrototypeO;
 
@@ -2261,14 +2236,12 @@ define(['exports', 'extend', 'path', 'gulp-util', 'stringify-object', 'shelljs',
   var RollupCjsBundled = function (_RollupCjs) {
     inherits(RollupCjsBundled, _RollupCjs);
 
-
     /**
      *
      * @param gulp - gulp instance
      * @param preset - base preset configuration - either one from preset.js or a custom hash
      * @param configs - customized overrides for this recipe
      */
-
     function RollupCjsBundled(gulp, preset) {
       var _Object$getPrototypeO;
 
@@ -2302,14 +2275,12 @@ define(['exports', 'extend', 'path', 'gulp-util', 'stringify-object', 'shelljs',
   var RollupIife = function (_RollupCjsBundled) {
     inherits(RollupIife, _RollupCjsBundled);
 
-
     /**
      *
      * @param gulp - gulp instance
      * @param preset - base preset configuration - either one from preset.js or a custom hash
      * @param configs - customized overrides for this recipe
      */
-
     function RollupIife(gulp, preset) {
       var _Object$getPrototypeO;
 
@@ -2343,14 +2314,12 @@ define(['exports', 'extend', 'path', 'gulp-util', 'stringify-object', 'shelljs',
   var RollupAmd = function (_RollupCjs) {
     inherits(RollupAmd, _RollupCjs);
 
-
     /**
      *
      * @param gulp - gulp instance
      * @param preset - base preset configuration - either one from preset.js or a custom hash
      * @param configs - customized overrides for this recipe
      */
-
     function RollupAmd(gulp, preset) {
       var _Object$getPrototypeO;
 
@@ -2384,14 +2353,12 @@ define(['exports', 'extend', 'path', 'gulp-util', 'stringify-object', 'shelljs',
   var RollupUmd = function (_RollupCjs) {
     inherits(RollupUmd, _RollupCjs);
 
-
     /**
      *
      * @param gulp - gulp instance
      * @param preset - base preset configuration - either one from preset.js or a custom hash
      * @param configs - customized overrides for this recipe
      */
-
     function RollupUmd(gulp, preset) {
       var _Object$getPrototypeO;
 
@@ -2444,13 +2411,11 @@ define(['exports', 'extend', 'path', 'gulp-util', 'stringify-object', 'shelljs',
   var Copy = function (_BaseRecipe) {
     inherits(Copy, _BaseRecipe);
 
-
     /**
      *
      * @param gulp - gulp instance
      * @param config - customized overrides
      */
-
     function Copy(gulp, preset) {
       var _Object$getPrototypeO;
 
@@ -2614,14 +2579,12 @@ define(['exports', 'extend', 'path', 'gulp-util', 'stringify-object', 'shelljs',
   var BaseClean = function (_BaseRecipe) {
     inherits(BaseClean, _BaseRecipe);
 
-
     /**
      *
      * @param gulp - gulp instance
      * @param preset - base preset configuration - either one from preset.js or a custom hash
      * @param configs - customized overrides for this recipe
      */
-
     function BaseClean(gulp, preset) {
       classCallCheck(this, BaseClean);
 
@@ -2711,14 +2674,12 @@ define(['exports', 'extend', 'path', 'gulp-util', 'stringify-object', 'shelljs',
   var CleanImages = function (_BaseClean) {
     inherits(CleanImages, _BaseClean);
 
-
     /**
      *
      * @param gulp - gulp instance
      * @param preset - base preset configuration - either one from preset.js or a custom hash
      * @param configs - customized overrides for this recipe
      */
-
     function CleanImages(gulp, preset) {
       var _Object$getPrototypeO;
 
@@ -2745,14 +2706,12 @@ define(['exports', 'extend', 'path', 'gulp-util', 'stringify-object', 'shelljs',
   var CleanStylesheets = function (_BaseClean) {
     inherits(CleanStylesheets, _BaseClean);
 
-
     /**
      *
      * @param gulp - gulp instance
      * @param preset - base preset configuration - either one from preset.js or a custom hash
      * @param configs - customized overrides for this recipe
      */
-
     function CleanStylesheets(gulp, preset) {
       var _Object$getPrototypeO;
 
@@ -2779,14 +2738,12 @@ define(['exports', 'extend', 'path', 'gulp-util', 'stringify-object', 'shelljs',
   var CleanJavascripts = function (_BaseClean) {
     inherits(CleanJavascripts, _BaseClean);
 
-
     /**
      *
      * @param gulp - gulp instance
      * @param preset - base preset configuration - either one from preset.js or a custom hash
      * @param configs - customized overrides for this recipe
      */
-
     function CleanJavascripts(gulp, preset) {
       var _Object$getPrototypeO;
 
@@ -2812,14 +2769,12 @@ define(['exports', 'extend', 'path', 'gulp-util', 'stringify-object', 'shelljs',
   var CleanDigest = function (_BaseClean) {
     inherits(CleanDigest, _BaseClean);
 
-
     /**
      *
      * @param gulp - gulp instance
      * @param preset - base preset configuration - either one from preset.js or a custom hash
      * @param configs - customized overrides for this recipe
      */
-
     function CleanDigest(gulp, preset) {
       var _Object$getPrototypeO;
 
@@ -2955,13 +2910,11 @@ define(['exports', 'extend', 'path', 'gulp-util', 'stringify-object', 'shelljs',
   var Clean = function (_Aggregate) {
     inherits(Clean, _Aggregate);
 
-
     /**
      *
      * @param gulp - gulp instance
      * @param config - customized overrides
      */
-
     function Clean(gulp, preset) {
       classCallCheck(this, Clean);
 
@@ -3019,14 +2972,12 @@ define(['exports', 'extend', 'path', 'gulp-util', 'stringify-object', 'shelljs',
   var Rev = function (_BaseRecipe) {
     inherits(Rev, _BaseRecipe);
 
-
     /**
      *
      * @param gulp - gulp instance
      * @param preset - base preset configuration - either one from preset.js or a custom hash
      * @param configs - customized overrides for this recipe
      */
-
     function Rev(gulp, preset) {
       var _Object$getPrototypeO;
 
@@ -3095,14 +3046,12 @@ define(['exports', 'extend', 'path', 'gulp-util', 'stringify-object', 'shelljs',
   var RevReplace = function (_BaseRecipe) {
     inherits(RevReplace, _BaseRecipe);
 
-
     /**
      *
      * @param gulp - gulp instance
      * @param preset - base preset configuration - either one from preset.js or a custom hash
      * @param configs - customized overrides for this recipe
      */
-
     function RevReplace(gulp, preset) {
       var _Object$getPrototypeO;
 
@@ -3186,14 +3135,12 @@ define(['exports', 'extend', 'path', 'gulp-util', 'stringify-object', 'shelljs',
   var CssNano = function (_BaseRecipe) {
     inherits(CssNano, _BaseRecipe);
 
-
     /**
      *
      * @param gulp - gulp instance
      * @param preset - base preset configuration - either one from preset.js or a custom hash
      * @param configs - customized overrides for this recipe
      */
-
     function CssNano(gulp, preset) {
       var _Object$getPrototypeO;
 
@@ -3241,14 +3188,12 @@ define(['exports', 'extend', 'path', 'gulp-util', 'stringify-object', 'shelljs',
   var BaseMocha = function (_BaseRecipe) {
     inherits(BaseMocha, _BaseRecipe);
 
-
     /**
      *
      * @param gulp - gulp instance
      * @param preset - base preset configuration - either one from preset.js or a custom hash
      * @param configs - customized overrides for this recipe
      */
-
     function BaseMocha(gulp, preset) {
       var _Object$getPrototypeO;
 
@@ -3283,14 +3228,12 @@ define(['exports', 'extend', 'path', 'gulp-util', 'stringify-object', 'shelljs',
   var Mocha = function (_BaseMocha) {
     inherits(Mocha, _BaseMocha);
 
-
     /**
      *
      * @param gulp - gulp instance
      * @param preset - base preset configuration - either one from preset.js or a custom hash
      * @param configs - customized overrides for this recipe
      */
-
     function Mocha(gulp, preset) {
       var _Object$getPrototypeO;
 
@@ -3339,14 +3282,12 @@ define(['exports', 'extend', 'path', 'gulp-util', 'stringify-object', 'shelljs',
   var MochaPhantomJs = function (_BaseMocha) {
     inherits(MochaPhantomJs, _BaseMocha);
 
-
     /**
      *
      * @param gulp - gulp instance
      * @param preset - base preset configuration - either one from preset.js or a custom hash
      * @param configs - customized overrides for this recipe
      */
-
     function MochaPhantomJs(gulp, preset) {
       var _Object$getPrototypeO;
 
@@ -3414,13 +3355,11 @@ define(['exports', 'extend', 'path', 'gulp-util', 'stringify-object', 'shelljs',
   var BasePublish = function (_BaseRecipe) {
     inherits(BasePublish, _BaseRecipe);
 
-
     /**
      *
      * @param gulp - gulp instance
      * @param config - customized overrides
      */
-
     function BasePublish(gulp, preset) {
       var _Object$getPrototypeO;
 
@@ -3431,7 +3370,6 @@ define(['exports', 'extend', 'path', 'gulp-util', 'stringify-object', 'shelljs',
       }
 
       // use the dir as the cwd to the BuildControl class
-
       var _this = possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(BasePublish)).call.apply(_Object$getPrototypeO, [this, gulp, preset, Default$29].concat(configs)));
 
       _this.config.options = extend(true, { debug: _this.config.debug, cwd: _this.config.dir }, _this.config.options);
@@ -3461,13 +3399,11 @@ define(['exports', 'extend', 'path', 'gulp-util', 'stringify-object', 'shelljs',
   var Prepublish = function (_BasePublish) {
     inherits(Prepublish, _BasePublish);
 
-
     /**
      *
      * @param gulp - gulp instance
      * @param config - customized overrides
      */
-
     function Prepublish(gulp, preset) {
       var _Object$getPrototypeO;
 
@@ -3542,13 +3478,11 @@ define(['exports', 'extend', 'path', 'gulp-util', 'stringify-object', 'shelljs',
   var PublishBuild = function (_BasePublish) {
     inherits(PublishBuild, _BasePublish);
 
-
     /**
      *
      * @param gulp - gulp instance
      * @param config - customized overrides
      */
-
     function PublishBuild(gulp, preset) {
       var _Object$getPrototypeO;
 
@@ -3750,13 +3684,11 @@ define(['exports', 'extend', 'path', 'gulp-util', 'stringify-object', 'shelljs',
   var PublishNpm = function (_BasePublish) {
     inherits(PublishNpm, _BasePublish);
 
-
     /**
      *
      * @param gulp - gulp instance
      * @param config - customized overrides
      */
-
     function PublishNpm(gulp, preset) {
       var _Object$getPrototypeO;
 
@@ -3804,13 +3736,11 @@ define(['exports', 'extend', 'path', 'gulp-util', 'stringify-object', 'shelljs',
   var PublishGhPages = function (_BasePublish) {
     inherits(PublishGhPages, _BasePublish);
 
-
     /**
      *
      * @param gulp - gulp instance
      * @param config - customized overrides
      */
-
     function PublishGhPages(gulp, preset) {
       var _Object$getPrototypeO;
 
@@ -3855,13 +3785,11 @@ define(['exports', 'extend', 'path', 'gulp-util', 'stringify-object', 'shelljs',
   var Jekyll = function (_BaseRecipe) {
     inherits(Jekyll, _BaseRecipe);
 
-
     /**
      *
      * @param gulp - gulp instance
      * @param config - customized overrides
      */
-
     function Jekyll(gulp, preset) {
       var _Object$getPrototypeO;
 
@@ -3965,13 +3893,11 @@ define(['exports', 'extend', 'path', 'gulp-util', 'stringify-object', 'shelljs',
   var Sleep = function (_BaseRecipe) {
     inherits(Sleep, _BaseRecipe);
 
-
     /**
      *
      * @param gulp - gulp instance
      * @param config - customized overrides
      */
-
     function Sleep(gulp, preset, sleep) {
       var _Object$getPrototypeO;
 
@@ -4022,13 +3948,11 @@ define(['exports', 'extend', 'path', 'gulp-util', 'stringify-object', 'shelljs',
   var BaseRegistry = function (_DefaultRegistry) {
     inherits(BaseRegistry, _DefaultRegistry);
 
-
     /**
      *
      * @param gulp - gulp instance
      * @param config - customized overrides
      */
-
     function BaseRegistry() {
       classCallCheck(this, BaseRegistry);
 
@@ -4143,11 +4067,9 @@ define(['exports', 'extend', 'path', 'gulp-util', 'stringify-object', 'shelljs',
   var RailsRegistry = function (_BaseRegistry) {
     inherits(RailsRegistry, _BaseRegistry);
 
-
     /**
      * @param config - customized overrides of the Default, last one wins
      */
-
     function RailsRegistry() {
       var _Object$getPrototypeO;
 
@@ -4293,11 +4215,9 @@ define(['exports', 'extend', 'path', 'gulp-util', 'stringify-object', 'shelljs',
   var RailsEngineDummyRegistry = function (_RailsRegistry) {
     inherits(RailsEngineDummyRegistry, _RailsRegistry);
 
-
     /**
      * @param config - customized overrides of the Default, last one wins
      */
-
     function RailsEngineDummyRegistry() {
       var _Object$getPrototypeO;
 

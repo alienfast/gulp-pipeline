@@ -1,6 +1,8 @@
 [![NPM version][npm-image]][npm-url] [![Build Status][travis-image]][travis-url]
 
 # gulp-pipeline
+**[Call for maintainers/new owners](https://github.com/alienfast/gulp-pipeline/issues/31)**
+
 Gulp 4 recipes modularized as ES2015 classes. Fully configurable. Fully extensible. Full pipeline in a few lines of code.
 
 This agnostic of your server software choice and works for anything (rails, node, angular, etc). 
